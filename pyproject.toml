@@ -1,0 +1,29 @@
+[project]
+authors = [{name = "Pierre Navaro", email = "pierre.navaro@math.cnrs.fr"}]
+dependencies = []
+description = "Add a short description here"
+name = "jdcoot"
+requires-python = ">= 3.11"
+version = "0.1.0"
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+jdcoot = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+python = ">=3.12.7,<4"
+pandas = ">=2.2.3,<3"
+matplotlib = ">=3.9.2,<4"
+pot = ">=0.9.4,<0.10"
+tf-keras = ">=2.17.0,<3"
+scikit-learn = ">=1.5.2,<2"
+alive-progress = ">=3.1.5,<4"
