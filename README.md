@@ -1,8 +1,8 @@
 # JDCOOT : Algorithm for Transfer Learning in Incomparable Domains using Optimal Transport
 
-Code stage Lucas Offroy : jdcoot
+Code stage Lucas Offroy
 
-Pour faire tourner le code il faut utiliser [pixi](https://pixi.sh)
+Pour installer les dépendances python il faut utiliser [pixi](https://pixi.sh)
 
 ```bash
 curl -fsSL https://pixi.sh/install.sh | bash
