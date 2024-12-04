@@ -164,3 +164,4 @@ cython_debug/
 # pixi environments
 .pixi
 *.egg-info
+/doc/_build

@@ -35,81 +35,48 @@
 # #!pip install ipympl
 # @title IMPORT USEFULL PACKAGES
 
-# BASICS
-import numpy as np # scientific computing
 import math
+
+# BASICS
+import numpy as np  # scientific computing
 import pandas as pd
-import scipy as sp # Fundamental algorithms for scientific computing
-from scipy import ndimage # image processing
-import scipy.optimize as spo
-from scipy.spatial.distance import cdist
-from scipy.io import loadmat # files .mat
-import scipy.io # Input and output
-from scipy import stats # Statistical functions
-from scipy.sparse import random # Generate a sparse matrix of the given shape and density with randomly distributed values
+import scipy.io  # Input and output
+from scipy.io import loadmat  # files .mat
+# ML
+from sklearn import preprocessing
 
 # %matplotlib inline
-import matplotlib.pyplot  as plt # Visualization // Marion: matplotlib.pylab
-import matplotlib.colors as mcolors
-from matplotlib import cm
-import os # operating system / read/write files
-import time # handling time-related tasks
-from random import shuffle #pseudo-random number generators for various distributions
-
-from tensorflow.python.ops.numpy_ops import np_config # warning ds import ot
-
 # OT
-import ot # OT methods, from install pot
-
 # NN
-#import keras # for DL, from install tensorflow
-#from keras import layers
-import tf_keras
-from tf_keras import layers
-from tf_keras.models import Sequential
-from tf_keras.layers import Activation # Marion : from keras.layers.core ?
-from tf_keras.layers import Dense # Marion : from keras.layers.core ?
-from tf_keras import backend as K
-
-# ML
-import sklearn # for ML
-from sklearn import preprocessing
-from sklearn.metrics import euclidean_distances
-from sklearn.preprocessing import OneHotEncoder as onehot
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import KFold
-from sklearn.metrics.pairwise import rbf_kernel
+# import keras # for DL, from install tensorflow
+# from keras import layers
 
 # MISC
-from functools import reduce #  for using higher-order functions that are in-built in
 
-
-from alive_progress import alive_bar
-import os
-import json
 # PERSO
-#import cot # COOT
-#import jdcot # JDCOOT
-#import classif
+# import cot # COOT
+# import jdcot # JDCOOT
+# import classif
 pd.options.mode.chained_assignment = None  # default='warn'
 # -
 
 # %run Codes_Lucas\JDCOOT_FUNCTIONS.ipynb #Functions import
+from jdcoot import *
 
 # # Data Generation
 
 # ### Same variables for generation, to stay in the "same world"
 
 global INDEX_GENERATION
-INDEX_GENERATION=np.random.choice(np.arange(100), math.ceil(0.75 * 100),replace=False)
+INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
 # # Reference Scenario function
 
-test_Data=Sref_test(INDEX_GENERATION)
-reference_Data=Sref(INDEX_GENERATION)
+test_Data = Sref_test(INDEX_GENERATION)
+reference_Data = Sref(INDEX_GENERATION)
 
-Poisson_Data_Reference=Sref_Poisson(INDEX_GENERATION)
-Poisson_Data_Test=Sref_Poisson_test(INDEX_GENERATION)
+Poisson_Data_Reference = Sref_Poisson(INDEX_GENERATION)
+Poisson_Data_Test = Sref_Poisson_test(INDEX_GENERATION)
 
 # # Test on Categorial artificial Data 
 
@@ -118,18 +85,22 @@ Poisson_Data_Test=Sref_Poisson_test(INDEX_GENERATION)
 # ### Independent covariables
 
 # +
-D=data_generator(n_Source=1000, n_Target=1000, d_Source=100, d_Target=100, mean_X_Source=np.zeros(100), mean_X_Target=np.zeros(100), mean_Y_Source=0,
-                           mean_Y_Target=0, Source_Generation_Correlation=0,Source_Non_Generation_Correlation=0,
-                          Target_Generation_Correlation=0,Target_Non_Generation_Correlation=0, Sparse_Rate=0.75,
-                           Odds_Ratio_Source=0.5, Odds_Ratio_Target=0.5, R2_Source=0.6, R2_Target=0.6,
-                           Observed_Covariates_Proportion_Source=0.2, Observed_Covariates_Proportion_Target=0.2,Indexes_Chosen_For_Generation=INDEX_GENERATION)
+D = data_generator(n_Source=1000, n_Target=1000, d_Source=100, d_Target=100, mean_X_Source=np.zeros(100),
+                   mean_X_Target=np.zeros(100), mean_Y_Source=0,
+                   mean_Y_Target=0, Source_Generation_Correlation=0, Source_Non_Generation_Correlation=0,
+                   Target_Generation_Correlation=0, Target_Non_Generation_Correlation=0, Sparse_Rate=0.75,
+                   Odds_Ratio_Source=0.5, Odds_Ratio_Target=0.5, R2_Source=0.6, R2_Target=0.6,
+                   Observed_Covariates_Proportion_Source=0.2, Observed_Covariates_Proportion_Target=0.2,
+                   Indexes_Chosen_For_Generation=INDEX_GENERATION)
 
-Performance(D,test_Data,type_supervision='semi-supervised',Objective_Variable='discrete',Balance=True,alpha=None,Labelled_Proportion_Target=0.2)
+Performance(D, test_Data, type_supervision='semi-supervised', Objective_Variable='discrete', Balance=True, alpha=None,
+            Labelled_Proportion_Target=0.2)
 # -
 
 # ### Auto Correlated covariables 
 
-Performance(reference_Data,test_Data,type_supervision='unsupervised',Objective_Variable='discrete',Balance=False,alpha=None,Labelled_Proportion_Target=0.2)
+Performance(reference_Data, test_Data, type_supervision='unsupervised', Objective_Variable='discrete', Balance=False,
+            alpha=None, Labelled_Proportion_Target=0.2)
 
 # ## Data observation impact
 
@@ -137,63 +108,95 @@ Performance(reference_Data,test_Data,type_supervision='unsupervised',Objective_V
 
 # #### Unsupervised
 
-UN=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'unsupervised',Monte_Carlo=10,algo='both',Balance=False,alpha=None)
+UN = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'unsupervised', Monte_Carlo=10, algo='both',
+                                           Balance=False, alpha=None)
 
-UN=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'unsupervised',Monte_Carlo=10,algo='both',Balance=True,alpha=None)
+UN = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'unsupervised', Monte_Carlo=10, algo='both',
+                                           Balance=True, alpha=None)
 
 # #### Semi-supervised
 
-SS=Observed_Labels_Proportions_Variation(reference_Data, test_Data,'semi-supervised',np.array([0,0.02,0.05,0.07,0.1,0.12,0.15]),Monte_Carlo=10,algo='both',Balance=False,alpha=None)
+SS = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'semi-supervised',
+                                           np.array([0, 0.02, 0.05, 0.07, 0.1, 0.12, 0.15]), Monte_Carlo=10,
+                                           algo='both', Balance=False, alpha=None)
 
-SS=Observed_Labels_Proportions_Variation(reference_Data, test_Data,'semi-supervised',np.array([0,0.02,0.05,0.07,0.1,0.12,0.15]),Monte_Carlo=10,algo='both',Balance=True,alpha=None)
+SS = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'semi-supervised',
+                                           np.array([0, 0.02, 0.05, 0.07, 0.1, 0.12, 0.15]), Monte_Carlo=10,
+                                           algo='both', Balance=True, alpha=None)
 
-SS=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'semi-supervised',np.array([0.1, 0.3, 0.5, 0.7, 0.9]),Monte_Carlo=10,algo='both',Balance=False,alpha=None)
+SS = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'semi-supervised',
+                                           np.array([0.1, 0.3, 0.5, 0.7, 0.9]), Monte_Carlo=10, algo='both',
+                                           Balance=False, alpha=None)
 
-SS=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'semi-supervised',np.array([0.1, 0.3, 0.5, 0.7, 0.9]),Monte_Carlo=10,algo='both',Balance=True,alpha=None)
+SS = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'semi-supervised',
+                                           np.array([0.1, 0.3, 0.5, 0.7, 0.9]), Monte_Carlo=10, algo='both',
+                                           Balance=True, alpha=None)
 
 # With more categories
 
-P=Observed_Labels_Proportions_Variation(Poisson_Data_Reference, Poisson_Data_Test,'semi-supervised',np.array([0,0.02,0.05,0.07,0.1,0.12,0.15]),Monte_Carlo=5,algo='both',Balance=True,alpha=None)
+P = Observed_Labels_Proportions_Variation(Poisson_Data_Reference, Poisson_Data_Test, 'semi-supervised',
+                                          np.array([0, 0.02, 0.05, 0.07, 0.1, 0.12, 0.15]), Monte_Carlo=5, algo='both',
+                                          Balance=True, alpha=None)
 
 # #### Partial and Cross-Partial
 
-PA=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'partial',Proportion_Labelled_Variations=np.array([0.1,0.3,0.5,0.7,0.9]),Monte_Carlo=5,algo='both',Objective_Variable='discrete',Multi_Variations=True ,Balance=False,alpha=None)
+PA = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'partial',
+                                           Proportion_Labelled_Variations=np.array([0.1, 0.3, 0.5, 0.7, 0.9]),
+                                           Monte_Carlo=5, algo='both', Objective_Variable='discrete',
+                                           Multi_Variations=True, Balance=False, alpha=None)
 
-PA=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'partial',Proportion_Labelled_Variations=np.array([0.02,0.05,0.07,0.1]),Monte_Carlo=5,algo='both',Objective_Variable='discrete',Multi_Variations=True ,Balance=False,alpha=None)
+PA = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'partial',
+                                           Proportion_Labelled_Variations=np.array([0.02, 0.05, 0.07, 0.1]),
+                                           Monte_Carlo=5, algo='both', Objective_Variable='discrete',
+                                           Multi_Variations=True, Balance=False, alpha=None)
 
-PA=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'cross-partial',Proportion_Labelled_Variations=np.array([0.1,0.3,0.5,0.7,0.9]),Monte_Carlo=5,algo='both',Objective_Variable='discrete',Multi_Variations=True ,Balance=False,alpha=None )
+PA = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'cross-partial',
+                                           Proportion_Labelled_Variations=np.array([0.1, 0.3, 0.5, 0.7, 0.9]),
+                                           Monte_Carlo=5, algo='both', Objective_Variable='discrete',
+                                           Multi_Variations=True, Balance=False, alpha=None)
 
-PA=Observed_Labels_Proportions_Variation(reference_Data,test_Data,'cross-partial',Proportion_Labelled_Variations=np.array([0.02,0.05,0.07,0.1]),Monte_Carlo=5,algo='both',Objective_Variable='discrete',Multi_Variations=True ,Balance=False,alpha=None )
+PA = Observed_Labels_Proportions_Variation(reference_Data, test_Data, 'cross-partial',
+                                           Proportion_Labelled_Variations=np.array([0.02, 0.05, 0.07, 0.1]),
+                                           Monte_Carlo=5, algo='both', Objective_Variable='discrete',
+                                           Multi_Variations=True, Balance=False, alpha=None)
 
 # ### Proportion of observed covariables variations
 
-PXO=Proportion_Of_Observed_Covariates_Variation(Observed_Covariates_Proportion=np.array([0.2,0.4,0.6,0.8]),Monte_Carlo=10,Multi_Variations=True ,algo='both',type_supervision='unsupervised',Balance=False,alpha=None)
+PXO = Proportion_Of_Observed_Covariates_Variation(Observed_Covariates_Proportion=np.array([0.2, 0.4, 0.6, 0.8]),
+                                                  Monte_Carlo=10, Multi_Variations=True, algo='both',
+                                                  type_supervision='unsupervised', Balance=False, alpha=None)
 
 # ## Data Generation variations
 
 # ### Sample size variations
 
-SSV=Sample_Size_Variation(Sample_sizes=np.array([10,100,500,1000]),Monte_Carlo=10 ,Multi_Variations=True,algo='both',type_supervision='unsupervised',Balance=False,alpha=None)
+SSV = Sample_Size_Variation(Sample_sizes=np.array([10, 100, 500, 1000]), Monte_Carlo=10, Multi_Variations=True,
+                            algo='both', type_supervision='unsupervised', Balance=False, alpha=None)
 
 # ### OR variations
 
-OR=OR_Variation(OR=np.array([0.2,0.4,0.6,0.8]),Monte_Carlo=10,Multi_Variations=True ,algo='both',type_supervision='unsupervised',Balance=False,alpha=None)
+OR = OR_Variation(OR=np.array([0.2, 0.4, 0.6, 0.8]), Monte_Carlo=10, Multi_Variations=True, algo='both',
+                  type_supervision='unsupervised', Balance=False, alpha=None)
 
 # ### Sparse rate variations
 
-SR=Sparse_Rate_Variation(SR=np.array([0.25,0.5,0.75,1]),Monte_Carlo=10,algo='both',type_supervision='unsupervised',Balance=False,alpha=None)
+SR = Sparse_Rate_Variation(SR=np.array([0.25, 0.5, 0.75, 1]), Monte_Carlo=10, algo='both',
+                           type_supervision='unsupervised', Balance=False, alpha=None)
 
 # ### Mean shift
 
-#Unbalanced
-MS=Mean_Shift_Variation(Mean_Shift=np.array([0,0.1,0.2,0.3,0.4]),Monte_Carlo=10,Multi_Variations=True,algo='both',type_supervision='unsupervised',Balance=False,alpha=None)
+# Unbalanced
+MS = Mean_Shift_Variation(Mean_Shift=np.array([0, 0.1, 0.2, 0.3, 0.4]), Monte_Carlo=10, Multi_Variations=True,
+                          algo='both', type_supervision='unsupervised', Balance=False, alpha=None)
 
-#Balanced
-MS=Mean_Shift_Variation(Mean_Shift=np.array([0,0.1,0.2,0.3,0.4]),Monte_Carlo=10,Multi_Variations=True,algo='both',type_supervision='unsupervised',Balance=True,alpha=None)
+# Balanced
+MS = Mean_Shift_Variation(Mean_Shift=np.array([0, 0.1, 0.2, 0.3, 0.4]), Monte_Carlo=10, Multi_Variations=True,
+                          algo='both', type_supervision='unsupervised', Balance=True, alpha=None)
 
 # ### Correlation variations
 
-C=Correlation_Variation(Correlation=np.array([0,0.2,0.5,0.7,1]),Monte_Carlo=10,Multi_Variations=True ,algo='both',type_supervision='unsupervised',Balance=False,alpha=None)
+C = Correlation_Variation(Correlation=np.array([0, 0.2, 0.5, 0.7, 1]), Monte_Carlo=10, Multi_Variations=True,
+                          algo='both', type_supervision='unsupervised', Balance=False, alpha=None)
 
 # # Test on CaffeNet4096 and GoogleNet1024 Data
 
@@ -210,35 +213,46 @@ possible_data = scipy.io.loadmat('caltech10_caffe.mat')
 feat = possible_data['fts'].astype(float)
 labels = possible_data['labels'].ravel()
 S_data = [feat, labels]
-S_nClass = len(np.unique(labels)) # nb de class in source data
+S_nClass = len(np.unique(labels))  # nb de class in source data
 possible_data = scipy.io.loadmat('amazon_google.mat')
 feat = possible_data['fts'].astype(float)
 labels = possible_data['labels'].ravel()
 T_data = [feat, labels]
-T_nClass = len(np.unique(labels)) # nb de class in target data
+T_nClass = len(np.unique(labels))  # nb de class in target data
 
-S=pd.DataFrame(np.concatenate((S_data[0],S_data[1].reshape(-1,1)),axis=1),columns=['X'+str(i) for i in range(S_data[0].shape[1])]+['Z'])
-T=pd.DataFrame(np.concatenate((T_data[0],T_data[1].reshape(-1,1)),axis=1),columns=['X'+str(i) for i in range(T_data[0].shape[1])]+['Z'])
+S = pd.DataFrame(np.concatenate((S_data[0], S_data[1].reshape(-1, 1)), axis=1),
+                 columns=['X' + str(i) for i in range(S_data[0].shape[1])] + ['Z'])
+T = pd.DataFrame(np.concatenate((T_data[0], T_data[1].reshape(-1, 1)), axis=1),
+                 columns=['X' + str(i) for i in range(T_data[0].shape[1])] + ['Z'])
 # -
 
 # ## Performance function test
 
-S=pd.DataFrame(np.concatenate((S_data[0],S_data[1].reshape(-1,1)),axis=1),columns=['X'+str(i) for i in range(S_data[0].shape[1])]+['Z'])
-T=pd.DataFrame(np.concatenate((T_data[0],T_data[1].reshape(-1,1)),axis=1),columns=['X'+str(i) for i in range(T_data[0].shape[1])]+['Z'])
-Performance((S,T),type_supervision='semi-supervised',algo="both",Balance=False,Labelled_Proportion_Target=0.2)
+S = pd.DataFrame(np.concatenate((S_data[0], S_data[1].reshape(-1, 1)), axis=1),
+                 columns=['X' + str(i) for i in range(S_data[0].shape[1])] + ['Z'])
+T = pd.DataFrame(np.concatenate((T_data[0], T_data[1].reshape(-1, 1)), axis=1),
+                 columns=['X' + str(i) for i in range(T_data[0].shape[1])] + ['Z'])
+Performance((S, T), type_supervision='semi-supervised', algo="both", Balance=False, Labelled_Proportion_Target=0.2)
 
 # ## Data labelling impact
 
-UN=Observed_Labels_Proportions_Variation((S,T),None,'unsupervised',Monte_Carlo=10,algo='both',Balance=False)
+UN = Observed_Labels_Proportions_Variation((S, T), None, 'unsupervised', Monte_Carlo=10, algo='both', Balance=False)
 
-SS=Observed_Labels_Proportions_Variation((S,T),None,'semi-supervised',np.array([0, 0.02, 0.05, 0.07, 0.1, 0.12, 0.15]),Monte_Carlo=10 ,algo='both',Balance=False)
+SS = Observed_Labels_Proportions_Variation((S, T), None, 'semi-supervised',
+                                           np.array([0, 0.02, 0.05, 0.07, 0.1, 0.12, 0.15]), Monte_Carlo=10,
+                                           algo='both', Balance=False)
 
-SS=Observed_Labels_Proportions_Variation((S,T),None,'semi-supervised',np.array([0.1, 0.3, 0.5, 0.7, 0.9]),Monte_Carlo=10 ,algo='both',Balance=False)
+SS = Observed_Labels_Proportions_Variation((S, T), None, 'semi-supervised', np.array([0.1, 0.3, 0.5, 0.7, 0.9]),
+                                           Monte_Carlo=10, algo='both', Balance=False)
 
-PA=Observed_Labels_Proportions_Variation((S,T),None,'partial',np.array([0.1,0.3,0.5,0.7,0.9]),Monte_Carlo=4,algo='both',Balance=False)
+PA = Observed_Labels_Proportions_Variation((S, T), None, 'partial', np.array([0.1, 0.3, 0.5, 0.7, 0.9]), Monte_Carlo=4,
+                                           algo='both', Balance=False)
 
-PA=Observed_Labels_Proportions_Variation((S,T),None,'partial',np.array([0.02,0.05,0.07,0.1]),Monte_Carlo=4,algo='both',Balance=False)
+PA = Observed_Labels_Proportions_Variation((S, T), None, 'partial', np.array([0.02, 0.05, 0.07, 0.1]), Monte_Carlo=4,
+                                           algo='both', Balance=False)
 
-PA=Observed_Labels_Proportions_Variation((S,T),None,'cross-partial',np.array([0.1,0.3,0.5,0.7,0.9]),Monte_Carlo=4,algo='both',Balance=False)
+PA = Observed_Labels_Proportions_Variation((S, T), None, 'cross-partial', np.array([0.1, 0.3, 0.5, 0.7, 0.9]),
+                                           Monte_Carlo=4, algo='both', Balance=False)
 
-PA=Observed_Labels_Proportions_Variation((S,T),None,'cross-partial',np.array([0.02,0.05,0.07,0.1]),Monte_Carlo=4,algo='both',Balance=False)
+PA = Observed_Labels_Proportions_Variation((S, T), None, 'cross-partial', np.array([0.02, 0.05, 0.07, 0.1]),
+                                           Monte_Carlo=4, algo='both', Balance=False)
