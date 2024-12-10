@@ -2,6 +2,8 @@
 
 Code stage Lucas Offroy
 
+JDCOOT : **J**oint **D**istribution **CO**-**O**ptimal **T**ransport
+
 Pour installer les dépendances python il faut utiliser [pixi](https://pixi.sh)
 
 ```bash
