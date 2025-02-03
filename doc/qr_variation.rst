@@ -1,5 +1,5 @@
-QR variation
-============
+:mod:`jdcoot.qr_variation`
+==========================
 
 .. automodule:: jdcoot.qr_variation
    :members:

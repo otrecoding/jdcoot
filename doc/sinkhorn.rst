@@ -1,5 +1,5 @@
-Sinkhorn
-========
+:mod:`jdcoot.sinkhorn`
+======================
 
 .. automodule:: jdcoot.sinkhorn
    :members:

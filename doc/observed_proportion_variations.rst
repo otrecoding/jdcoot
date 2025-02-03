@@ -1,5 +1,5 @@
-Observed variation proportion
-=============================
+:mod:`jdcoot.observed_proportion_variations`
+============================================
 
 .. automodule:: jdcoot.observed_proportion_variations
    :members:

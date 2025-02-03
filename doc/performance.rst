@@ -1,5 +1,5 @@
-Performance
-===========
+:mod:`jdcoot.performance`
+=========================
 
 .. automodule:: jdcoot.performance
    :members:

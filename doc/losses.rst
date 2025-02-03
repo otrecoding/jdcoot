@@ -1,5 +1,5 @@
-Losses
-======
+:mod:`jdcoot.losses`
+====================
 
 .. automodule:: jdcoot.losses
    :members:
