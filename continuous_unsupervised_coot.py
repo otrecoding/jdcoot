@@ -13,7 +13,7 @@ from jdcoot.comp import comp_regression
 from jdcoot.coot import cot_numpy
 from jdcoot.data_scenario import DataScenario, DataScenarioTest
 import jdcoot
-from jdcoot.utils import labelled_indexes, rmse, xcolumns
+from jdcoot.utils import *
 
     
 def continuous_unsupervised_coot( source, target, source_test, target_test) :
@@ -25,7 +25,7 @@ def continuous_unsupervised_coot( source, target, source_test, target_test) :
     
     l_source, l_target = labelled_indexes( source, prop_S, target, prop_T)
 
-    x_source = target.loc[:, xcolumns(target)]
+    x_source = source.loc[:, xcolumns(source)]
     x_target = target.loc[:, xcolumns(target)]
     
     ytrain_source = source.Y.values.copy()
