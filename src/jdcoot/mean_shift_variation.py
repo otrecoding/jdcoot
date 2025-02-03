@@ -24,7 +24,7 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
                          Odds_Ratio_Source=0.5, Odds_Ratio_Target=0.5, R2_Source=0.6, R2_Target=0.6,
                          Observed_Covariates_Proportion_Target=0.2,
                          Observed_Covariates_Proportion_Source=0.2, Indexes_Chosen_For_Generation=INDEX_GENERATION):
-    """
+    r"""
     Mean_Shift_Variation : Compute and plot performance versus the mean shift between target and source
 
     Input : Mean_Shift (np array) : Mean Shift values between target and source to compute performance with
@@ -288,8 +288,8 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             MC_coot_perf, MC_jdcoot_perf, MC_ref_perf, bp_coot, bp_jdcoot, hm_coot, hm_jdcoot, test_MC_coot_perf,
             test_MC_jdcoot_perf, test_MC_ref_perf, test_bp_coot, test_bp_jdcoot, test_hm_coot, test_hm_jdcoot)
 
-        graph_multi(Data, algo, Sample_sizes, Objective_Variable, "Mean shift variation impact",
-                    "$i \ s.t. \mu_T=\mu_S+i$ \n with $\mu_S$ = " + str(R2[0]), "mean shift")
+        graph_multi(Data, algo, Sample_sizes, Objective_Variable, r"Mean shift variation impact",
+                    r"$i \ s.t. \mu_T=\mu_S+i$ \n with $\mu_S$ = " + str(R2[0]), "mean shift")
 
         if Store_in:
             Store(Data, "Mean_Shift_Variation")
@@ -387,7 +387,7 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             tit = "Test Accuracy vs \n mean shift variations"
             axs[1].set_title(tit)
             axs[1].set_ylabel("Accuracy")
-            axs[1].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[1].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[1].plot(np.arange(len(R2)) + 1, test_MC_coot_perf, color="red", label="COOT Mean Performance")
             axs[1].boxplot([test_bp_coot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
                            boxprops=dict(facecolor="red"))
@@ -395,7 +395,7 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             tit = "Pure Accuracy vs \n mean shift variations"
             axs[0].set_title(tit)
             axs[0].set_ylabel("Accuracy")
-            axs[0].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[0].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[0].plot(np.arange(len(R2)) + 1, MC_coot_perf, color="red", label="COOT Mean Performance")
 
             axs[0].boxplot([bp_coot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
@@ -405,7 +405,7 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             tit = "Test Accuracy vs v mean shift variations"
             axs[1].set_title(tit)
             axs[1].set_ylabel("Accuracy")
-            axs[1].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[1].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[1].plot(np.arange(len(R2)) + 1, test_MC_jdcoot_perf, color="green", label="JDCOOT Mean Performance")
             axs[1].boxplot([test_bp_jdcoot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
                            boxprops=dict(facecolor="green"))
@@ -413,7 +413,7 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             tit = "Pure Accuracy vs \n mean shift variations"
             axs[0].set_title(tit)
             axs[0].set_ylabel("Accuracy")
-            axs[0].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with \mu_S = " + str(R2[0]))
+            axs[0].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with \mu_S = " + str(R2[0]))
             axs[0].plot(np.arange(len(R2)) + 1, MC_jdcoot_perf, color="green", label="JDCOOT Mean Performance")
 
             axs[0].boxplot([bp_jdcoot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
@@ -423,20 +423,20 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             tit = "Test Accuracy vs v mean shift variations"
             axs[1].set_title(tit)
             axs[1].set_ylabel("Accuracy")
-            axs[1].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[1].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[1].plot(np.arange(len(R2)) + 1, test_MC_coot_perf, color="red", label="COOT Mean Performance")
             axs[1].boxplot([test_bp_coot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
                            boxprops=dict(facecolor="red"))
 
             axs[0].set_ylabel("Accuracy")
-            axs[0].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[0].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[0].plot(np.arange(len(R2)) + 1, MC_coot_perf, color="red", label="COOT Mean Performance")
 
             axs[0].boxplot([bp_coot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
                            boxprops=dict(facecolor="red"))
 
             axs[1].set_ylabel("Accuracy")
-            axs[1].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[1].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[1].plot(np.arange(len(R2)) + 1, test_MC_jdcoot_perf, color="green", label="JDCOOT Mean Performance")
             axs[1].boxplot([test_bp_jdcoot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,
                            boxprops=dict(facecolor="green"))
@@ -444,7 +444,7 @@ def Mean_Shift_Variation(Mean_Shift, Data=None, Monte_Carlo=1, Multi_Variations=
             tit = "Pure Accuracy vs \n mean shift variations"
             axs[0].set_title(tit)
             axs[0].set_ylabel("Accuracy")
-            axs[0].set_xlabel("$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
+            axs[0].set_xlabel(r"$i \ s.t. \mu_T=\mu_S+i$ with $\mu_S$ = " + str(R2[0]))
             axs[0].plot(np.arange(len(R2)) + 1, MC_jdcoot_perf, color="green", label="JDCOOT Mean Performance")
 
             axs[0].boxplot([bp_jdcoot.reshape((Monte_Carlo, -1))[:, i] for i in range(len(R2))], patch_artist=True,

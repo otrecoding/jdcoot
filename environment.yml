@@ -1,0 +1,13 @@
+name: jdcoot
+channels:
+  - conda-forge
+dependencies:
+  - matplotlib
+  - numpy
+  - pandas
+  - pot
+  - python=3.12
+  - scikit-learn
+  - scipy
+  - seaborn
+  - tf-keras

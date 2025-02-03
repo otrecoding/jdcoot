@@ -165,3 +165,7 @@ cython_debug/
 .pixi
 *.egg-info
 /doc/_build
+/.idea
+.idea/workspace.xml
+/Stored_Data
+*.swp

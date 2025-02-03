@@ -8,9 +8,9 @@ from tf_keras.layers import Dense
 
 from .comp import comp_
 from .comp import comp_regression
-from .jdcot import cot_numpy
-from .jdcot import jdcot_multitask_classif
-from .jdcot import jdcot_multitask_reg
+from .coot import cot_numpy
+from .jdcot.multitask_classif import jdcot_multitask_classif
+from .jdcot.multitask_reg import jdcot_multitask_reg
 
 # -
 

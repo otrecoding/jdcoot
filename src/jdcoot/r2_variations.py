@@ -12,116 +12,6 @@ from .reference_scenario import Sref
 from .store_data import Store
 
 # +
-"""
-R2_Variation : Compute and plot performance versus the R2 coefficient
-
-Input : R2 (np array) : R2 values to compute performance with
-
-        Data (tuple or str) : 
-                            (str) Name of the folder where data has been stored
-                             
-                            OR 
-                            
-                            Previous simulated data (tuple of 10) with respectively : 
-                                                        Pure performance Monte Carlo COOT,
-                                                         Pure performance Monte Carlo JDCOOT,
-                                                         Pure performance Monte Carlo REF,
-                                                         Pure performance Boxplot COOT,
-                                                         Pure performance Boxplot JDCOOT,
-                                                         Test performance Monte Carlo COOT,
-                                                         Test performance Monte Carlo JDCOOT,
-                                                         Test performance Monte Carlo REF,
-                                                         Test performance Boxplot COOT,
-                                                         Test performance Boxplot JDCOOT
-                                         
-        
-                            
-        type_supervision (str : 'unsupervised' or 'semi-supervised' or 'partial' or 'cross-partial') : if 'unsupervised', measure the performance such that none of the observations of target are labelled and all source observations are labelled
-                                                                                                       if 'semi-supervised', measure the performance such that labelled proportions of observations of target vary
-                                                                                                       if 'partial', measure the performance such that labelled proportions of observations of target and source vary
-                                                                                                       if 'cross-partial', measure the performance such that labelled proportions of observations of target and source vary. Here, for JDCOOT, uses 2 semi-supervised JDCOOT methods for each dataset
-        
-        
-        
-        Monte_Carlo : Number of repetitions of computing
-                            
-                            
-        Multi_Variations (bool) : if true, compute performance along source and target simultaneous variation of proportions of labelled observations, and plot heatmaps
-        
-        
-        Objective_Variable (str : 'discrete' or 'continuous') : if 'discrete', measure the performance for classifisation 
-                                                                if 'continuous', measure the performance for regression
-        
-        algo (str : 'COOT' or 'JDCOOT' or 'both') : if 'COOT', measure the performance for COOT 
-                                                    if 'JDCOOT', measure the performance for JDCOOT
-                                                    if 'both',  measure the performance for COOT and JDCOOT
-                                                    
-        Balance (bool) : if true, balance the number of observation in each class. So, source and target dscrete variables have the same distribution. However, it destroys some of the data. 
-        
-        alpha (float) : Hyper parameter of the problem formulation as in the paper. If None, optimized alpha is used (optimized for data given by the previous function data_generator())
-        
-        Poisson (Bool) : Uses Poisson modeling to generate more than 2 classes
-        
-        Labelled_Proportion_Target (float in [0,1]) : Proportion on observed labels in target for semi-supervised or partial analysis. Optional in case of unsupervised analysis.
-        
-        Labelled_Proportion_Source (float in [0,1]) : Proportion on observed labels in target for partial analysis. Optional in case of unsupervised or semi-supervised analysis. 
-        
-        d_Source, d_Target (int): number of variables of source/target (must be the same for the generation in the "same world"/ consider that this set of variable is the "universe")
-        
-        mean_X_Source, mean_X_Target (d_Source/d_Target dimensional array of float) : mean of the Normal law of the covariates of source/target
-        
-        mean_Y_Source,mean_Y_Target (float) : mean of the continuous objective variable of source/target
-        
-        Source_Generation_Correlation, Source_Non_Generation_Correlation (float in  [0,1]): auto correlation coefficient of active/non active covariates for source
-        
-        Target_Generation_Correlation, Target_Non_Generation_Correlation (float in  [0,1]): auto correlation coefficient of active/non active covariates for target
-        
-        Sparse_Rate (float in  [0,1]) : Proportion of active covariates for generation (Same for Source and Traget because generation in the "same world"/ consider that this generation explains the observed phenomenon)
-        
-        Odds_Ratio_Source, Odds_Ratio_Target (float) : Odds ratio of the model of source/target (for probabilities calculation in discrete case)
-        
-        R2_Source, R2_Target (float in  [0,1]) : R^2 of the model of source/target (for white noise calculation in continuous case)
-        
-        Observed_Covariates_Proportion_Source, Observed_Covariates_Proportion_Target (float in  [0,1]) : Proportion of observed covariates of source/target
-        
-        Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly 
-        
-
-
-
-
-Output : Data (tuple) : tuple of 10 or 14 elements with respectively : For Multivariation Scenarios (Heatmap) : 14 elements :  
-                                                                        Pure performance Monte Carlo COOT,
-                                                                        Pure performance Monte Carlo JDCOOT,
-                                                                        Pure performance Monte Carlo REF,
-                                                                        Pure performance Boxplot COOT,
-                                                                        Pure performance Boxplot JDCOOT,
-                                                                        Pure performance Heatmap COOT,
-                                                                        Pure performance Heatmap JDCOOT,
-                                                                        Test performance Monte Carlo COOT,
-                                                                        Test performance Monte Carlo JDCOOT,
-                                                                        Test performance Monte Carlo REF,
-                                                                        Test performance Boxplot COOT,
-                                                                        Test performance Boxplot JDCOOT,
-                                                                        Test performance Heatmap COOT,
-                                                                        Test performance Heatmap JDCOOT,
-                                                                
-
-
-                                                                    For Univariation Scenarios (No Heatmap) : 10 elements :
-                                                                        Pure performance Monte Carlo COOT,
-                                                                        Pure performance Monte Carlo JDCOOT,
-                                                                        Pure performance Monte Carlo REF,
-                                                                        Pure performance Boxplot COOT,
-                                                                        Pure performance Boxplot JDCOOT,
-                                                                        Test performance Monte Carlo COOT,
-                                                                        Test performance Monte Carlo JDCOOT,
-                                                                        Test performance Monte Carlo REF,
-                                                                        Test performance Boxplot COOT,
-                                                                        Test performance Boxplot JDCOOT
-    
-"""
-
 
 def R2_Variation(R2, Data=None, Monte_Carlo=1, Multi_Variations=True, algo='both', type_supervision='unsupervised',
                  Objective_Variable='discrete', Balance=True, alpha=None, Poisson=False,
@@ -133,6 +23,116 @@ def R2_Variation(R2, Data=None, Monte_Carlo=1, Multi_Variations=True, algo='both
                  rho_target_generation=0.7, rho_target_non_generation=0.2, Sparse_Rate=0.75,
                  Odds_Ratio_Source=0.5, Odds_Ratio_Target=0.5, Observed_Covariates_Proportion_Target=0.2,
                  Observed_Covariates_Proportion_Source=0.2, Indexes_Chosen_For_Generation=INDEX_GENERATION):
+    """
+    R2_Variation : Compute and plot performance versus the R2 coefficient
+
+    Input : R2 (np array) : R2 values to compute performance with
+
+            Data (tuple or str) :
+                                (str) Name of the folder where data has been stored
+
+                                OR
+
+                                Previous simulated data (tuple of 10) with respectively :
+                                                            Pure performance Monte Carlo COOT,
+                                                             Pure performance Monte Carlo JDCOOT,
+                                                             Pure performance Monte Carlo REF,
+                                                             Pure performance Boxplot COOT,
+                                                             Pure performance Boxplot JDCOOT,
+                                                             Test performance Monte Carlo COOT,
+                                                             Test performance Monte Carlo JDCOOT,
+                                                             Test performance Monte Carlo REF,
+                                                             Test performance Boxplot COOT,
+                                                             Test performance Boxplot JDCOOT
+
+
+
+            type_supervision (str : 'unsupervised' or 'semi-supervised' or 'partial' or 'cross-partial') : if 'unsupervised', measure the performance such that none of the observations of target are labelled and all source observations are labelled
+                                                                                                           if 'semi-supervised', measure the performance such that labelled proportions of observations of target vary
+                                                                                                           if 'partial', measure the performance such that labelled proportions of observations of target and source vary
+                                                                                                           if 'cross-partial', measure the performance such that labelled proportions of observations of target and source vary. Here, for JDCOOT, uses 2 semi-supervised JDCOOT methods for each dataset
+
+
+
+            Monte_Carlo : Number of repetitions of computing
+
+
+            Multi_Variations (bool) : if true, compute performance along source and target simultaneous variation of proportions of labelled observations, and plot heatmaps
+
+
+            Objective_Variable (str : 'discrete' or 'continuous') : if 'discrete', measure the performance for classifisation
+                                                                    if 'continuous', measure the performance for regression
+
+            algo (str : 'COOT' or 'JDCOOT' or 'both') : if 'COOT', measure the performance for COOT
+                                                        if 'JDCOOT', measure the performance for JDCOOT
+                                                        if 'both',  measure the performance for COOT and JDCOOT
+
+            Balance (bool) : if true, balance the number of observation in each class. So, source and target dscrete variables have the same distribution. However, it destroys some of the data.
+
+            alpha (float) : Hyper parameter of the problem formulation as in the paper. If None, optimized alpha is used (optimized for data given by the previous function data_generator())
+
+            Poisson (Bool) : Uses Poisson modeling to generate more than 2 classes
+
+            Labelled_Proportion_Target (float in [0,1]) : Proportion on observed labels in target for semi-supervised or partial analysis. Optional in case of unsupervised analysis.
+
+            Labelled_Proportion_Source (float in [0,1]) : Proportion on observed labels in target for partial analysis. Optional in case of unsupervised or semi-supervised analysis.
+
+            d_Source, d_Target (int): number of variables of source/target (must be the same for the generation in the "same world"/ consider that this set of variable is the "universe")
+
+            mean_X_Source, mean_X_Target (d_Source/d_Target dimensional array of float) : mean of the Normal law of the covariates of source/target
+
+            mean_Y_Source,mean_Y_Target (float) : mean of the continuous objective variable of source/target
+
+            Source_Generation_Correlation, Source_Non_Generation_Correlation (float in  [0,1]): auto correlation coefficient of active/non active covariates for source
+
+            Target_Generation_Correlation, Target_Non_Generation_Correlation (float in  [0,1]): auto correlation coefficient of active/non active covariates for target
+
+            Sparse_Rate (float in  [0,1]) : Proportion of active covariates for generation (Same for Source and Traget because generation in the "same world"/ consider that this generation explains the observed phenomenon)
+
+            Odds_Ratio_Source, Odds_Ratio_Target (float) : Odds ratio of the model of source/target (for probabilities calculation in discrete case)
+
+            R2_Source, R2_Target (float in  [0,1]) : R^2 of the model of source/target (for white noise calculation in continuous case)
+
+            Observed_Covariates_Proportion_Source, Observed_Covariates_Proportion_Target (float in  [0,1]) : Proportion of observed covariates of source/target
+
+            Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
+
+
+
+
+
+    Output : Data (tuple) : tuple of 10 or 14 elements with respectively : For Multivariation Scenarios (Heatmap) : 14 elements :
+                                                                            Pure performance Monte Carlo COOT,
+                                                                            Pure performance Monte Carlo JDCOOT,
+                                                                            Pure performance Monte Carlo REF,
+                                                                            Pure performance Boxplot COOT,
+                                                                            Pure performance Boxplot JDCOOT,
+                                                                            Pure performance Heatmap COOT,
+                                                                            Pure performance Heatmap JDCOOT,
+                                                                            Test performance Monte Carlo COOT,
+                                                                            Test performance Monte Carlo JDCOOT,
+                                                                            Test performance Monte Carlo REF,
+                                                                            Test performance Boxplot COOT,
+                                                                            Test performance Boxplot JDCOOT,
+                                                                            Test performance Heatmap COOT,
+                                                                            Test performance Heatmap JDCOOT,
+
+
+
+                                                                        For Univariation Scenarios (No Heatmap) : 10 elements :
+                                                                            Pure performance Monte Carlo COOT,
+                                                                            Pure performance Monte Carlo JDCOOT,
+                                                                            Pure performance Monte Carlo REF,
+                                                                            Pure performance Boxplot COOT,
+                                                                            Pure performance Boxplot JDCOOT,
+                                                                            Test performance Monte Carlo COOT,
+                                                                            Test performance Monte Carlo JDCOOT,
+                                                                            Test performance Monte Carlo REF,
+                                                                            Test performance Boxplot COOT,
+                                                                            Test performance Boxplot JDCOOT
+
+    """
+
     if Objective_Variable == 'both':
         return -1
 

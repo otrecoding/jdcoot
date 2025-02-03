@@ -1,5 +1,5 @@
-Proportion variations
-=====================
+:mod:`jdcoot.proportion_variations`
+===================================
 
 .. automodule:: jdcoot.proportion_variations
    :members:
