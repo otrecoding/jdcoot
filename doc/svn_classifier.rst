@@ -1,5 +1,5 @@
-SVN classifier
-==============
+:mod:`jdcoot.svn_classifier`
+============================
 
 .. automodule:: jdcoot.svn_classifier
    :members:

@@ -8,22 +8,25 @@ from .globals import INDEX_GENERATION
 # ## Reference Scenario
 
 # +
-"""
-Sref : Sample a reference scenario as described in the paper
-
-Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly 
-
-Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
-
-                                        | X_1 | ... | X_d | Y | Z |
-                                        
-                                    with X_i the ith observed covariate, 
-                                         Y the continuous objective variable for regression analysis, 
-                                         Z the discrete objective variable for classification analysis
-"""
 
 
+# @deprecated
 def Sref(Indexes_Chosen_For_Generation=INDEX_GENERATION):
+    """
+    Sref : Sample a reference scenario as described in the paper
+
+    Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
+
+    Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
+
+    .. math::
+                                            | X_1 | ... | X_d | Y | Z |
+
+    - :math:`X_i` the ith observed covariate,
+    - `Y` the continuous objective variable for regression analysis,
+    - `Z` the discrete objective variable for classification analysis
+    """
+
     n_S = 1000
     n_T = 1000
     d = 100
@@ -54,22 +57,25 @@ def Sref(Indexes_Chosen_For_Generation=INDEX_GENERATION):
                            pxo_S, pxo_T, Indexes_Chosen_For_Generation))
 
 
-"""
-Sref_test : Sample a test sample for the reference scenario (300 observations)
 
-Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly 
-
-Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
-
-                                        | X_1 | ... | X_d | Y | Z |
-                                        
-                                    with X_i the ith observed covariate, 
-                                         Y the continuous objective variable for regression analysis, 
-                                         Z the discrete objective variable for classification analysis
-"""
-
-
+# @deprecated
 def Sref_test(Indexes_Chosen_For_Generation=INDEX_GENERATION):
+    """
+    Sref_test : Sample a test sample for the reference scenario (300 observations)
+
+    Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
+
+    Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
+
+    .. math::
+
+                                                | X_1 | ... | X_d | Y | Z |
+
+    - :math:`X_i` the ith observed covariate,
+    - :math:`Y` the continuous objective variable for regression analysis,
+    - :math:`Z` the discrete objective variable for classification analysis
+    """
+
     n_S = 300
     n_T = 300
     d = 100
@@ -104,22 +110,27 @@ def Sref_test(Indexes_Chosen_For_Generation=INDEX_GENERATION):
 # ## Reference scenario in case of multiclassification
 
 # +
-"""
-Sref_Poisson : Sample a reference scenario but with more than 2 classes for the classification analysis
-
-Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly 
-
-Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
-
-                                        | X_1 | ... | X_d | Y | Z |
-                                        
-                                    with X_i the ith observed covariate, 
-                                         Y the continuous objective variable for regression analysis, 
-                                         Z the discrete objective variable for classification analysis
-"""
 
 
+
+# @deprecated
 def Sref_Poisson(Indexes_Chosen_For_Generation=INDEX_GENERATION):
+    """
+    Sref_Poisson : Sample a reference scenario but with more than 2 classes for the classification analysis
+
+    Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
+
+    Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
+
+    .. math::
+
+                                            | X_1 | ... | X_d | Y | Z |
+
+    - :math:`X_i` the ith observed covariate,
+    - :math:`Y` the continuous objective variable for regression analysis,
+    - :math:`Z` the discrete objective variable for classification analysis
+    """
+
     n_S = 10000
     n_T = 10000
     d = 100
@@ -149,22 +160,25 @@ def Sref_Poisson(Indexes_Chosen_For_Generation=INDEX_GENERATION):
                            pxo_S, pxo_T, Indexes_Chosen_For_Generation, Poisson=True))
 
 
-"""
-Sref_Poisson_test : Sample a test sample for the Poisson reference scenario (3000 observations)
 
-Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly 
-
-Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
-
-                                        | X_1 | ... | X_d | Y | Z |
-                                        
-                                    with X_i the ith observed covariate, 
-                                         Y the continuous objective variable for regression analysis, 
-                                         Z the discrete objective variable for classification analysis
-"""
-
-
+# @deprecated
 def Sref_Poisson_test(Indexes_Chosen_For_Generation=INDEX_GENERATION):
+    """
+    Sref_Poisson_test : Sample a test sample for the Poisson reference scenario (3000 observations)
+
+    Input : Indexes_Chosen_For_Generation (array of int) : Array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
+
+    Output : Data (tuple): tuple of 2 dataframes (Source in index 1 and Target in index 2) with the following format :
+
+    .. math:
+
+                                            | X_1 | ... | X_d | Y | Z |
+
+    - :math:`X_i` the ith observed covariate,
+    - :math:`Y` the continuous objective variable for regression analysis,
+    - :math:`Z` the discrete objective variable for classification analysis
+    """
+
     n_S = 3000
     n_T = 3000
     d = 100

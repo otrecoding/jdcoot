@@ -16,12 +16,13 @@ def random_gamma_init(p, q, **kwargs):
 
 def init_matrix_np(X1, X2, v1, v2):
     """Return loss matrices and tensors for COOT fast computation
-    Returns the value of |X1-X2|^{2} \otimes T as done in [1] based on [2] for the Gromov-Wasserstein distance.
+    Returns the value of :math:`|X1-X2|^{2} \otimes T` as done in [1] based on [2] for the Gromov-Wasserstein distance.
     Where :
         - X1 : The source dataset of shape (n,d)
         - X2 : The target dataset of shape (n',d')
         - v1 ,v2 : weights (histograms) on the columns of resp. X1 and X2
         - T : Coupling matrix of shape (n,n')
+
     Parameters
     ----------
     X1 : numpy array, shape (n, d)
@@ -41,6 +42,7 @@ def init_matrix_np(X1, X2, v1, v2):
         h1(X1) matrix (see paragraph 1.2 of supplementary material in [1])
     hC2 : ndarray, shape (n', d')
         h2(X2) matrix (see paragraph 1.2 of supplementary material in [1])
+        
     References
     ----------
     .. [1] Redko Ievgen, Vayer Titouan, Flamary R{\'e}mi and Courty Nicolas
@@ -77,10 +79,13 @@ def init_matrix_np(X1, X2, v1, v2):
 def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
               niter=10, algo='emd', reg=0, algo2='emd',
               reg2=0, verbose=True, log=False, random_init=False, C_lin=None):
+
     """ Returns COOT between two datasets X1,X2 (see [1])
 
     The function solves the following optimization problem:
+
     .. math::
+
         COOT = \min_{Ts,Tv} \sum_{i,j,k,l} |X1_{i,k}-X2_{j,l}|^{2}*Ts_{i,j}*Tv_{k,l}
 
     Where :
@@ -142,13 +147,17 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
           "CO-Optimal Transport"
     Example
     ----------
-    import numpy as np
-    from cot import cot_numpy
 
-    n_samples=300
-    Xs=np.random.rand(n_samples,2)
-    Xt=np.random.rand(n_samples,1)
-    cot_numpy(Xs,Xt)
+    .. code-block:: python
+
+        import numpy as np
+        from cot import cot_numpy
+
+        n_samples=300
+        Xs=np.random.rand(n_samples,2)
+        Xt=np.random.rand(n_samples,1)
+        cot_numpy(Xs,Xt)
+
     """
     if v1 is None:
         v1 = np.ones(X1.shape[1]) / X1.shape[1]  # is (d,)

@@ -1,5 +1,5 @@
-:mod: `jdcoot.coot`
-===================
+:mod:`jdcoot.coot`
+==================
 
 .. automodule:: jdcoot.coot
    :members:

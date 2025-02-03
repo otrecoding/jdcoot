@@ -10,7 +10,10 @@ from .data_generation import *
 from .data_generation_variation import *
 from .data_observation import *
 from .graph_multi import *
-from .jdcot import *
+from .jdcot.svm import *
+from .jdcot.nn_l2 import *
+from .jdcot.multitask_classif import *
+from .jdcot.multitask_reg import *
 from .krr_classifier import *
 from .losses import *
 from .mean_shift_variation import *
@@ -25,3 +28,4 @@ from .sinkhorn import *
 from .sparse_rate_variation import *
 from .store_data import *
 from .svn_classifier import *
+from .data_scenario import *
