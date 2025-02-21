@@ -108,27 +108,28 @@ def discrete_partial_reference( source, target, source_test, target_test) :
 
     enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
     
+    xtrain_source = source_train.loc[source_train.Z != -1, source_train.columns != 'Z']
+    ztrain_source = enc.fit_transform(source_train.loc[source_train.Z != -1, 'Z'].values.reshape(-1, 1))
+
     xtrain_target = target_train.loc[target_train.Z != -1, target_train.columns != 'Z']
     ztrain_target = enc.fit_transform(target_train.loc[target_train.Z != -1, 'Z'].values.reshape(-1, 1))
 
     clf.fit( xtrain_target, ztrain_target, batch_size=10, epochs=20, verbose=0)  
     
-    z_test = clf.predict(target_test.loc[:, xcolumns(target)])
-    z_test = enc.inverse_transform(z_test).reshape(-1)
+    xtest_target = target_test.loc[:, xcolumns(target)]
+    z_test = enc.inverse_transform(clf.predict(xtest_target)).reshape(-1)
     
     fe_size = len(xcolumns(source))  # Nombre de variables de Targe
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    clf2 = clf_seq(shape, nClass=len(np.union1d(np.unique(source['Z']), np.unique(target['Z']))))
+    clf2 = clf_seq(shape, nClass=len(np.union1d(source_levels, target_levels)))
     
     clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
-    clf2.fit(
-        source_train.loc[source_train.Z != -1, source_train.columns != 'Z'],
-        enc.fit_transform(source_train.loc[source_train.Z != -1, 'Z'].values.reshape(-1, 1)),
-        batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
-    z_test2 = clf2.predict(source_test.loc[:, xcolumns(source)])
-    z_test2 = enc.inverse_transform(z_test2).reshape(-1)
+    clf2.fit( xtrain_source, ztrain_source, batch_size=10, epochs=20, verbose=0)  
+
+    xtest_source = source_test.loc[:, xcolumns(source)]
+    z_test2 = enc.inverse_transform(clf2.predict(xtest_source)).reshape(-1)
     
     perf_ref = (sum(z_test == target_test.Z) + sum(z_test2 == source_test.Z)) / (len(z_test) + len(z_test2))
     
