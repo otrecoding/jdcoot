@@ -36,8 +36,8 @@ def discrete_partial_reference( S, T, S_test, T_test) :
         T = T.loc[~np.in1d(T.Z, del_idx), :].reset_index(drop=True)
     
     # number of observations kept referenced by the min number of available observation per class
-    S_nPerClass = math.ceil(min(np.unique(S.Z, return_counts=True)[1]))  
-    T_nPerClass = math.ceil(min(np.unique(T.Z, return_counts=True)[1]))
+    S_nPerClass = min(np.unique(S.Z, return_counts=True)[1])
+    T_nPerClass = min(np.unique(T.Z, return_counts=True)[1])
     
     z_kept_source = np.array([]).astype(int)
     for lab in source_levels:
@@ -66,11 +66,11 @@ def discrete_partial_reference( S, T, S_test, T_test) :
         b = np.random.choice(np.where(T.Z == lab)[0], math.ceil(prop_T * sum(T.Z == lab)), replace=False)
         z_labelled_target = np.append(z_labelled_target, b)
     
-    Z_training_data_source = S.drop(columns = 'Y')
-    Z_training_data_source.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] = -1
+    source_train = S.drop(columns = 'Y')
+    source_train.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] = -1
     
-    Z_training_data_Target = T.drop(columns = 'Y')
-    Z_training_data_Target.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] = -1
+    target_train = T.drop(columns = 'Y')
+    target_train.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] = -1
     
     def clf_seq(shape, nClass):
         model = tf_keras.Sequential([
@@ -82,16 +82,15 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
     # loss = 'MeanSquaredError
-    clf = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
+    clf = clf_seq(shape, nClass=len(np.union1d(source_levels, target_levels)))
     clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     enc = onehot(handle_unknown='ignore', sparse_output=False,
                  categories=[np.arange(len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))])
     # print(enc.fit_transform(Z_training_data_Target.loc[Z_training_data_Target['Z']!=-1,'Z'].values.reshape(-1,1)))
     
     clf.fit(
-        Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, Z_training_data_Target.columns != 'Z'],
-        enc.fit_transform(
-            Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, 'Z'].values.reshape(-1, 1)),
+        target_train.loc[target_train.Z != -1, target_train.columns != 'Z'],
+        enc.fit_transform(target_train.loc[target_train.Z != -1, 'Z'].values.reshape(-1, 1)),
         batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
     
     z_test = clf.predict(T_test.loc[:, xcolumns(T)])
@@ -106,21 +105,18 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
     clf2.fit(
-        Z_training_data_source.loc[Z_training_data_source['Z'] != -1, Z_training_data_source.columns != 'Z'],
-        enc.fit_transform(
-            Z_training_data_source.loc[Z_training_data_source['Z'] != -1, 'Z'].values.reshape(-1, 1)),
+        source_train.loc[source_train.Z != -1, source_train.columns != 'Z'],
+        enc.fit_transform(source_train.loc[source_train.Z != -1, 'Z'].values.reshape(-1, 1)),
         batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
     z_test2 = clf2.predict(S_test.loc[:, xcolumns(S)])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
     perf_ref = (sum(z_test == T_test.Z) + sum(z_test2 == S_test.Z)) / (len(z_test) + len(z_test2))
     
-    z_test = clf.predict(
-        Z_training_data_Target.loc[Z_training_data_Target.Z == -1, Z_training_data_Target.columns != 'Z'])
+    z_test = clf.predict(target_train.loc[target_train.Z == -1, target_train.columns != 'Z'])
     z_test = enc.inverse_transform(z_test).reshape(-1)
     
-    z_test2 = clf2.predict(
-        Z_training_data_source.loc[Z_training_data_source.Z == -1, Z_training_data_source.columns != 'Z'])
+    z_test2 = clf2.predict(source_train.loc[source_train.Z == -1, source_train.columns != 'Z'])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
     perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z']) + sum(
