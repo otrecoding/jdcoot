@@ -15,62 +15,21 @@ from jdcoot.coot import cot_numpy
 from jdcoot.utils import *
 
 
-def discrete_partial_reference( S, T, S_test, T_test) :
+def discrete_partial_reference( source, target, source_test, target_test) :
 
-    source_levels = np.unique(S.Z)
-    target_levels = np.unique(T.Z)
+    source_levels = np.unique(source.Z)
+    target_levels = np.unique(target.Z)
 
-    if len(source_levels) > 2:
+    prop_source = 0.1
+    prop_target = 0.1
+
+    source_labels, target_labels = discrete_labels(source, prop_source, target, prop_target)
+
+    source_train = source.drop(columns = 'Y')
+    source_train.loc[np.setdiff1d(np.arange(0, np.shape(source)[0]), source_labels), 'Z'] = -1
     
-        del_idx = np.array([])
-        for k in source_levels:
-            if sum(S.Z == k) < 0.01 * len(S.Z):
-                del_idx = np.append(del_idx, k)
-        S = S.loc[~np.in1d(S.Z, del_idx), :].reset_index(drop=True)
-    
-    if len(target_levels) > 2:
-        del_idx = np.array([])
-        for k in target_levels:
-            if sum(T.Z == k) < 0.01 * len(T.Z):
-                del_idx = np.append(del_idx, k)
-        T = T.loc[~np.in1d(T.Z, del_idx), :].reset_index(drop=True)
-    
-    # number of observations kept referenced by the min number of available observation per class
-    S_nPerClass = min(np.unique(S.Z, return_counts=True)[1])
-    T_nPerClass = min(np.unique(T.Z, return_counts=True)[1])
-    
-    z_kept_source = np.array([]).astype(int)
-    for lab in source_levels:
-        z_kept_source = np.append(z_kept_source,
-                                  np.random.choice(np.where(S['Z'] == lab)[0], S_nPerClass, replace=False))
-    
-    S = S.loc[z_kept_source, :].reset_index(drop=True)
-    
-    z_kept_target = np.array([]).astype(int)
-    for lab in target_levels:
-        z_kept_target = np.append(z_kept_target,
-                                  np.random.choice(np.where(T['Z'] == lab)[0], T_nPerClass, replace=False))
-    T = T.loc[z_kept_target, :].reset_index(drop=True)
-    
-    prop_S = 0.1
-    prop_T = 0.1
-    alpha = 2.875
-    
-    source_labels = np.array([]).astype(int)
-    for lab in source_levels:
-        a = np.random.choice(np.where(S.Z == lab)[0], math.ceil(prop_S * sum(S.Z == lab)), replace=False)
-        source_labels = np.append(source_labels, a)
-    
-    target_labels = np.array([]).astype(int)
-    for lab in target_levels:
-        b = np.random.choice(np.where(T.Z == lab)[0], math.ceil(prop_T * sum(T.Z == lab)), replace=False)
-        target_labels = np.append(target_labels, b)
-    
-    source_train = S.drop(columns = 'Y')
-    source_train.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), source_labels), 'Z'] = -1
-    
-    target_train = T.drop(columns = 'Y')
-    target_train.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), target_labels), 'Z'] = -1
+    target_train = target.drop(columns = 'Y')
+    target_train.loc[np.setdiff1d(np.arange(0, np.shape(target)[0]), target_labels), 'Z'] = -1
     
     def clf_seq(shape, nClass):
         model = tf_keras.Sequential([
@@ -78,26 +37,27 @@ def discrete_partial_reference( S, T, S_test, T_test) :
             Dense(units=nClass, activation='sigmoid')])
         return model
     
-    fe_size = len(xcolumns(T))  # Nombre de variables de Target
+    fe_size = len(xcolumns(target))  # Nombre de variables de Target
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
     clf = clf_seq(shape, nClass=len(np.union1d(source_levels, target_levels)))
     clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-    enc = onehot(handle_unknown='ignore', sparse_output=False,
-                 categories=[np.arange(len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))])
+    categories=[np.arange(len(np.union1d(source_levels, target_levels)))]
+
+    enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
     
     clf.fit(
         target_train.loc[target_train.Z != -1, target_train.columns != 'Z'],
         enc.fit_transform(target_train.loc[target_train.Z != -1, 'Z'].values.reshape(-1, 1)),
         batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
     
-    z_test = clf.predict(T_test.loc[:, xcolumns(T)])
+    z_test = clf.predict(target_test.loc[:, xcolumns(target)])
     z_test = enc.inverse_transform(z_test).reshape(-1)
     
-    fe_size = len(xcolumns(S))  # Nombre de variables de Targe
+    fe_size = len(xcolumns(source))  # Nombre de variables de Targe
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    clf2 = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
+    clf2 = clf_seq(shape, nClass=len(np.union1d(np.unique(source['Z']), np.unique(target['Z']))))
     
     clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
@@ -105,10 +65,10 @@ def discrete_partial_reference( S, T, S_test, T_test) :
         source_train.loc[source_train.Z != -1, source_train.columns != 'Z'],
         enc.fit_transform(source_train.loc[source_train.Z != -1, 'Z'].values.reshape(-1, 1)),
         batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
-    z_test2 = clf2.predict(S_test.loc[:, xcolumns(S)])
+    z_test2 = clf2.predict(source_test.loc[:, xcolumns(source)])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
-    perf_ref = (sum(z_test == T_test.Z) + sum(z_test2 == S_test.Z)) / (len(z_test) + len(z_test2))
+    perf_ref = (sum(z_test == target_test.Z) + sum(z_test2 == source_test.Z)) / (len(z_test) + len(z_test2))
     
     z_test = clf.predict(target_train.loc[target_train.Z == -1, target_train.columns != 'Z'])
     z_test = enc.inverse_transform(z_test).reshape(-1)
@@ -116,8 +76,8 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     z_test2 = clf2.predict(source_train.loc[source_train.Z == -1, source_train.columns != 'Z'])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
-    perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), target_labels), 'Z']) + sum(
-            z_test2 == S.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), source_labels), 'Z'])) / (
+    perf_ref2 = (sum(z_test == target.loc[np.setdiff1d(np.arange(0, np.shape(target)[0]), target_labels), 'Z']) + sum(
+            z_test2 == source.loc[np.setdiff1d(np.arange(0, np.shape(source)[0]), source_labels), 'Z'])) / (
                                               len(z_test) + len(z_test2))
 
     return perf_ref, perf_ref2
