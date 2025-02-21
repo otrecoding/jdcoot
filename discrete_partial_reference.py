@@ -56,21 +56,21 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     prop_T = 0.1
     alpha = 2.875
     
-    z_labelled_source = np.array([]).astype(int)
+    source_labels = np.array([]).astype(int)
     for lab in source_levels:
         a = np.random.choice(np.where(S.Z == lab)[0], math.ceil(prop_S * sum(S.Z == lab)), replace=False)
-        z_labelled_source = np.append(z_labelled_source, a)
+        source_labels = np.append(source_labels, a)
     
-    z_labelled_target = np.array([]).astype(int)
+    target_labels = np.array([]).astype(int)
     for lab in target_levels:
         b = np.random.choice(np.where(T.Z == lab)[0], math.ceil(prop_T * sum(T.Z == lab)), replace=False)
-        z_labelled_target = np.append(z_labelled_target, b)
+        target_labels = np.append(target_labels, b)
     
     source_train = S.drop(columns = 'Y')
-    source_train.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] = -1
+    source_train.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), source_labels), 'Z'] = -1
     
     target_train = T.drop(columns = 'Y')
-    target_train.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] = -1
+    target_train.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), target_labels), 'Z'] = -1
     
     def clf_seq(shape, nClass):
         model = tf_keras.Sequential([
@@ -81,12 +81,10 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     fe_size = len(xcolumns(T))  # Nombre de variables de Target
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    # loss = 'MeanSquaredError
     clf = clf_seq(shape, nClass=len(np.union1d(source_levels, target_levels)))
     clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     enc = onehot(handle_unknown='ignore', sparse_output=False,
                  categories=[np.arange(len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))])
-    # print(enc.fit_transform(Z_training_data_Target.loc[Z_training_data_Target['Z']!=-1,'Z'].values.reshape(-1,1)))
     
     clf.fit(
         target_train.loc[target_train.Z != -1, target_train.columns != 'Z'],
@@ -99,7 +97,6 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     fe_size = len(xcolumns(S))  # Nombre de variables de Targe
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    # loss = 'MeanSquaredError
     clf2 = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
     
     clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
@@ -119,8 +116,8 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     z_test2 = clf2.predict(source_train.loc[source_train.Z == -1, source_train.columns != 'Z'])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
-    perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z']) + sum(
-            z_test2 == S.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'])) / (
+    perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), target_labels), 'Z']) + sum(
+            z_test2 == S.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), source_labels), 'Z'])) / (
                                               len(z_test) + len(z_test2))
 
     return perf_ref, perf_ref2
@@ -130,13 +127,13 @@ if __name__ == "__main__":
 
     INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
     
-    S, T = jdcoot.Sref(INDEX_GENERATION)
-    S_test, T_test = jdcoot.Sref_test(INDEX_GENERATION)
+    source, target = jdcoot.Sref(INDEX_GENERATION)
+    source_test, target_test = jdcoot.Sref_test(INDEX_GENERATION)
     
-    S_test = S_test.loc[:, S.columns]
-    T_test = T_test.loc[:, T.columns]
+    source_test = target_test.loc[:, source.columns]
+    target_test = target_test.loc[:, target.columns]
 
-    perf_ref, perf_ref2 = discrete_partial_reference(S, T, S_test, T_test)
+    perf_ref, perf_ref2 = discrete_partial_reference(source, target, source_test, target_test)
 
     print("Pure Performance Reference : {} ".format(perf_ref2))
     print("Test Performance Reference : {} ".format(perf_ref))
