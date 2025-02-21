@@ -13,86 +13,35 @@ import jdcoot
 from jdcoot.comp import comp_
 from jdcoot.coot import cot_numpy
 from jdcoot.utils import *
-from itertools import chain
-
-def discrete_labels(source, prop_source, target, prop_target):
-
-    n_source = len(source.Z)
-    n_target = len(target.Z)
-    source_levels = np.unique(source.Z)
-    target_levels = np.unique(target.Z)
-
-    if len(source_levels) > 2:
-    
-        del_idx = [k for k in source_levels if sum(source.Z == k) < 0.01 * len(source.Z)]
-
-        source = source.loc[~np.in1d(source.Z, del_idx), :].reset_index(drop=True)
-    
-    if len(target_levels) > 2:
-
-        del_idx = [k for k in target_levels if sum(target.Z == k) < 0.01 * len(target.Z)]
-
-        target = target.loc[~np.in1d(target.Z, del_idx), :].reset_index(drop=True)
-    
-    # number of observations kept referenced by the min number of available observation per class
-    source_freq = min(np.unique(source.Z, return_counts=True)[1])
-    target_freq = min(np.unique(target.Z, return_counts=True)[1])
-    
-    kept_source = []
-    for k in source_levels:
-        kept_source.append(np.random.choice(np.where(source.Z == k)[0], source_freq, replace=False))
-    
-    source = source.loc[chain(*kept_source), :].reset_index(drop=True)
-    
-    kept_target = []
-    for k in target_levels:
-        kept_target.append(np.random.choice(np.where(target.Z == k)[0], target_freq, replace=False))
-
-    target = target.loc[chain(*kept_target), :].reset_index(drop=True)
-    
-    source_labels = np.array([]).astype(int)
-
-    for k in source_levels:
-        a = np.random.choice(np.where(source.Z == k)[0], 
-                             math.ceil(prop_source * sum(source.Z == k)), 
-                             replace=False)
-
-        source_labels = np.append(source_labels, a)
-    
-    target_labels = np.array([]).astype(int)
-    for k in target_levels:
-        b = np.random.choice(np.where(target.Z == k)[0], 
-                             math.ceil(prop_target * sum(target.Z == k)), 
-                             replace=False)
-
-        target_labels = np.append(target_labels, b)
-    
-
-    lsource = np.full(n_source, True)
-    ltarget = np.full(n_target, True)
-
-    lsource[source_labels] = False
-    ltarget[target_labels] = False
-
-    return lsource, ltarget
+from sklearn.model_selection import train_test_split
 
 
-def discrete_partial_reference( source, target, source_test, target_test) :
+def discrete_partial_reference( source, target, test_source, test_target) :
+
 
     source_levels = np.unique(source.Z)
     target_levels = np.unique(target.Z)
 
-    prop_source = 0.1
-    prop_target = 0.1
+    nClass = len(np.union1d(source_levels, target_levels))
+    categories=[np.arange(nClass)]
 
-    source_labels, target_labels = discrete_labels(source, prop_source, target, prop_target)
+    enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
 
-    source_train = source.drop(columns = 'Y')
-    source_train.loc[source_labels, 'Z'] = -1
-    
-    target_train = target.drop(columns = 'Y')
-    target_train.loc[target_labels, 'Z'] = -1
-    
+    source_train, source_test = train_test_split(source, test_size = 0.2, stratify = source.Z)
+    target_train, target_test = train_test_split(target, test_size = 0.2, stratify = target.Z)
+
+    x_source_train = source_train.loc[:, xcolumns(source)].values
+    z_source_train = enc.fit_transform(source_train.Z.values.reshape(-1, 1))
+
+    x_target_train = target_train.loc[:, xcolumns(target)].values
+    z_target_train = enc.fit_transform(target_train.Z.values.reshape(-1, 1))
+
+    x_source_test = source_test.loc[:, xcolumns(source)].values
+    z_source_test = source_test.Z.values
+
+    x_target_test = target_test.loc[:, xcolumns(target)].values
+    z_target_test = target_test.Z.values
+
     def clf_seq(shape, nClass):
         model = tf_keras.Sequential([
             Dense(units=128, input_shape=shape, activation='sigmoid'),
@@ -102,47 +51,35 @@ def discrete_partial_reference( source, target, source_test, target_test) :
     fe_size = len(xcolumns(target))  # Nombre de variables de Target
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    clf = clf_seq(shape, nClass=len(np.union1d(source_levels, target_levels)))
-    clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-    categories=[np.arange(len(np.union1d(source_levels, target_levels)))]
 
-    enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
-    
-    xtrain_source = source_train.loc[source_train.Z != -1, source_train.columns != 'Z']
-    ztrain_source = enc.fit_transform(source_train.loc[source_train.Z != -1, 'Z'].values.reshape(-1, 1))
-
-    xtrain_target = target_train.loc[target_train.Z != -1, target_train.columns != 'Z']
-    ztrain_target = enc.fit_transform(target_train.loc[target_train.Z != -1, 'Z'].values.reshape(-1, 1))
-
-    clf.fit( xtrain_target, ztrain_target, batch_size=10, epochs=20, verbose=0)  
-    
-    xtest_target = target_test.loc[:, xcolumns(target)]
-    z_test = enc.inverse_transform(clf.predict(xtest_target)).reshape(-1)
+    clf_target = clf_seq(shape, nClass=nClass)
+    clf_target.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+    clf_target.fit( x_target_train, z_target_train, batch_size=10, epochs=20, verbose=0)  
     
     fe_size = len(xcolumns(source))  # Nombre de variables de Targe
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    clf2 = clf_seq(shape, nClass=len(np.union1d(source_levels, target_levels)))
-    
-    clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-    
-    clf2.fit( xtrain_source, ztrain_source, batch_size=10, epochs=20, verbose=0)  
 
-    xtest_source = source_test.loc[:, xcolumns(source)]
-    z_test2 = enc.inverse_transform(clf2.predict(xtest_source)).reshape(-1)
-    
-    perf_ref = (sum(z_test == target_test.Z) + sum(z_test2 == source_test.Z)) / (len(z_test) + len(z_test2))
-    
-    z_test = clf.predict(target_train.loc[target_train.Z == -1, target_train.columns != 'Z'])
-    z_test = enc.inverse_transform(z_test).reshape(-1)
-    
-    z_test2 = clf2.predict(source_train.loc[source_train.Z == -1, source_train.columns != 'Z'])
-    z_test2 = enc.inverse_transform(z_test2).reshape(-1)
-    
-    perf_ref2 = (  sum(z_test == target.loc[target_labels, 'Z']) 
-                 + sum(z_test2 == source.loc[source_labels, 'Z'])) / (len(z_test) + len(z_test2))
+    clf_source = clf_seq(shape, nClass=nClass)
+    clf_source.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+    clf_source.fit( x_source_train, z_source_train, batch_size=10, epochs=20, verbose=0)  
 
-    return perf_ref, perf_ref2
+    x_test_target = test_target.loc[:, xcolumns(test_target)]
+    z_test_target = enc.inverse_transform(clf_target.predict(x_test_target)).reshape(-1)
+
+    x_test_source = test_source.loc[:, xcolumns(test_source)]
+    z_test_source = enc.inverse_transform(clf_source.predict(x_test_source)).reshape(-1)
+    
+    perf_test = ( sum(z_test_target == test_target.Z) 
+                + sum(z_test_source == test_source.Z)) / (len(z_test_target) + len(z_test_source))
+    
+    z_target_pred = enc.inverse_transform(clf_target.predict(x_target_test)).reshape(-1)
+    z_source_pred = enc.inverse_transform(clf_source.predict(x_source_test)).reshape(-1)
+    
+    perf_pure = (  sum(z_target_pred == z_target_test) 
+                 + sum(z_source_pred == z_source_test)) / (len(z_target_pred) + len(z_source_pred))
+
+    return perf_test, perf_pure
 
 
 if __name__ == "__main__":
