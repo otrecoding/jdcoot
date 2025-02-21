@@ -17,35 +17,37 @@ from jdcoot.utils import *
 
 def discrete_partial_reference( S, T, S_test, T_test) :
 
-    if len(np.unique(S.Z)) > 2:
+    source_levels = np.unique(S.Z)
+    target_levels = np.unique(T.Z)
+
+    if len(source_levels) > 2:
     
         del_idx = np.array([])
-        for k in np.unique(S.Z):
+        for k in source_levels:
             if sum(S.Z == k) < 0.01 * len(S.Z):
                 del_idx = np.append(del_idx, k)
         S = S.loc[~np.in1d(S.Z, del_idx), :].reset_index(drop=True)
     
-    if len(np.unique(T.Z)) > 2:
+    if len(target_levels) > 2:
         del_idx = np.array([])
-        for k in np.unique(T.Z):
+        for k in target_levels:
             if sum(T.Z == k) < 0.01 * len(T.Z):
                 del_idx = np.append(del_idx, k)
         T = T.loc[~np.in1d(T.Z, del_idx), :].reset_index(drop=True)
     
     # number of observations kept referenced by the min number of available observation per class
-    S_nPerClass = math.ceil(min(np.unique(S.Z, return_counts=True)[
-                                    1]))  
-    T_nPerClass = math.ceil(min(np.unique(T['Z'], return_counts=True)[1]))
+    S_nPerClass = math.ceil(min(np.unique(S.Z, return_counts=True)[1]))  
+    T_nPerClass = math.ceil(min(np.unique(T.Z, return_counts=True)[1]))
     
     z_kept_source = np.array([]).astype(int)
-    for lab in np.unique(S.Z):
+    for lab in source_levels:
         z_kept_source = np.append(z_kept_source,
                                   np.random.choice(np.where(S['Z'] == lab)[0], S_nPerClass, replace=False))
     
     S = S.loc[z_kept_source, :].reset_index(drop=True)
     
     z_kept_target = np.array([]).astype(int)
-    for lab in np.unique(T.Z):
+    for lab in target_levels:
         z_kept_target = np.append(z_kept_target,
                                   np.random.choice(np.where(T['Z'] == lab)[0], T_nPerClass, replace=False))
     T = T.loc[z_kept_target, :].reset_index(drop=True)
@@ -55,19 +57,19 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     alpha = 2.875
     
     z_labelled_source = np.array([]).astype(int)
-    for lab in np.unique(S.Z):
+    for lab in source_levels:
         a = np.random.choice(np.where(S.Z == lab)[0], math.ceil(prop_S * sum(S.Z == lab)), replace=False)
         z_labelled_source = np.append(z_labelled_source, a)
     
     z_labelled_target = np.array([]).astype(int)
-    for lab in np.unique(T.Z):
+    for lab in target_levels:
         b = np.random.choice(np.where(T.Z == lab)[0], math.ceil(prop_T * sum(T.Z == lab)), replace=False)
         z_labelled_target = np.append(z_labelled_target, b)
     
-    Z_training_data_source = S.loc[:, S.columns != 'Y']
+    Z_training_data_source = S.drop(columns = 'Y')
     Z_training_data_source.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] = -1
     
-    Z_training_data_Target = T.loc[:, T.columns != 'Y']
+    Z_training_data_Target = T.drop(columns = 'Y')
     Z_training_data_Target.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] = -1
     
     def clf_seq(shape, nClass):
