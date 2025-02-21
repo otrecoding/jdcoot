@@ -108,10 +108,10 @@ def discrete_partial_reference( source, target, source_test, target_test) :
 
     enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
     
-    clf.fit(
-        target_train.loc[target_train.Z != -1, target_train.columns != 'Z'],
-        enc.fit_transform(target_train.loc[target_train.Z != -1, 'Z'].values.reshape(-1, 1)),
-        batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
+    xtrain_target = target_train.loc[target_train.Z != -1, target_train.columns != 'Z']
+    ztrain_target = enc.fit_transform(target_train.loc[target_train.Z != -1, 'Z'].values.reshape(-1, 1))
+
+    clf.fit( xtrain_target, ztrain_target, batch_size=10, epochs=20, verbose=0)  
     
     z_test = clf.predict(target_test.loc[:, xcolumns(target)])
     z_test = enc.inverse_transform(z_test).reshape(-1)
