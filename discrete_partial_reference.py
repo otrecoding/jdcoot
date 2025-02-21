@@ -12,6 +12,7 @@ sys.path.append(os.path.abspath('src'))
 import jdcoot
 from jdcoot.comp import comp_
 from jdcoot.coot import cot_numpy
+from jdcoot.utils import *
 
 
 def discrete_partial_reference( S, T, S_test, T_test) :
@@ -20,30 +21,31 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     
         del_idx = np.array([])
         for k in np.unique(S.Z):
-            if sum(S['Z'] == k) < 0.01 * len(S.Z):
+            if sum(S.Z == k) < 0.01 * len(S.Z):
                 del_idx = np.append(del_idx, k)
-        S = S.loc[~np.in1d(S['Z'], del_idx), :].reset_index(drop=True)
+        S = S.loc[~np.in1d(S.Z, del_idx), :].reset_index(drop=True)
     
-    if len(np.unique(T['Z'])) > 2:
+    if len(np.unique(T.Z)) > 2:
         del_idx = np.array([])
-        for k in np.unique(T['Z']):
-            if sum(T['Z'] == k) < 0.01 * len(T['Z']):
+        for k in np.unique(T.Z):
+            if sum(T.Z == k) < 0.01 * len(T.Z):
                 del_idx = np.append(del_idx, k)
-        T = T.loc[~np.in1d(T['Z'], del_idx), :].reset_index(drop=True)
+        T = T.loc[~np.in1d(T.Z, del_idx), :].reset_index(drop=True)
     
-    S_nPerClass = math.ceil(min(np.unique(S['Z'], return_counts=True)[
-                                    1]))  # number of observations kept referenced by the min number of available observation per class
+    # number of observations kept referenced by the min number of available observation per class
+    S_nPerClass = math.ceil(min(np.unique(S.Z, return_counts=True)[
+                                    1]))  
     T_nPerClass = math.ceil(min(np.unique(T['Z'], return_counts=True)[1]))
     
     z_kept_source = np.array([]).astype(int)
-    for lab in np.unique(S['Z']):
+    for lab in np.unique(S.Z):
         z_kept_source = np.append(z_kept_source,
                                   np.random.choice(np.where(S['Z'] == lab)[0], S_nPerClass, replace=False))
     
     S = S.loc[z_kept_source, :].reset_index(drop=True)
     
     z_kept_target = np.array([]).astype(int)
-    for lab in np.unique(T['Z']):
+    for lab in np.unique(T.Z):
         z_kept_target = np.append(z_kept_target,
                                   np.random.choice(np.where(T['Z'] == lab)[0], T_nPerClass, replace=False))
     T = T.loc[z_kept_target, :].reset_index(drop=True)
@@ -53,13 +55,13 @@ def discrete_partial_reference( S, T, S_test, T_test) :
     alpha = 2.875
     
     z_labelled_source = np.array([]).astype(int)
-    for lab in np.unique(S['Z']):
-        a = np.random.choice(np.where(S['Z'] == lab)[0], math.ceil(prop_S * sum(S['Z'] == lab)), replace=False)
+    for lab in np.unique(S.Z):
+        a = np.random.choice(np.where(S.Z == lab)[0], math.ceil(prop_S * sum(S.Z == lab)), replace=False)
         z_labelled_source = np.append(z_labelled_source, a)
     
     z_labelled_target = np.array([]).astype(int)
-    for lab in np.unique(T['Z']):
-        b = np.random.choice(np.where(T['Z'] == lab)[0], math.ceil(prop_T * sum(T['Z'] == lab)), replace=False)
+    for lab in np.unique(T.Z):
+        b = np.random.choice(np.where(T.Z == lab)[0], math.ceil(prop_T * sum(T.Z == lab)), replace=False)
         z_labelled_target = np.append(z_labelled_target, b)
     
     Z_training_data_source = S.loc[:, S.columns != 'Y']
@@ -74,8 +76,7 @@ def discrete_partial_reference( S, T, S_test, T_test) :
             Dense(units=nClass, activation='sigmoid')])
         return model
     
-    vfunc = np.vectorize(lambda arr: 'X' in arr)
-    fe_size = sum(vfunc(T.columns))  # Nombre de variables de Target
+    fe_size = len(xcolumns(T))  # Nombre de variables de Target
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
     # loss = 'MeanSquaredError
@@ -91,10 +92,10 @@ def discrete_partial_reference( S, T, S_test, T_test) :
             Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, 'Z'].values.reshape(-1, 1)),
         batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
     
-    z_test = clf.predict(T_test.loc[:, vfunc(T.columns)])
+    z_test = clf.predict(T_test.loc[:, xcolumns(T)])
     z_test = enc.inverse_transform(z_test).reshape(-1)
     
-    fe_size = sum(vfunc(S.columns))  # Nombre de variables de Targe
+    fe_size = len(xcolumns(S))  # Nombre de variables de Targe
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
     # loss = 'MeanSquaredError
@@ -107,17 +108,17 @@ def discrete_partial_reference( S, T, S_test, T_test) :
         enc.fit_transform(
             Z_training_data_source.loc[Z_training_data_source['Z'] != -1, 'Z'].values.reshape(-1, 1)),
         batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
-    z_test2 = clf2.predict(S_test.loc[:, vfunc(S.columns)])
+    z_test2 = clf2.predict(S_test.loc[:, xcolumns(S)])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
-    perf_ref = (sum(z_test == T_test.loc[:, 'Z']) + sum(z_test2 == S_test.loc[:, 'Z'])) / (len(z_test) + len(z_test2))
+    perf_ref = (sum(z_test == T_test.Z) + sum(z_test2 == S_test.Z)) / (len(z_test) + len(z_test2))
     
     z_test = clf.predict(
-        Z_training_data_Target.loc[Z_training_data_Target['Z'] == -1, Z_training_data_Target.columns != 'Z'])
+        Z_training_data_Target.loc[Z_training_data_Target.Z == -1, Z_training_data_Target.columns != 'Z'])
     z_test = enc.inverse_transform(z_test).reshape(-1)
     
     z_test2 = clf2.predict(
-        Z_training_data_source.loc[Z_training_data_source['Z'] == -1, Z_training_data_source.columns != 'Z'])
+        Z_training_data_source.loc[Z_training_data_source.Z == -1, Z_training_data_source.columns != 'Z'])
     z_test2 = enc.inverse_transform(z_test2).reshape(-1)
     
     perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z']) + sum(
