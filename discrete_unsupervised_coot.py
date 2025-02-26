@@ -50,7 +50,7 @@ def discrete_unsupervised_coot( source, target, source_test, target_test):
         return model
     
     
-    fe_size = len(xcolumns(target))  # Nombre de variables de target
+    fe_size = len(xcolumns(target))  
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
     clf = clf_seq(shape, nClass=nClass)
