@@ -42,58 +42,42 @@ def discrete_partial_coot(source, target, test_source, test_target):
     z_source = source.Z.values
     z_target = target.Z.values
 
-    source_train, source_test = train_test_split(source, test_size = prop_source, stratify = z_source)
-    target_train, target_test = train_test_split(target, test_size = prop_target, stratify = z_target)
+    n_source = len(z_source)
+    n_target = len(z_target)
 
-    x_source_train = source_train.loc[:, xcolumns(source)].values
-    z_source_train = one_hot(source_train.Z.values)
+    l_source_train, l_source_test = train_test_split(np.arange(n_source), test_size = prop_source, stratify = z_source)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target, stratify = z_target)
 
-    x_target_train = target_train.loc[:, xcolumns(target)].values
-    z_target_train = one_hot(target_train.Z.values)
+    x_source_train = source.loc[l_source_train, xcolumns(source)].values
+    z_source_train = source.loc[l_source_train, 'Z'].values
 
-    x_source_test = source_test.loc[:, xcolumns(source)].values
-    z_source_test = source_test.Z.values
+    x_target_train = target.loc[l_target_train, xcolumns(target)].values
+    z_target_train = target.loc[l_target_train, 'Z'].values
 
-    x_target_test = target_test.loc[:, xcolumns(target)].values
-    z_target_test = target_test.Z.values
+    x_source_test = source.loc[l_source_test, xcolumns(source)].values
+    z_source_test = source.loc[l_source_test, 'Z'].values
+
+    x_target_test = target.loc[l_target_test, xcolumns(target)].values
+    z_target_test = target.loc[l_target_test, 'Z'].values
 
     def compute_cost_matrix(ys, yt, v=10000):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
         return M
     
-    M_lin = compute_cost_matrix(yt=z_target, ys=z_source)
+    M_lin = compute_cost_matrix(yt=z_target, ys=z_source_train)
 
-    Ts, Tv, cost = cot_numpy( X1=x_source, X2=x_target,
-         niter=100, C_lin=M_lin,
-         algo='sinkhorn', reg=1,
-         algo2='emd', verbose=False)
+    Ts, Tv, cost = cot_numpy( X1=x_source_train, X2=x_target,
+         niter=100, C_lin=M_lin, algo='sinkhorn', reg=1, algo2='emd', verbose=False)
 
-    # Target estimation
+    zt_estimated = one_cold(n_target * np.dot(Ts.T, one_hot(z_source_train)))
 
-    zt_estimated = one_cold(len(z_target) * np.dot(Ts.T, z_source))
+    M_lin = compute_cost_matrix(yt=z_source, ys=z_target_train)
 
-    M_lin = compute_cost_matrix(yt=z_source_train, ys=z_target_train)
-
-    Ts, Tv, cost = cot_numpy( X1=x_target_train, X2=x_source_train,
-         niter=100, C_lin=M_lin,
-         algo='sinkhorn', reg=1,
-         algo2='emd', verbose=False)
-
-    # Source estimation
-    zt_onehot = one_hot(z_target_train)
-    zs_onehot_estimated = len(z_source) * np.dot(Ts.T, zt_onehot)
-    zs_estimated = one_cold(zs_onehot_estimated)
+    zs_estimated = one_cold(n_source * np.dot(Ts.T, one_hot(z_target_train)))
      
-    perf_coot = (sum(z_target_test == zt_estimated))
-    #             np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target)]) + sum(
-    #         S.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] == zs_estimated[
-    #             np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source)])) / (
-    #                                       len(np.setdiff1d(np.arange(0, np.shape(T)[0]),
-    #                                                        z_labelled_target)) + len(
-    #                                   np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source)))
-    # else:
-    #     perf_coot = (sum(T.loc[:, 'Z'] == zt_estimated) + sum(S.loc[:, 'Z'] == zs_estimated)) / (len(zt_estimated) + len(zs_estimated))
-    # 
+    perf_coot = (sum(z_target_test == zt_estimated[l_target_test])
+               + sum(z_source_test == zs_estimated[l_source_test])) / (len(z_target_test) + len(z_source_test))
+     
     # #############train classifier and evaluate the performance on test
     # def clf_seq(shape, nClass):
     #     model = tf_keras.Sequential([
@@ -128,7 +112,7 @@ def discrete_partial_coot(source, target, test_source, test_target):
     # perf_coot_test = (sum(zt_test == T_test.Z) + sum(zs_test == S_test.Z)) / (len(zs_test) + len(zt_test))
 
     # return perf_coot, perf_coot_test
-    return 0, 0
+    return perf_coot, 0
 
 
 if __name__ == "__main__":
