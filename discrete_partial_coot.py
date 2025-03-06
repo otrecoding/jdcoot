@@ -67,7 +67,7 @@ def discrete_partial_coot(source, target, test_source, test_target):
     M_lin = compute_cost_matrix(yt=z_target, ys=z_source_train)
 
     Ts, Tv, cost = cot_numpy( X1=x_source_train, X2=x_target,
-         niter=100, C_lin=M_lin, algo='sinkhorn', reg=1, algo2='emd', verbose=False)
+         niter=100, C_lin=M_lin, algo='sinkhorn', reg=0.5, algo2='emd', verbose=False)
 
     zt_estimated = one_cold(n_target * np.dot(Ts.T, one_hot(z_source_train)))
 
@@ -87,31 +87,26 @@ def discrete_partial_coot(source, target, test_source, test_target):
     fe_size_target = len(xcolumns(target))  
     shape_target = (fe_size_target,)
     loss = 'categorical_crossentropy'
-    clf_target = clf_seq(shapeT, nClass=nClass)
+    clf_target = clf_seq(shape_target, nClass=nClass)
     clf_target.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
     fe_size_source = len(xcolumns(source))  # Nombre de variables de Target
     shape_source = (fe_size_source,)
     loss = 'categorical_crossentropy'
-    clfS = clf_seq(shapeS, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-    clfS.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-    # 
-    # clfT.fit(T.loc[:, xcolumns(T)], enc.fit_transform(zt_estimated.reshape(-1, 1)), batch_size=10,
-    #          epochs=20, verbose=0)  # we train the classifier with target data estimated
-    # clfS.fit(S.loc[:, xcolumns(S)], enc.fit_transform(zs_estimated.reshape(-1, 1)), batch_size=10,
-    #          epochs=20, verbose=0)  # we train the classifier with target data estimated
-    # 
-    # zt_test = clfT.predict(T_test.loc[:, xcolumns(T_test)])
-    # zs_test = clfS.predict(S_test.loc[:, xcolumns(S_test)])
-    # 
-    # zt_test = enc.inverse_transform(zt_test).reshape(-1)
-    # zs_test = enc.inverse_transform(zs_test).reshape(-1)
-    # 
-    # perf_coot_test = (sum(zt_test == T_test.Z) + sum(zs_test == S_test.Z)) / (len(zs_test) + len(zt_test))
+    clf_source = clf_seq(shape_source, nClass=nClass)
+    clf_source.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+     
+    # we train the classifier with target data estimated
+    clf_target.fit(x_target, one_hot(zt_estimated), batch_size=10, epochs=20, verbose=0)  
+    # we train the classifier with target data estimated
+    clf_source.fit(x_source, one_hot(zs_estimated), batch_size=10, epochs=20, verbose=0)  
+     
+    zt_test = one_cold(clf_target.predict(x_target_test))
+    zs_test = one_cold(clf_source.predict(x_source_test))
+     
+    perf_coot_test = (sum(zt_test == z_target_test) + sum(zs_test == z_source_test)) / (len(zs_test) + len(zt_test))
 
-    # return perf_coot, perf_coot_test
-    return perf_coot, 0
-
+    return perf_coot, perf_coot_test
 
 if __name__ == "__main__":
 
