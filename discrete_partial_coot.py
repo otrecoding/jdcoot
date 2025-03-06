@@ -101,10 +101,10 @@ def discrete_partial_coot(source, target, test_source, test_target):
     # we train the classifier with target data estimated
     clf_source.fit(x_source, one_hot(zs_estimated), batch_size=10, epochs=20, verbose=0)  
      
-    zt_test = one_cold(clf_target.predict(x_target_test))
-    zs_test = one_cold(clf_source.predict(x_source_test))
+    zt_test = one_cold(clf_target.predict(test_target.loc[:, xcolumns(test_target)]))
+    zs_test = one_cold(clf_source.predict(test_source.loc[:, xcolumns(test_source)]))
      
-    perf_coot_test = (sum(zt_test == z_target_test) + sum(zs_test == z_source_test)) / (len(zs_test) + len(zt_test))
+    perf_coot_test = (sum(zt_test == test_target.Z) + sum(zs_test == test_source.Z)) / (len(zs_test) + len(zt_test))
 
     return perf_coot, perf_coot_test
 
