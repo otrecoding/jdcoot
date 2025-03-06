@@ -78,25 +78,23 @@ def discrete_partial_coot(source, target, test_source, test_target):
     perf_coot = (sum(z_target_test == zt_estimated[l_target_test])
                + sum(z_source_test == zs_estimated[l_source_test])) / (len(z_target_test) + len(z_source_test))
      
-    # #############train classifier and evaluate the performance on test
-    # def clf_seq(shape, nClass):
-    #     model = tf_keras.Sequential([
-    #         Dense(units=128, input_shape=shape, activation='sigmoid'),
-    #         Dense(units=nClass, activation='sigmoid')])
-    #     return model
-    # 
-    # vfunc = np.vectorize(lambda arr: 'X' in arr)
-    # fe_sizeT = len(xcolumns(T))  # Nombre de variables de Target
-    # shapeT = (fe_sizeT,)
-    # loss = 'categorical_crossentropy'
-    # clfT = clf_seq(shapeT, nClass=len(np.union1d(np.unique(S.Z), np.unique(T.Z))))
-    # clfT.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-    # 
-    # fe_sizeS = len(xcolumns(S))  # Nombre de variables de Target
-    # shapeS = (fe_sizeS,)
-    # loss = 'categorical_crossentropy'
-    # clfS = clf_seq(shapeS, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-    # clfS.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+    def clf_seq(shape, nClass):
+        model = tf_keras.Sequential([
+            Dense(units=128, input_shape=shape, activation='sigmoid'),
+            Dense(units=nClass, activation='sigmoid')])
+        return model
+     
+    fe_size_target = len(xcolumns(target))  
+    shape_target = (fe_size_target,)
+    loss = 'categorical_crossentropy'
+    clf_target = clf_seq(shapeT, nClass=nClass)
+    clf_target.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+    
+    fe_size_source = len(xcolumns(source))  # Nombre de variables de Target
+    shape_source = (fe_size_source,)
+    loss = 'categorical_crossentropy'
+    clfS = clf_seq(shapeS, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
+    clfS.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     # 
     # clfT.fit(T.loc[:, xcolumns(T)], enc.fit_transform(zt_estimated.reshape(-1, 1)), batch_size=10,
     #          epochs=20, verbose=0)  # we train the classifier with target data estimated
