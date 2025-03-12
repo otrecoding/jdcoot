@@ -59,8 +59,9 @@ def continuous_unsupervised_coot( source, target, source_test, target_test) :
     clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
     clf.fit(x_target, ypred, batch_size=10, epochs=20, verbose=0) 
-    ytest = clf.predict(target_test.loc[:, xcolumns(target)])[:, 0]
-    perf_coot_test = rmse(ytest, target_test.Y)
+    xtest = target_test.loc[:, xcolumns(target)].values
+    ytest = clf.predict(xtest)[:, 0]
+    perf_coot_test = rmse(ytest, target_test.Y.values)
 
     return perf_coot, perf_coot_test
 
