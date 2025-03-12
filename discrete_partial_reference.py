@@ -18,7 +18,6 @@ from sklearn.model_selection import train_test_split
 
 def discrete_partial_reference( source, target, test_source, test_target) :
 
-
     source_levels = np.unique(source.Z)
     target_levels = np.unique(target.Z)
 
