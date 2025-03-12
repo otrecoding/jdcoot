@@ -27,47 +27,50 @@ def continuous_unsupervised_jdcoot( source, target, test_source, test_target):
     ytrain_target = np.full_like(target.Y.values, np.nan).reshape(-1, 1)
     
     def clf_seq(shape):
-        model = tf_keras.Sequential([Dense(units=128, input_shape=shape, activation='linear'),
+        model = tf_keras.Sequential([Dense(units=128, 
+                                     input_shape=shape, activation='linear'),
                                      Dense(units=1, activation='linear')])
         return model
     
     
-    fe_sizeB = len(xcolumns(target))  # Nombre de variables de Target
-    shape = (fe_sizeB,)
+    fe_size = len(xcolumns(target))  # Nombre de variables de Target
+    shape = (fe_size,)
     loss = 'MeanSquaredError'
-    clfB = clf_seq(shape)
-    clfB.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+    clf_target = clf_seq(shape)
+    clf_target.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
-    fe_sizeA = len(xcolumns(source))  # Nombre de variables de Source
-    shape = (fe_sizeA,)
-    
+    fe_size = len(xcolumns(source))  # Nombre de variables de Source
+    shape = (fe_size,)
     loss = 'MeanSquaredError'
-    clfA = clf_seq(shape)
-    clfA.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
+    clf_source = clf_seq(shape)
+    clf_source.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
-    model1, model2, results = jdcot_multitask_reg(modelA=clfA, modelB=clfB,
+    model_source, model_target, results = jdcot_multitask_reg(
+                                                  modelA=clf_source, 
+                                                  modelB=clf_target,
                                                   XA = xtrain_source,
                                                   YA = ytrain_source,
                                                   XB = xtrain_target,
                                                   YB = ytrain_target,
                                                   yAtruth=source.Y,
-                                                  yBtruth=target.Y, reshape_data=False, algo='sinkhorn',
+                                                  yBtruth=target.Y, 
+                                                  reshape_data=False, 
+                                                  algo='sinkhorn',
                                                   reg=100, alpha=alpha)
     
-    zpred_target = model2.predict(xtrain_target).ravel()
+    zpred_target = model_target.predict(xtrain_target).ravel()
     
     perf_jdcoot = sum((zpred_target - target.Y) ** 2) / len( zpred_target)
     
-    zt_test = model2.predict(test_target.loc[:, xcolumns(test_target)]).ravel()
-    zs_test = model1.predict(test_source.loc[:, xcolumns(test_source)]).ravel()
+
+    xsource = test_source.loc[:, xcolumns(test_source)].values
+    xtarget = test_target.loc[:, xcolumns(test_target)].values
+
+    ytarget = model_target.predict(xtarget).ravel()
+    ysource = model_source.predict(xsource).ravel()
     
-    perf_jdcoot_test = sum((zt_test - test_target.Y) ** 2) / len(zt_test)
-    
-    
-    zt_test = model2.predict(test_target.loc[:, xcolumns(test_target)]).ravel()
-    zs_test = model1.predict(test_source.loc[:, xcolumns(test_source)]).ravel()
-    
-    perf_jdcoot_test = (sum((zt_test - test_target.Y) ** 2) + sum((zs_test - test_source.Y) ** 2)) / (len(zt_test) + len(zs_test))
+    perf_jdcoot_test = (sum((ytarget - test_target.Y) ** 2) 
+                      + sum((ysource - test_source.Y) ** 2)) / (len(ytarget) + len(ysource))
 
     return perf_jdcoot, perf_jdcoot_test
 
