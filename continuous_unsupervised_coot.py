@@ -21,17 +21,15 @@ def continuous_unsupervised_coot( source, target, source_test, target_test) :
     
     prop_S = 1
     prop_T = 0
-    alpha = 0.3
     
-    l_source, l_target = labelled_indexes( source, prop_S, target, prop_T)
-
     x_source = source.loc[:, xcolumns(source)]
     x_target = target.loc[:, xcolumns(target)]
+
+    y_source = source.Y.values
+    y_target = target.Y.values
     
-    ytrain_source = source.Y.values.copy()
-    ytrain_source[l_source] = np.nan
-    ytrain_target = target.Y.values.copy()
-    ytrain_target[l_target] = np.nan
+    ytrain_source = y_source
+    ytrain_target = np.full_like(y_target, np.nan)
     
     def compute_cost_matrix(ys, yt):
         return ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())  
@@ -43,10 +41,10 @@ def continuous_unsupervised_coot( source, target, source_test, target_test) :
                              algo='sinkhorn', reg=1,
                              algo2='emd', verbose=False)
     
-    ytrue = target.Y
-    ypred = target.Y.size * np.dot(Ts.T, source.Y)
+    ytrue = y_target
+    ypred = y_target.size * np.dot(Ts.T, y_source)
     
-    perf_coot = rmse(ypred[l_target], ytrue[l_target])
+    perf_coot = rmse(ypred, ytrue)
     
     def clf_seq(shape, nClass):
         model = tf_keras.Sequential([
