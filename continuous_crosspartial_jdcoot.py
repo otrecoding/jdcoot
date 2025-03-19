@@ -87,6 +87,7 @@ def continuous_croos_partial_jdcoot( source, target, source_test, test):
 
 if __name__ == '__main__':
 
+    np.random.seed(2025)
     INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
     
     S, T = jdcoot.Sref(INDEX_GENERATION)
