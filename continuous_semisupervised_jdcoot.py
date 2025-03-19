@@ -113,7 +113,7 @@ if __name__ == '__main__':
         source.to_csv("source.csv", index = False)
         target.to_csv("target.csv", index = False)
     
-        source_test, data_target_test = test_scenario.generate(INDEX_GENERATION)
+        source_test, target_test = test_scenario.generate(INDEX_GENERATION)
         source_test.to_csv("source_test.csv", index = False)
         target_test.to_csv("target_test.csv", index = False)
 
