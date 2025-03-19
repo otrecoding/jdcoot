@@ -15,44 +15,60 @@ from jdcoot.comp import comp_regression
 from jdcoot.coot import cot_numpy
 from jdcoot.data_scenario import DataScenario, DataScenarioTest
 import jdcoot
+from jdcoot.utils import *
+from sklearn.model_selection import train_test_split
 
 
-def discrete_semisupervised_coot( S, T, S_test, T_test):
+def discrete_semisupervised_coot( source, target, source_test, target_test):
 
-    prop_S = 1
-    prop_T = 0.1
+    prop_target = 0.1
     
+    source_levels = np.unique(source.Z)
+    target_levels = np.unique(target.Z)
+
+    nClass = len(np.union1d(source_levels, target_levels))
+    categories=[np.arange(nClass)]
+
+    x_source = source.loc[:, xcolumns(source)].values
+    x_target = target.loc[:, xcolumns(target)].values
+
+    z_source = source.Z.values
+    z_target = target.Z.values
+
+    n_source = len(z_source)
+    n_target = len(z_target)
+
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), 
+                                                     test_size = prop_target, 
+                                                     stratify = z_target)
+
+    z_target_train = z_target.copy()
+    z_target_train[l_target_test] = -1
+
+    x_target_test = target.loc[l_target_test, xcolumns(target)].values
+    z_target_test = target.loc[l_target_test, 'Z'].values
 
     # cost matrix with ot dist
     def compute_cost_matrix(ys, yt, v=10000):
-        M = ot.dist(ys.values.reshape(-1, 1), yt.values.reshape(-1, 1), metric=comp_(v))
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
         return M
     
-    if prop_T == 0:
-        M_lin = None
-    else:
-        M_lin = compute_cost_matrix(yt=Z_training_data_target['Z'], ys=Z_training_data_source['Z'])
+    M_lin = compute_cost_matrix(yt=z_target_train, ys=z_source)
     
-    Ts, Tv, cost = cot_numpy(X1=Z_training_data_source.loc[:, Z_training_data_source.columns != 'Z'],
-                             X2=Z_training_data_target.loc[:, Z_training_data_target.columns != 'Z'],
+    Ts, Tv, cost = cot_numpy(X1=x_source,
+                             X2=x_target,
                              niter=100, C_lin=M_lin,
                              algo='sinkhorn', reg=1,
                              algo2='emd', verbose=False)
     
     # target estimation
-    enc = onehot(handle_unknown='ignore', sparse_output=False,
-                 categories=[np.arange(len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))])
-    zs_onehot = enc.fit_transform(S['Z'].values.reshape(-1, 1))
-    zt_onehot_estimated = len(T.loc[:, 'Z']) * np.dot(Ts.T, zs_onehot)
+    enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
+
+    zs_onehot = enc.fit_transform(z_source.reshape(-1, 1))
+    zt_onehot_estimated = n_target * np.dot(Ts.T, zs_onehot)
     zt_estimated = enc.inverse_transform(zt_onehot_estimated).reshape(-1)
-    
-    if len(np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target)) != 0:
-        perf_coot = sum(T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] == zt_estimated[
-                np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target)]) / len(
-            np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target))
-        # perf_tot=sum(T.loc[:,'Z']==zt_estimated)/len(zt_estimated)
-    else:
-        perf_coot = sum(T.loc[:, 'Z'] == zt_estimated) / len(zt_estimated)
+
+    perf_coot = np.mean(z_target_test == zt_estimated[l_target_test])
     
     #############train classifier and evaluate performance on test
     def clf_seq(shape, nClass):
@@ -61,23 +77,18 @@ def discrete_semisupervised_coot( S, T, S_test, T_test):
             Dense(units=nClass, activation='sigmoid')])
         return model
     
-    vfunc = np.vectorize(lambda arr: 'X' in arr)
-    fe_size = sum(vfunc(T.columns))  # Nombre de variables de target
+    fe_size = len(xcolumns(target))  # Nombre de variables de target
     shape = (fe_size,)
     loss = 'categorical_crossentropy'
-    # loss = 'MeanSquaredError'
-    # clf = clf_seq(shape, nClass = len(np.unique(S['Z'])))
-    clf = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
+    clf = clf_seq(shape, nClass=nClass)
     clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
     
-    # print(enc.fit_transform(zt_estimated.reshape(-1,1)))
-    # print(len(np.union1d(np.unique(S['Z']),np.unique(T['Z']))))
-    
-    clf.fit(T.loc[:, vfunc(T.columns)], enc.fit_transform(zt_estimated.reshape(-1, 1)), batch_size=10,
-            epochs=20, verbose=0)  # we train the classifier with target data estimated
-    z_test = clf.predict(T_test.loc[:, vfunc(T.columns)])
+    clf.fit(x_target, enc.fit_transform(zt_estimated.reshape(-1, 1)), batch_size=10,
+            epochs=20, verbose=0) 
+
+    z_test = clf.predict(target_test.loc[:, xcolumns(target)])
     z_test = enc.inverse_transform(z_test).reshape(-1)
-    perf_coot_test = sum(z_test == T_test.loc[:, 'Z']) / len(z_test)
+    perf_coot_test = np.mean(z_test == target_test.Z) 
 
     return perf_coot, perf_coot_test
 
