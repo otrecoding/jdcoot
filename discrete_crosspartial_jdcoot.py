@@ -13,8 +13,8 @@ from jdcoot.jdcot.multitask_classif import jdcot_multitask_classif
 from jdcoot.jdcot.multitask_reg import jdcot_multitask_reg
 
 from jdcoot.utils import *
+from discrete_partial_reference import *
 
-INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
 def discrete_crosspartial_jdcoot( S, T, S_test, T_test) :
 
@@ -161,11 +161,13 @@ def discrete_crosspartial_jdcoot( S, T, S_test, T_test) :
         zt_test = one_hot_inv(model2.predict(T_test.loc[:, xcolumns(T_test)])) + min(np.unique(T.Z))
         zs_test = one_hot_inv(model1.predict(S_test.loc[:, xcolumns(S_test)])) + min(np.unique(T.Z))
         perf_jdcoot_test = (sum(zt_test == T_test.loc[:, 'Z']) + sum(zs_test == S_test.loc[:, 'Z'])) / (len(zt_test) + len(zs_test))
+        return perf_jdcoot, perf_jdcoot_test
     
     
     
 if __name__ == "__main__":
 
+    INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
     S, T = jdcoot.Sref(INDEX_GENERATION)
     S_test, T_test = jdcoot.Sref_test(INDEX_GENERATION)
     
