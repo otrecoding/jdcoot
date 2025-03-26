@@ -1,6 +1,10 @@
 # JDCOOT : Algorithm for Transfer Learning in Incomparable Domains using Optimal Transport
 
-Code stage Lucas Offroy
+Code : Lucas Offroy (Stage Ingénieur INSA)
+
+Encadrement : Valérie Garès (INRIA)  et Chloé Friguet (UBS)
+
+Support technique : Pierre Navaro (CNRS)
 
 JDCOOT : **J**oint **D**istribution **CO**-**O**ptimal **T**ransport
 

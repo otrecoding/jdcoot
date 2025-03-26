@@ -2,92 +2,52 @@ import os
 import sys
 sys.path.append(os.path.abspath('src'))
 
-import math
 import numpy as np
-import pandas as pd
-import ot
-import tf_keras
-from tf_keras.layers import Dense
-from sklearn.preprocessing import OneHotEncoder as onehot
 
-from jdcoot.comp import comp_
-from jdcoot.comp import comp_regression
-from jdcoot.coot import cot_numpy
-from jdcoot.data_scenario import DataScenario, DataScenarioTest
-import jdcoot
+from jdcoot.utils import xcolumns, continuous_accuracy, continuous_classifier
+from sklearn.model_selection import train_test_split
 
-Objective_Variable = 'continuous'
-Balance=True,
-Labelled_Proportion_target=0.1 # 0.5 or 0.9
+def continuous_semisupervised_reference( source, target, source_test, target_test):
 
-INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
+    prop_target = 0.1 
+    
+    x_target = target.loc[:, xcolumns(target)].values
 
-try:
-    data_source = pd.read_csv("source.csv")
-    data_target = pd.read_csv("target.csv")
+    y_target = target.Y.values
 
-    data_source_test = pd.read_csv("source_test.csv")
-    data_source_test = data_source_test.loc[:, data_source.columns]
-    data_target_test = pd.read_csv("target_test.csv")
-    data_target_test = data_target_test.loc[:, data_target.columns]
+    n_target = len(y_target)
 
-except FileNotFoundError:
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target)
 
-    reference_scenario = DataScenario()
-    test_scenario = DataScenarioTest()
+    xtrain_target = x_target[l_target_train, :]
+    ytrain_target = y_target[l_target_train]
 
-    data_source, data_target = reference_scenario.generate(INDEX_GENERATION)
-    data_source.to_csv("source.csv", index = False)
-    data_target.to_csv("target.csv", index = False)
+    xtest_target = x_target[l_target_test, :]
+    ytest_target = y_target[l_target_test]
 
-    data_source_test, data_target_test = test_scenario.generate(INDEX_GENERATION)
-    data_source_test.to_csv("source_test.csv", index = False)
-    data_target_test.to_csv("target_test.csv", index = False)
+    clf = continuous_classifier(target)
+
+    clf.fit(xtrain_target, ytrain_target, batch_size=10, epochs=20, verbose=0) 
+
+    z_test = clf.predict(xtest_target).ravel()
+    perf_ref1 = continuous_accuracy(z_test, ytest_target)
+    
+    x_target_test = target_test.loc[:, xcolumns(target)].values
+    y_target_test = target_test.Y.values
+
+    z_test = clf.predict(x_target_test).ravel()
+    perf_ref2 = continuous_accuracy(z_test, y_target_test)
+    
+    return perf_ref1, perf_ref2
 
 
-S = data_source
-T = data_target
-S_test = data_source_test.loc[:, S.columns]
-T_test = data_target_test.loc[:, T.columns]
+if __name__ == "__main__":
 
-prop_S = 1
+    from scenario import generate_data
 
-prop_S = 1
-prop_T = 0.1 # Labelled_Proportion_target
-alpha = 2.625
+    data = generate_data()
 
+    pure, test = continuous_semisupervised_reference(*data)
 
-y_labelled_source = np.random.choice(np.arange(len(S['Y'])), math.ceil(prop_S * len(S['Y'])), replace=False)
-y_labelled_target = np.random.choice(np.arange(len(T['Y'])), math.ceil(prop_T * len(T['Y'])), replace=False)
-Y_training_data_source = S.drop(columns = 'Z')
-Y_training_data_source.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), y_labelled_source), 'Y'] = np.NaN
-Y_training_data_Target = T.drop(columns = 'Z')
-Y_training_data_Target.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), y_labelled_target), 'Y'] = np.NaN
-
-def clf_seq(shape, nClass):
-    model = tf_keras.Sequential([
-        Dense(units=128, input_shape=shape, activation='linear'),
-        Dense(units=nClass, activation='linear')])
-    return model
-
-vfunc = np.vectorize(lambda arr: 'X' in arr)
-fe_size = sum(vfunc(T.columns))  # Nombre de variables de Targe
-shape = (fe_size,)
-loss = 'MeanSquaredError'
-clf = clf_seq(shape, nClass=1)
-clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-
-clf.fit(Y_training_data_Target.loc[
-            ~np.isnan(Y_training_data_Target['Y']), Y_training_data_Target.columns != 'Y'],
-        Y_training_data_Target.loc[~np.isnan(Y_training_data_Target['Y']), 'Y'], batch_size=10, epochs=20,
-        verbose=0) 
-
-z_test = clf.predict(T_test.loc[:, vfunc(T.columns)]).reshape(-1)
-perf_ref = sum((z_test - T_test.loc[:, 'Y']) ** 2) / len(z_test)
-
-z_test = clf.predict(Y_training_data_Target.loc[np.isnan(
-    Y_training_data_Target['Y']), Y_training_data_Target.columns != 'Y']).reshape(-1)
-perf_ref2 = sum((z_test - T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), y_labelled_target), 'Y']) ** 2) / len(z_test)
-
-print("Pure Performance Reference : {} ".format(perf_ref2))
-print("Test Performance Reference : {} ".format(perf_ref))
+    print(f"Pure Performance Reference : {pure}")
+    print(f"Test Performance Reference : {test}")

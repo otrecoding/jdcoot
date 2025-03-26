@@ -1,213 +1,96 @@
-import math
 import os
 import sys
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder as onehot
-import tf_keras
-from tf_keras.layers import Dense
+from sklearn.model_selection import train_test_split
 
 sys.path.append(os.path.abspath('src'))
 
-import jdcoot
 from jdcoot.jdcot.multitask_classif import jdcot_multitask_classif
-from jdcoot.jdcot.multitask_reg import jdcot_multitask_reg
+from jdcoot.utils import xcolumns, discrete_classifiers, discrete_accuracy
 
-INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
+def discrete_partial_jdcoot( source, target, test_source, test_target) :
 
-S, T = jdcoot.Sref(INDEX_GENERATION)
-S_test, T_test = jdcoot.Sref_test(INDEX_GENERATION)
+    prop_source = 0.1
+    prop_target = 0.1
+    alpha = 2.875
 
-S_test = S_test.loc[:, S.columns]
-T_test = T_test.loc[:, T.columns]
+    source_levels = np.unique(source.Z)
+    target_levels = np.unique(target.Z)
 
-if len(np.unique(S['Z'])) > 2:
+    nClass = len(np.union1d(source_levels, target_levels))
 
-    del_idx = np.array([])
-    for k in np.unique(S['Z']):
-        if sum(S['Z'] == k) < 0.01 * len(S['Z']):
-            del_idx = np.append(del_idx, k)
-    S = S.loc[~np.in1d(S['Z'], del_idx), :].reset_index(drop=True)
+    z_source = source.Z.values
+    z_target = target.Z.values
 
-if len(np.unique(T['Z'])) > 2:
-    del_idx = np.array([])
-    for k in np.unique(T['Z']):
-        if sum(T['Z'] == k) < 0.01 * len(T['Z']):
-            del_idx = np.append(del_idx, k)
-    T = T.loc[~np.in1d(T['Z'], del_idx), :].reset_index(drop=True)
+    n_source = len(z_source)
+    n_target = len(z_target)
 
-S_nPerClass = math.ceil(min(np.unique(S['Z'], return_counts=True)[
-                                1]))  # number of observations kept referenced by the min number of available observation per class
-T_nPerClass = math.ceil(min(np.unique(T['Z'], return_counts=True)[1]))
+    l_source_train, l_source_test = train_test_split(np.arange(n_source), test_size = prop_source, stratify = z_source)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target, stratify = z_target)
 
-z_kept_source = np.array([]).astype(int)
-for lab in np.unique(S['Z']):
-    z_kept_source = np.append(z_kept_source,
-                              np.random.choice(np.where(S['Z'] == lab)[0], S_nPerClass, replace=False))
+    x_source_train = source.loc[:, xcolumns(source)].values
+    z_source_train = np.copy(z_source)
+    z_source_train[l_source_test] = -1
 
-S = S.loc[z_kept_source, :].reset_index(drop=True)
+    x_target_train = target.loc[:, xcolumns(target)].values
+    z_target_train = np.copy(z_target)
+    z_target_train[l_target_test] = -1
 
-z_kept_target = np.array([]).astype(int)
-for lab in np.unique(T['Z']):
-    z_kept_target = np.append(z_kept_target,
-                              np.random.choice(np.where(T['Z'] == lab)[0], T_nPerClass, replace=False))
-T = T.loc[z_kept_target, :].reset_index(drop=True)
+    x_source_test = source.loc[l_source_test, xcolumns(source)].values
+    z_source_test = source.Z.values[l_source_test]
 
-prop_S = 0.1 # Labelled_Proportion_Source
-prop_T = 0.1 # Labelled_Proportion_Target
-alpha = 2.875
+    x_target_test = target.loc[l_target_test, xcolumns(target)].values
+    z_target_test = target.Z.values[l_target_test]
 
-z_labelled_source = np.array([]).astype(int)
-for lab in np.unique(S['Z']):
-    a = np.random.choice(np.where(S['Z'] == lab)[0], math.ceil(prop_S * sum(S['Z'] == lab)), replace=False)
-    z_labelled_source = np.append(z_labelled_source, a)
+    clfA, clfB = discrete_classifiers(source, target, 'relu', 'softmax')
+    
+    def one_hot(y, nClass):
+    
+        levels = np.sort(np.unique(y))
+        m = min(y)
+        if m == -1:
+            if len(levels) != 1:
+                m = levels[1]
+    
+        Y = np.zeros((len(y), nClass))
+        for i in range(len(y)):
+            if y[i] != -1:
+                Y[i, (y[i] - m).astype(int)] = 1
+        return Y
+    
+    def one_cold(z_encoded):
+        return np.vectorize(lambda i: np.argmax(z_encoded[i, :]))(np.arange(z_encoded.shape[0]))
+    
+    oh_source = one_hot(z_source_train, nClass)
 
-z_labelled_target = np.array([]).astype(int)
-for lab in np.unique(T['Z']):
-    b = np.random.choice(np.where(T['Z'] == lab)[0], math.ceil(prop_T * sum(T['Z'] == lab)), replace=False)
-    z_labelled_target = np.append(z_labelled_target, b)
+    oh_target = one_hot(z_target_train, nClass)
+    
+    model1, model2, results = jdcot_multitask_classif(modelA=clfA, modelB=clfB,
+                                                      XA=x_source_train, YA=oh_source,
+                                                      XB=x_target_train, YB=oh_target,
+                                                      yAtruth=z_source, yBtruth=z_target, 
+                                                      algo='sinkhorn', reg=1, alpha=alpha)
+    
+    zpred_target = one_cold(model2.predict(x_target_test)) + min(target_levels)
+    
+    zpred_source = one_cold(model1.predict(x_source_test)) + min(source_levels)
+    
+    perf_pure = discrete_accuracy(zpred_source, z_source_test, zpred_target, z_target_test)
 
-Z_training_data_source = S.loc[:, S.columns != 'Y']
-Z_training_data_source.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] = -1
+    zt_test = one_cold(model2.predict(test_target.loc[:, xcolumns(test_target)])) + min(target_levels)
+    zs_test = one_cold(model1.predict(test_source.loc[:, xcolumns(test_source)])) + min(source_levels)
 
-Z_training_data_Target = T.loc[:, T.columns != 'Y']
-Z_training_data_Target.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] = -1
+    perf_test = discrete_accuracy(zt_test, test_target.Z, zs_test, test_source.Z)
 
-def clf_seq(shape, nClass):
-    model = tf_keras.Sequential([
-        Dense(units=128, input_shape=shape, activation='sigmoid'),
-        Dense(units=nClass, activation='sigmoid')])
-    return model
-
-vfunc = np.vectorize(lambda arr: 'X' in arr)
-fe_size = sum(vfunc(T.columns))  # Nombre de variables de Target
-shape = (fe_size,)
-loss = 'categorical_crossentropy'
-# loss = 'MeanSquaredError
-clf = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-enc = onehot(handle_unknown='ignore', sparse_output=False,
-             categories=[np.arange(len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))])
-# print(enc.fit_transform(Z_training_data_Target.loc[Z_training_data_Target['Z']!=-1,'Z'].values.reshape(-1,1)))
-
-clf.fit(
-    Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, Z_training_data_Target.columns != 'Z'],
-    enc.fit_transform(
-        Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, 'Z'].values.reshape(-1, 1)),
-    batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
-
-z_test = clf.predict(T_test.loc[:, vfunc(T.columns)])
-z_test = enc.inverse_transform(z_test).reshape(-1)
-
-fe_size = sum(vfunc(S.columns))  # Nombre de variables de Targe
-shape = (fe_size,)
-loss = 'categorical_crossentropy'
-# loss = 'MeanSquaredError
-clf2 = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-
-clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-
-clf2.fit(
-    Z_training_data_source.loc[Z_training_data_source['Z'] != -1, Z_training_data_source.columns != 'Z'],
-    enc.fit_transform(
-        Z_training_data_source.loc[Z_training_data_source['Z'] != -1, 'Z'].values.reshape(-1, 1)),
-    batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
-z_test2 = clf2.predict(S_test.loc[:, vfunc(S.columns)])
-z_test2 = enc.inverse_transform(z_test2).reshape(-1)
-
-perf_ref = (sum(z_test == T_test.loc[:, 'Z']) + sum(z_test2 == S_test.loc[:, 'Z'])) / ( len(z_test) + len(z_test2))
-
-z_test = clf.predict(
-    Z_training_data_Target.loc[Z_training_data_Target['Z'] == -1, Z_training_data_Target.columns != 'Z'])
-z_test = enc.inverse_transform(z_test).reshape(-1)
-
-z_test2 = clf2.predict(
-    Z_training_data_source.loc[Z_training_data_source['Z'] == -1, Z_training_data_source.columns != 'Z'])
-z_test2 = enc.inverse_transform(z_test2).reshape(-1)
-
-perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z']) + sum(
-        z_test2 == S.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'])) / (
-                                  len(z_test) + len(z_test2))
-
-def clf_seq(shape, nClass):
-    model = tf_keras.Sequential([
-        Dense(units=128, input_shape=shape, activation='relu'),
-        Dense(units=nClass, activation='softmax')])
-    return model
-
-vfunc = np.vectorize(lambda arr: 'X' in arr)
-fe_sizeB = sum(vfunc(T.columns))  # Nombre de variables de Target
-shape = (fe_sizeB,)
-loss = 'categorical_crossentropy'
-# loss = 'MeanSquaredError'
-clfB = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-clfB.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-
-fe_sizeA = sum(vfunc(S.columns))  # Nombre de variables de Source
-shape = (fe_sizeA,)
-loss = 'categorical_crossentropy'
-# loss = 'MeanSquaredError'
-clfA = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-clfA.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-
-def one_hot(y, nClass):
-
-    m = min(y)
-    if m == -1:
-        if len(np.unique(y)) != 1:
-            m = np.sort(np.unique(y))[1]
-
-    Y = np.zeros((len(y), nClass))
-    for i in range(len(y)):
-        if y[i] != -1:
-            Y[i, (y[i] - m).astype(int)] = 1
-    return Y
-
-def one_hot_inv(z_encoded):
-    return np.vectorize(lambda i: np.argmax(z_encoded[i, :]))(np.arange(z_encoded.shape[0]))
-
-oh_source = one_hot(Z_training_data_source.loc[:, 'Z'],
-                    len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-oh_target = one_hot(Z_training_data_Target.loc[:, 'Z'],
-                    len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-# model1,model2,results=jdcot_multitask_classif(clfB,clfA,XA,YA,XB,YB,yAtruth,yBtruth)
-
-model1, model2, results = jdcot_multitask_classif(modelA=clfA, modelB=clfB,
-                                                  XA=np.array(Z_training_data_source.loc[:,
-                                                              Z_training_data_source.columns != 'Z']),
-                                                  YA=oh_source,
-                                                  XB=np.array(Z_training_data_Target.loc[:,
-                                                              Z_training_data_Target.columns != 'Z']),
-                                                  YB=oh_target,
-                                                  yAtruth=S['Z'],
-                                                  yBtruth=T['Z'], algo='sinkhorn', reg=1, alpha=alpha)
-
-if len(np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target)) != 0:
-
-    zpred_enc_target = model2.predict(Z_training_data_Target.loc[
-                                          np.setdiff1d(np.arange(0, np.shape(T)[0]),
-                                                       z_labelled_target), Z_training_data_Target.columns != 'Z'])
-    zpred_target = one_hot_inv(zpred_enc_target) + min(np.unique(T['Z']))
+    return perf_pure, perf_test
 
 
-    zpred_enc_source = model1.predict(Z_training_data_source.loc[
-                                          np.setdiff1d(np.arange(0, np.shape(S)[0]),
-                                                       z_labelled_source), Z_training_data_source.columns != 'Z'])
-    zpred_source = one_hot_inv(zpred_enc_source) + min(np.unique(S['Z']))
+if __name__ == "__main__":
 
-    perf_jdcoot = (sum(zpred_source == S.loc[
-        np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z']) + sum(
-        zpred_target == T.loc[
-            np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'])) / (
-                                        len(zpred_source) + len(zpred_target))
-    zt_test = one_hot_inv(model2.predict(T_test.loc[:, vfunc(T_test.columns)])) + min(
-        np.unique(T['Z']))
-    zs_test = one_hot_inv(model1.predict(S_test.loc[:, vfunc(S_test.columns)])) + min(
-        np.unique(T['Z']))
-    perf_jdcoot_test = (sum(zt_test == T_test.loc[:, 'Z']) + sum(zs_test == S_test.loc[:, 'Z'])) / (
-                                                 len(zt_test) + len(zs_test))
+    from scenario import generate_data
+    
+    data = generate_data()
+    perf_pure, perf_test = discrete_partial_jdcoot( *data )
 
-print("Pure Performance JDCOOT : {} ".format(perf_jdcoot))
-print("Test Performance JDCOOT : {} ".format(perf_jdcoot_test))
-print("\n")
-print("Pure Performance Reference : {} ".format(perf_ref2))
-print("Test Performance Reference : {} ".format(perf_ref))
+    print(f"Pure Performance JDCOOT : {perf_pure}")
+    print(f"Test Performance JDCOOT : {perf_test}")

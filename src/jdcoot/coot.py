@@ -16,7 +16,7 @@ def random_gamma_init(p, q, **kwargs):
 
 def init_matrix_np(X1, X2, v1, v2):
     """Return loss matrices and tensors for COOT fast computation
-    Returns the value of :math:`|X1-X2|^{2} \otimes T` as done in [1] based on [2] for the Gromov-Wasserstein distance.
+    Returns the value of :math:`|X1-X2|^{2} \\otimes T` as done in [1] based on [2] for the Gromov-Wasserstein distance.
     Where :
         - X1 : The source dataset of shape (n,d)
         - X2 : The target dataset of shape (n',d')
@@ -86,7 +86,7 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
 
     .. math::
 
-        COOT = \min_{Ts,Tv} \sum_{i,j,k,l} |X1_{i,k}-X2_{j,l}|^{2}*Ts_{i,j}*Tv_{k,l}
+        COOT = \\min_{Ts,Tv} \\sum_{i,j,k,l} |X1_{i,k}-X2_{j,l}|^{2}*Ts_{i,j}*Tv_{k,l}
 
     Where :
     - X1 : The source dataset

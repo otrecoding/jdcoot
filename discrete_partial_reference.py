@@ -1,133 +1,67 @@
-import math
 import os
 import sys
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder as onehot
-import tf_keras
-from tf_keras.layers import Dense
-import ot
 
 sys.path.append(os.path.abspath('src'))
 
-import jdcoot
-from jdcoot.comp import comp_
-from jdcoot.coot import cot_numpy
+from jdcoot.utils import xcolumns, discrete_accuracy, discrete_classifiers
+from sklearn.model_selection import train_test_split
 
-INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
-S, T = jdcoot.Sref(INDEX_GENERATION)
-S_test, T_test = jdcoot.Sref_test(INDEX_GENERATION)
+def discrete_partial_reference( source, target, test_source, test_target) :
 
-S_test = S_test.loc[:, S.columns]
-T_test = T_test.loc[:, T.columns]
+    source_levels = np.sort(np.unique(source.Z))
+    target_levels = np.sort(np.unique(target.Z))
 
-if len(np.unique(S['Z'])) > 2:
+    nClass = len(np.union1d(source_levels, target_levels))
+    categories=[np.arange(nClass)]
 
-    del_idx = np.array([])
-    for k in np.unique(S['Z']):
-        if sum(S['Z'] == k) < 0.01 * len(S['Z']):
-            del_idx = np.append(del_idx, k)
-    S = S.loc[~np.in1d(S['Z'], del_idx), :].reset_index(drop=True)
+    enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
 
-if len(np.unique(T['Z'])) > 2:
-    del_idx = np.array([])
-    for k in np.unique(T['Z']):
-        if sum(T['Z'] == k) < 0.01 * len(T['Z']):
-            del_idx = np.append(del_idx, k)
-    T = T.loc[~np.in1d(T['Z'], del_idx), :].reset_index(drop=True)
+    source_train, source_test = train_test_split(source, test_size = 0.2, stratify = source.Z)
+    target_train, target_test = train_test_split(target, test_size = 0.2, stratify = target.Z)
 
-S_nPerClass = math.ceil(min(np.unique(S['Z'], return_counts=True)[
-                                1]))  # number of observations kept referenced by the min number of available observation per class
-T_nPerClass = math.ceil(min(np.unique(T['Z'], return_counts=True)[1]))
+    x_source_train = source_train.loc[:, xcolumns(source)].values
+    z_source_train = enc.fit_transform(source_train.Z.values[:, np.newaxis])
 
-z_kept_source = np.array([]).astype(int)
-for lab in np.unique(S['Z']):
-    z_kept_source = np.append(z_kept_source,
-                              np.random.choice(np.where(S['Z'] == lab)[0], S_nPerClass, replace=False))
+    x_target_train = target_train.loc[:, xcolumns(target)].values
+    z_target_train = enc.fit_transform(target_train.Z.values[:, np.newaxis])
 
-S = S.loc[z_kept_source, :].reset_index(drop=True)
+    x_source_test = source_test.loc[:, xcolumns(source)].values
+    z_source_test = source_test.Z.values
 
-z_kept_target = np.array([]).astype(int)
-for lab in np.unique(T['Z']):
-    z_kept_target = np.append(z_kept_target,
-                              np.random.choice(np.where(T['Z'] == lab)[0], T_nPerClass, replace=False))
-T = T.loc[z_kept_target, :].reset_index(drop=True)
+    x_target_test = target_test.loc[:, xcolumns(target)].values
+    z_target_test = target_test.Z.values
 
-prop_S = 0.1
-prop_T = 0.1
-alpha = 2.875
+    clf_source, clf_target = discrete_classifiers(source, target, 'sigmoid', 'sigmoid')
 
-z_labelled_source = np.array([]).astype(int)
-for lab in np.unique(S['Z']):
-    a = np.random.choice(np.where(S['Z'] == lab)[0], math.ceil(prop_S * sum(S['Z'] == lab)), replace=False)
-    z_labelled_source = np.append(z_labelled_source, a)
+    clf_target.fit( x_target_train, z_target_train, batch_size=10, epochs=20, verbose=0)  
+    clf_source.fit( x_source_train, z_source_train, batch_size=10, epochs=20, verbose=0)  
 
-z_labelled_target = np.array([]).astype(int)
-for lab in np.unique(T['Z']):
-    b = np.random.choice(np.where(T['Z'] == lab)[0], math.ceil(prop_T * sum(T['Z'] == lab)), replace=False)
-    z_labelled_target = np.append(z_labelled_target, b)
+    z_target_pred = enc.inverse_transform(clf_target.predict(x_target_test)).ravel()
+    z_source_pred = enc.inverse_transform(clf_source.predict(x_source_test)).ravel()
+    
+    perf_pure = discrete_accuracy(z_target_pred, z_target_test, z_source_pred, z_source_test)
 
-Z_training_data_source = S.loc[:, S.columns != 'Y']
-Z_training_data_source.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'] = -1
+    x_test_source = test_source.loc[:, xcolumns(source)]
+    x_test_target = test_target.loc[:, xcolumns(target)]
 
-Z_training_data_Target = T.loc[:, T.columns != 'Y']
-Z_training_data_Target.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z'] = -1
+    z_test_source = enc.inverse_transform(clf_source.predict(x_test_source)).ravel()
+    z_test_target = enc.inverse_transform(clf_target.predict(x_test_target)).ravel()
+    
+    perf_test = discrete_accuracy(z_test_target, test_target.Z, z_test_source, test_source.Z)
+    
 
-def clf_seq(shape, nClass):
-    model = tf_keras.Sequential([
-        Dense(units=128, input_shape=shape, activation='sigmoid'),
-        Dense(units=nClass, activation='sigmoid')])
-    return model
+    return perf_pure, perf_test
 
-vfunc = np.vectorize(lambda arr: 'X' in arr)
-fe_size = sum(vfunc(T.columns))  # Nombre de variables de Target
-shape = (fe_size,)
-loss = 'categorical_crossentropy'
-# loss = 'MeanSquaredError
-clf = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
-clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-enc = onehot(handle_unknown='ignore', sparse_output=False,
-             categories=[np.arange(len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))])
-# print(enc.fit_transform(Z_training_data_Target.loc[Z_training_data_Target['Z']!=-1,'Z'].values.reshape(-1,1)))
 
-clf.fit(
-    Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, Z_training_data_Target.columns != 'Z'],
-    enc.fit_transform(
-        Z_training_data_Target.loc[Z_training_data_Target['Z'] != -1, 'Z'].values.reshape(-1, 1)),
-    batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
+if __name__ == "__main__":
 
-z_test = clf.predict(T_test.loc[:, vfunc(T.columns)])
-z_test = enc.inverse_transform(z_test).reshape(-1)
+    from scenario import generate_data
 
-fe_size = sum(vfunc(S.columns))  # Nombre de variables de Targe
-shape = (fe_size,)
-loss = 'categorical_crossentropy'
-# loss = 'MeanSquaredError
-clf2 = clf_seq(shape, nClass=len(np.union1d(np.unique(S['Z']), np.unique(T['Z']))))
+    data = generate_data()
+    perf_pure, perf_test = discrete_partial_reference(*data)
 
-clf2.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-
-clf2.fit(
-    Z_training_data_source.loc[Z_training_data_source['Z'] != -1, Z_training_data_source.columns != 'Z'],
-    enc.fit_transform(
-        Z_training_data_source.loc[Z_training_data_source['Z'] != -1, 'Z'].values.reshape(-1, 1)),
-    batch_size=10, epochs=20, verbose=0)  # we train the classifier with target data estimated
-z_test2 = clf2.predict(S_test.loc[:, vfunc(S.columns)])
-z_test2 = enc.inverse_transform(z_test2).reshape(-1)
-
-perf_ref = (sum(z_test == T_test.loc[:, 'Z']) + sum(z_test2 == S_test.loc[:, 'Z'])) / (len(z_test) + len(z_test2))
-
-z_test = clf.predict(
-    Z_training_data_Target.loc[Z_training_data_Target['Z'] == -1, Z_training_data_Target.columns != 'Z'])
-z_test = enc.inverse_transform(z_test).reshape(-1)
-
-z_test2 = clf2.predict(
-    Z_training_data_source.loc[Z_training_data_source['Z'] == -1, Z_training_data_source.columns != 'Z'])
-z_test2 = enc.inverse_transform(z_test2).reshape(-1)
-
-perf_ref2 = (sum(z_test == T.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), z_labelled_target), 'Z']) + sum(
-        z_test2 == S.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), z_labelled_source), 'Z'])) / (
-                                          len(z_test) + len(z_test2))
-
-print("Pure Performance Reference : {} ".format(perf_ref2))
-print("Test Performance Reference : {} ".format(perf_ref))
+    print(f"Pure Performance Reference : {perf_pure}")
+    print(f"Test Performance Reference : {perf_test}")

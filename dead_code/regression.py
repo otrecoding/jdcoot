@@ -35,7 +35,8 @@
 # #!pip install ipympl
 # @title IMPORT USEFULL PACKAGES
 
-import os, sys
+import os
+import sys
 sys.path.append(os.path.abspath('src'))
 import math
 

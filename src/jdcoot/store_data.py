@@ -56,4 +56,4 @@ def Store(Data, name):
     for i, data in enumerate(Data):
         np.save(os.path.join(os.getcwd(),"Stored_Data", f"{name}{i}"), data, allow_pickle=True, fix_imports=True)
 
-    print(f"Saved as : {os.path.join(os.getcwd(), "Stored_Data", name)}")
+    print(f"Saved as : {os.getcwd()} Stored_Data {name}")
