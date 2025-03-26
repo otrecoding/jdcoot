@@ -41,7 +41,6 @@ import math
 import numpy as np  # scientific computing
 import pandas as pd
 import scipy.io  # Input and output
-from scipy.io import loadmat  # files .mat
 # ML
 from sklearn import preprocessing
 

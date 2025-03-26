@@ -395,5 +395,3 @@ def jdcot_multitask_classif(modelA, modelB, XA, YA, XB, YB, yAtruth, yBtruth, XA
         if len(XBtest):
             results['YB test acc'] = testB
         return modelA, modelB, results
-
-

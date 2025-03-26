@@ -2,111 +2,67 @@ import os
 import sys
 sys.path.append(os.path.abspath('src'))
 
-import math
 import numpy as np
-import pandas as pd
 import ot
-import tf_keras
-from tf_keras.layers import Dense
 
-from jdcoot.comp import comp_regression
 from jdcoot.coot import cot_numpy
-from jdcoot.data_scenario import DataScenario, DataScenarioTest
-import jdcoot
-
-Objective_Variable = 'continuous'
-Balance=True,
-Labelled_Proportion_target=0.1 # 0.5 or 0.9
-
-INDEX_GENERATION = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
-
-try:
-    data_source = pd.read_csv("source.csv")
-    data_target = pd.read_csv("target.csv")
-
-    data_source_test = pd.read_csv("source_test.csv")
-    data_source_test = data_source_test.loc[:, data_source.columns]
-    data_target_test = pd.read_csv("target_test.csv")
-    data_target_test = data_target_test.loc[:, data_target.columns]
-
-except FileNotFoundError:
-
-    reference_scenario = DataScenario()
-    test_scenario = DataScenarioTest()
-
-    data_source, data_target = reference_scenario.generate(INDEX_GENERATION)
-    data_source.to_csv("source.csv", index = False)
-    data_target.to_csv("target.csv", index = False)
-
-    data_source_test, data_target_test = test_scenario.generate(INDEX_GENERATION)
-    data_source_test.to_csv("source_test.csv", index = False)
-    data_target_test.to_csv("target_test.csv", index = False)
+from jdcoot.comp import comp_regression
+from jdcoot.utils import xcolumns, continuous_classifier, continuous_accuracy
+from sklearn.model_selection import train_test_split
 
 
-S = data_source
-T = data_target
-S_test = data_source_test
-T_test = data_target_test
+def continuous_semisupervised_coot(source, target, source_test, target_test):
 
-prop_S = 1
-prop_T = 0.1 # Labelled_Proportion_target
-alpha = 2.625
+    prop_target = 0.1 # Labelled_Proportion_target
 
+    y_source = source.Y.values
+    y_target = target.Y.values
 
-y_labelled_source = np.random.choice(np.arange(len(S['Y'])), math.ceil(prop_S * len(S['Y'])), replace=False)
-y_labelled_target = np.random.choice(np.arange(len(T['Y'])), math.ceil(prop_T * len(T['Y'])), replace=False)
-Y_training_data_source = S.loc[:, S.columns != 'Z']
-Y_training_data_source.loc[np.setdiff1d(np.arange(0, np.shape(S)[0]), y_labelled_source), 'Y'] = np.NaN
-Y_training_data_Target = T.loc[:, T.columns != 'Z']
-Y_training_data_Target.loc[np.setdiff1d(np.arange(0, np.shape(T)[0]), y_labelled_target), 'Y'] = np.NaN
+    n_target = len(y_target)
+    
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target)
 
-def compute_cost_matrix(ys, yt):
-    M = ot.dist(ys.values.reshape(-1, 1), yt.values.reshape(-1, 1),
-                metric=comp_regression())  # comp_reg ? ou comp_
-    return M
+    ytrain_source = source.Y.values.copy()
+    ytrain_target = target.Y.values.copy()
+    ytrain_target[l_target_test] = np.nan
+    
+    def compute_cost_matrix(ys, yt):
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1),
+                    metric=comp_regression())  # comp_reg ? ou comp_
+        return M
+    
+    M_lin = compute_cost_matrix(yt=ytrain_target, ys=ytrain_source)
+    
+    xtrain_source = source.loc[:, xcolumns(source)].values
+    xtrain_target = target.loc[:, xcolumns(target)].values
 
-if prop_T == 0:
-    M_lin = None
-else:
-    M_lin = compute_cost_matrix(yt=Y_training_data_Target['Y'], ys=Y_training_data_source['Y'])
+    Ts, Tv, cost = cot_numpy(X1=xtrain_source,
+                             X2=xtrain_target,
+                             niter=100, C_lin=M_lin,
+                             algo='sinkhorn', reg=1,
+                             algo2='emd', verbose=False)
+    
+    y_target_pred = n_target * np.dot(Ts.T, y_source)
+    
+    perf_pure = continuous_accuracy(y_target_pred[l_target_test], y_target[l_target_test])
+    
+    clf_target = continuous_classifier(target)
 
-    # plt.imshow(M_lin)
+    clf_target.fit(xtrain_target, y_target_pred, batch_size=10, epochs=20, verbose=0)  
 
-Ts, Tv, cost = cot_numpy(X1=Y_training_data_source.loc[:, Y_training_data_source.columns != 'Y'],
-                         X2=Y_training_data_Target.loc[:, Y_training_data_Target.columns != 'Y'],
-                         niter=100, C_lin=M_lin,
-                         algo='sinkhorn', reg=1,
-                         algo2='emd', verbose=False)
+    y_target_test_pred = clf_target.predict(target_test.loc[:, xcolumns(target_test)]).ravel()
 
-zt_estimated = len(T.loc[:, 'Y']) * np.dot(Ts.T, S['Y'])
+    perf_test = continuous_accuracy(y_target_test_pred, target_test.Y)
 
-if len(np.setdiff1d(np.arange(0, np.shape(T)[0]), y_labelled_target)) != 0:
-    # perfs_tot=np.append(perf_coot,sum((zt_estimated-T.loc[:,'Y'])**2)/len(zt_estimated)
-    perf_coot = sum((zt_estimated[np.setdiff1d(np.arange(0, np.shape(T)[0]),
-                                                                    y_labelled_target)] - T.loc[
-                                              np.setdiff1d(np.arange(0, np.shape(T)[0]),
-                                                           y_labelled_target), 'Y']) ** 2) / len(
-        np.setdiff1d(np.arange(0, np.shape(T)[0]), y_labelled_target))
+    return perf_pure, perf_test
 
-else:
-    perf_coot = sum((T.loc[:, 'Y'] - zt_estimated) ** 2) / len(zt_estimated)
+if __name__ == '__main__':
 
-def clf_seq(shape, nClass):
-    model = tf_keras.Sequential([
-        Dense(units=128, input_shape=shape, activation='linear'),
-        Dense(units=nClass, activation='linear')])
-    return model
+    from scenario import generate_data
 
-vfunc = np.vectorize(lambda arr: 'X' in arr)
-fe_size = sum(vfunc(T.columns))  # Nombre de variables de Target
-shape = (fe_size,)
-loss = 'MeanSquaredError'
-clf = clf_seq(shape, nClass=1)
-clf.compile(optimizer='Adam', loss=loss, metrics=['accuracy'])
-clf.fit(T.loc[:, vfunc(T.columns)], zt_estimated, batch_size=10, epochs=20,
-        verbose=0)  # we train the classifier with target data estimated
-z_test = clf.predict(T_test.loc[:, vfunc(T_test.columns)])[:, 0]
-perf_coot_test = sum((z_test - T_test.loc[:, 'Y']) ** 2) / len(z_test)
+    data = generate_data()
+    
+    perf_pure, perf_test = continuous_semisupervised_coot( *data )
 
-print("Pure Performance COOT : {} ".format(perf_coot))
-print("Test Performance COOT : {} ".format(perf_coot_test))
+    print(f"Pure Performance COOT : {perf_pure}")
+    print(f"Test Performance COOT : {perf_test}")
