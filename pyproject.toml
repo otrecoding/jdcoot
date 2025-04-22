@@ -32,3 +32,10 @@ alive-progress = ">=3.1.5,<4"
 
 [tool.pixi.target.osx-64.dependencies]
 pot = ">=0.9.5,<0.10"
+
+[tool.pixi.commands]
+test = "pytest"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

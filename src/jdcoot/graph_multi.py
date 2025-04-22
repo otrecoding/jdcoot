@@ -181,7 +181,7 @@ def graph_multi(Data, algo, TAB, Objective_Variable, maintit, metric, name_metri
             axs[1, 2].set_title(tit)
             axs[1, 2].set_xlabel("Target data " + name_metric)
             axs[1, 2].set_ylabel("Source data " + name_metric)
-            c2 = axs[1, 2].pcolormesh(np.arange(len(Sample_sizes)), np.arange(len(Sample_sizes)), test_hm_jdcoot,
+            axs[1, 2].pcolormesh(np.arange(len(Sample_sizes)), np.arange(len(Sample_sizes)), test_hm_jdcoot,
                                       vmin=Mi, vmax=Ma, cmap="viridis")
             axs[1, 2].set_xticks(np.arange(len(Sample_sizes)), labels=Sample_sizes.astype(str), rotation=45)
             axs[1, 2].set_yticks(np.arange(len(Sample_sizes)), labels=Sample_sizes.astype(str))

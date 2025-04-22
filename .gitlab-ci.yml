@@ -1,12 +1,41 @@
-image: tensorflow/tensorflow
+default:
+  image: tensorflow/tensorflow
+  cache:
+    paths:
+      - .pip-cache/
+  before_script:
+    - python --version
+    - pip install --upgrade pip
+    - pip install build
+    - pip install -r requirements.txt
+  tags:
+    - plmshift
 
 stages:
+  - build
+  - test
   - deploy
+
+build:
+  stage: build
+  script:
+    - python -m build
+  artifacts:
+    paths:
+      - dist/
+
+test:
+  stage: test
+  script:
+    - pip install pytest
+    - pytest
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
 
 pages:
   stage: deploy
   script:
-    - pip install -r requirements.txt
     - pip install -U sphinx
     - sphinx-build -b html doc/ public/
   only:
@@ -14,5 +43,3 @@ pages:
   artifacts:
     paths:
       - public
-  tags:
-    - plmshift

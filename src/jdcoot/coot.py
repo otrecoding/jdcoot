@@ -183,6 +183,8 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
     log_out = {}
     log_out['cost'] = []
 
+    verbose = True
+
     for i in range(niter):
         Tsold = Ts
         Tvold = Tv
@@ -210,7 +212,7 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
             log_out['cost'].append(cost)
 
         if verbose:
-            print('Delta: {0}  Loss: {1}'.format(delta, cost))
+            print(f'Delta: {delta:15.7f} \t Loss: {cost:15.7f}')
 
         if delta < 1e-16 or np.abs(costold - cost) < 1e-7:
             if verbose:
