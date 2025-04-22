@@ -80,36 +80,36 @@ class DataScenario:
 
         k = 0
         for i in indexes_chosen_for_generation:
-            l = 0
+            ll = 0
             for j in indexes_chosen_for_generation:
-                cov_source[i, j] = self.generation_correlation_source ** abs(k - l)
-                l += 1
+                cov_source[i, j] = self.generation_correlation_source ** abs(k - ll)
+                ll += 1
             k += 1
 
         k = 0
 
         for i in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-            l = 0
+            ll = 0
             for j in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-                cov_source[i, j] = self.non_generation_correlation_source ** abs(k - l)
-                l += 1
+                cov_source[i, j] = self.non_generation_correlation_source ** abs(k - ll)
+                ll += 1
             k += 1
 
         k = 0
         for i in indexes_chosen_for_generation:
-            l = 0
+            ll = 0
             for j in indexes_chosen_for_generation:
-                cov_target[i, j] = self.generation_correlation_target ** abs(k - l)
-                l += 1
+                cov_target[i, j] = self.generation_correlation_target ** abs(k - ll)
+                ll += 1
             k += 1
 
         # MEME NOMBRE DE VARIABLES DANS SOURCE ET DANS TARGET CAR MEME  MONDE
         k = 0
         for i in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-            l = 0
+            ll = 0
             for j in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-                cov_target[i, j] = self.non_generation_correlation_target ** abs(k - l)
-                l += 1
+                cov_target[i, j] = self.non_generation_correlation_target ** abs(k - ll)
+                ll += 1
             k += 1
 
         x_source = np.random.multivariate_normal(self.mean_x_source, cov_source, self.size_source)
