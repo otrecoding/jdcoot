@@ -22,6 +22,7 @@ from .models.discrete_semisupervised_reference import discrete_semisupervised_re
 from .models.discrete_unsupervised_coot import discrete_unsupervised_coot
 from .models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
 from .scenario import generate_data
+from .data_scenario import DataScenario, DataScenarioTest
 
 
 __all__ = [
@@ -41,4 +42,6 @@ continuous_partial_coot
 , discrete_semisupervised_reference
 , discrete_unsupervised_coot
 , discrete_unsupervised_jdcoot
-, generate_data]
+, generate_data
+, DataScenario
+, DataScenarioTest]
