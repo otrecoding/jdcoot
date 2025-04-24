@@ -2,7 +2,11 @@ import math
 
 import numpy as np
 import pandas as pd
+from scipy.linalg  import sqrtm
 
+
+def sample( x, px ):
+     return np.random.choice(x, math.floor(px * len(x)), replace=False)
 
 class DataScenario:
     r"""
@@ -11,16 +15,16 @@ class DataScenario:
     Parameters
     ----------
 
-    - `size_source`, `size_target` : number of observation of source/target
+    - `size_source`, `size_target` : number of obs of source/target
     - `dim_source`, `dim_target` : number of variables of source/target 
     - `mean_x_source`, `mean_x_target` :  mean of the distribution of the co-variates of source/target
     - `mean_y_source`, `mean_y_target` :  mean of the distribution of the continuous objective variable of source/target
-    - `generation_correlation_source`, `non_generation_correlation_source` : auto correlation coefficient of active/non active co-variates for source
-    - `generation_correlation_target`, `non_generation_correlation_target` : auto correlation coefficient of active/non active co-variates for target
+    - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
+    - `active_correlation_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
     - `sparse_rate` : proportion of active co-variates for generation (Same for source and target because generation in the "same world"/ consider that this generation explains the observed phenomenon)
     - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
     - `r2_source`, `r2_target` : R^2 of the model of source/target (for white noise calculation in continuous case)
-    - `observed_co-variates_proportion_source`, `observed_co-variates_proportion_target` : proportion of observed co-variates of source/target
+    - `obs_covar_prop_source`, `obs_covar_prop_target` : proportion of observed co-variates of source/target
 
     """
 
@@ -32,8 +36,8 @@ class DataScenario:
         self.dim_source = d
         self.dim_target = d
         pxo = 0.2
-        self.observed_covariates_proportion_source = pxo
-        self.observed_covariates_proportion_target = pxo
+        self.obs_covar_prop_source = pxo
+        self.obs_covar_prop_target = pxo
         self.sparse_rate = 0.75
 
         self.odds_ratio_source = 0.5
@@ -44,19 +48,19 @@ class DataScenario:
         self.mean_x_target = np.zeros(self.dim_target)
         self.mean_y_source = 0
         self.mean_y_target = 0
-        self.generation_correlation_source = 0.7
-        self.non_generation_correlation_source = 0.2
-        self.generation_correlation_target = 0.7
-        self.non_generation_correlation_target = 0.2
+        self.active_autocorr_source = 0.7
+        self.inactive_autocorr_source = 0.2
+        self.active_correlation_target = 0.7
+        self.inactive_autocorr_target = 0.2
         self.poisson = False
 
-    def generate(self, indexes_chosen_for_generation,
-                 cols_chosen_for_observation_source = None,
-                 cols_chosen_for_observation_target = None):
+    def generate(self, active_variables_ix,
+                 selected_obs_source = None,
+                 selected_obs_target = None):
         """
-        - `indexes_chosen_for_generation` : array of indexes of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
-        - `cols_chosen_for_observation_source` ['X1', ... , 'Xd'] : names of observed variables in source (In order to keep the same observations when we want to compare performance with test sample) If None, chosen randomly
-        - `cols_chosen_for_observation_target` ['X1', ... , 'Xd'] : names of observed variables in target (In order to keep the same observations when we want to compare performance with test sample) If None, chosen randomly
+        - `active_variables_ix` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
+        - `selected_obs_source` ['X1', ... , 'Xd'] : names of observed variables in source (In order to keep the same observations when we want to compare performance with test sample) If None, chosen randomly
+        - `selected_obs_target` ['X1', ... , 'Xd'] : names of observed variables in target (In order to keep the same observations when we want to compare performance with test sample) If None, chosen randomly
         - `poisson` : Uses Poisson modeling to generate more than 2 classes
 
         Returns
@@ -78,187 +82,120 @@ class DataScenario:
         cov_source = np.eye(self.dim_source)
         cov_target = np.eye(self.dim_target)
 
-        k = 0
-        for i in indexes_chosen_for_generation:
-            ll = 0
-            for j in indexes_chosen_for_generation:
-                cov_source[i, j] = self.generation_correlation_source ** abs(k - ll)
-                ll += 1
-            k += 1
+        actives = active_variables_ix
+        inactives = np.setdiff1d(np.arange(self.dim_source), actives)
 
-        k = 0
+        for kk,ii in enumerate(actives):
+            for ll,jj in enumerate(actives):
+                cov_source[ii, jj] = self.active_autocorr_source ** abs(kk - ll)
 
-        for i in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-            ll = 0
-            for j in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-                cov_source[i, j] = self.non_generation_correlation_source ** abs(k - ll)
-                ll += 1
-            k += 1
+        for kk, ii in enumerate(inactives):
+            for ll, jj in enumerate(inactives):
+                cov_source[ii, jj] = self.inactive_autocorr_source ** abs(kk - ll)
 
-        k = 0
-        for i in indexes_chosen_for_generation:
-            ll = 0
-            for j in indexes_chosen_for_generation:
-                cov_target[i, j] = self.generation_correlation_target ** abs(k - ll)
-                ll += 1
-            k += 1
+        for kk, ii in enumerate(actives):
+            for ll, jj in enumerate(actives):
+                cov_target[ii, jj] = self.active_correlation_target ** abs(kk - ll)
 
-        # MEME NOMBRE DE VARIABLES DANS SOURCE ET DANS TARGET CAR MEME  MONDE
-        k = 0
-        for i in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-            ll = 0
-            for j in np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation):
-                cov_target[i, j] = self.non_generation_correlation_target ** abs(k - ll)
-                ll += 1
-            k += 1
+        for kk, ii in enumerate(inactives):
+            for ll, jj in enumerate(inactives):
+                cov_target[ii, jj] = self.inactive_autocorr_target ** abs(kk - ll)
 
         x_source = np.random.multivariate_normal(self.mean_x_source, cov_source, self.size_source)
+        x_target = np.random.multivariate_normal(self.mean_x_target, cov_target, self.size_target)
+
+        data_source = pd.DataFrame(x_source, columns = [f'X{i+1}' for i in range(self.dim_source)])
+        data_target = pd.DataFrame(x_target, columns = [f'X{i+1}' for i in range(self.dim_target)])
+
+        if selected_obs_source is None or selected_obs_target is None:
+
+            obs_covariables_ix_source1 = sample(actives, self.obs_covar_prop_source)
+            obs_covariables_ix_source2 = sample(inactives, self.obs_covar_prop_source)
+            obs_covariables_ix_source = np.union1d(obs_covariables_ix_source1, obs_covariables_ix_source2)
+
+            obs_covariables_ix_target1 = sample(actives, self.obs_covar_prop_target)
+            obs_covariables_ix_target2 = sample(inactives, self.obs_covar_prop_target)
+            obs_covariables_ix_target = np.union1d(obs_covariables_ix_target1, obs_covariables_ix_target2)
+
+            selected_obs_source = [f'X{i+1}' for i in obs_covariables_ix_source]
+            selected_obs_target = [f'X{i+1}' for i in obs_covariables_ix_target]
+
+
+        data_source = data_source.loc[:, list(selected_obs_source)] 
+        data_target = data_target.loc[:, list(selected_obs_target)]
 
         # source objective variables generation
 
         # Continuous
-        # Parameters of regression
-        # Coefficients for linear predictor
 
-        if sum(self.mean_x_source[indexes_chosen_for_generation]) == 0 or self.mean_x_source == 0:
+        if sum(self.mean_x_source[actives]) == 0 or self.mean_x_source == 0:
             b_source = 1
         else:
-            b_source = self.mean_y_source / sum(self.mean_x_source[indexes_chosen_for_generation])
+            b_source = self.mean_y_source / sum(self.mean_x_source[actives])
 
         a_source = np.zeros(self.dim_source)
-        a_source[indexes_chosen_for_generation] = b_source
+        a_source[actives] = b_source
 
-        # Sigma
-        sigma_source = np.var(np.dot(x_source, a_source)) * (1 - self.r2_source) / self.r2_source
+        y_source = np.dot(x_source, a_source)
 
-        # Variable generation
-        y_source = np.dot(x_source, a_source) + np.random.normal(loc=0, scale=np.sqrt(sigma_source),
-                                                                 size=self.size_source)
+        sigma_source = np.var(y_source) * (1 - self.r2_source) / self.r2_source
 
-        # Discrete
-        # Parameters of regression
-        # Coefficients for linear predictor
+        y_source += np.random.normal(loc=0, scale=np.sqrt(sigma_source), size=self.size_source)
+
         a_source = np.zeros(self.dim_source)
-        a_source[indexes_chosen_for_generation] = np.log(self.odds_ratio_source)
+        a_source[actives] = np.log(self.odds_ratio_source)
 
-        # Variable generation
-        proba_z_source = np.exp(np.dot(x_source, a_source)) / (1 + np.exp(np.dot(x_source, a_source)))
+        z = np.dot(x_source, a_source)
+        proba_z_source = np.exp(z) / (1 + np.exp(z))
 
         us = np.random.uniform(0, 1, self.size_source)
 
-        z_source = np.zeros(self.size_source)
+        z_source = np.zeros(self.size_source, dtype = 'int')
         z_source[us < proba_z_source] = 1
 
         if self.poisson:
             at = np.zeros(self.dim_source)
-            at[indexes_chosen_for_generation] = 10 / 100
+            at[actives] = 10 / 100
             z_source = np.random.poisson(np.exp(np.dot(x_source, at)), self.size_source)
 
-        # target co-variables generation
-        x_target = np.random.multivariate_normal(self.mean_x_target, cov_target, self.size_target)
-        # target objective variables generation
-        # Continuous
-        # Parameters of regression
-        # Coefficients for linear predictor
-
-        if sum(self.mean_x_target[indexes_chosen_for_generation]) == 0 or self.mean_y_target == 0:
+        if sum(self.mean_x_target[actives]) == 0 or self.mean_y_target == 0:
             b_target = 1
         else:
-            b_target = self.mean_y_target / sum(self.mean_x_target[indexes_chosen_for_generation])
+            b_target = self.mean_y_target / sum(self.mean_x_target[actives])
 
         a_target = np.zeros(self.dim_target)
-        a_target[indexes_chosen_for_generation] = b_target
+        a_target[actives] = b_target
 
-        # Sigma
-        sigma_target = np.var(np.dot(x_target, a_target)) * (1 - self.r2_target) / self.r2_target
+        y_target = np.dot(x_target, a_target)
+        sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
 
-        # Variable generation
-        y_target = np.dot(x_target, a_target) + np.random.normal(loc=0, scale=np.sqrt(sigma_target), size=self.size_target)
+        M = sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))
+        mx_target = (M @ (x_target - self.mean_y_target).T).T + self.mean_x_source  
 
-        # Discrete
-        # Parameters of regression
-        # Coefficients for linear predictor
+        y_target = np.dot(mx_target, a_target) + np.random.normal(loc=0, scale=np.sqrt(sigma_target), size=self.size_target)
+
         a_target = np.zeros(self.dim_target)
-        a_target[indexes_chosen_for_generation] = np.log(self.odds_ratio_target)
+        a_target[actives] = np.log(self.odds_ratio_target)
 
-        # Variable generation
-        proba_z_target = np.exp(np.dot(x_target, a_target)) / (1 + np.exp(np.dot(x_target, a_target)))
+        z = np.dot(mx_target, a_target)
+
+        proba_z_target = np.exp(z) / (1 + np.exp(z))
 
         us = np.random.uniform(0, 1, self.size_target)
 
-        z_target = np.zeros(self.size_target)
+        z_target = np.zeros(self.size_target, dtype = 'int')
         z_target[us < proba_z_target] = 1
 
         if self.poisson:
             at = np.zeros(self.dim_target)
-            at[indexes_chosen_for_generation] = 10 / 100
+            at[actives] = 10 / 100
             z_target = np.random.poisson(np.exp(np.dot(x_target, at)), self.size_target)
 
-        if cols_chosen_for_observation_source is None or cols_chosen_for_observation_target is None:
 
-            # source co-variables mask (prop% in co-variables used for generation + prop% in co-variables not used for generation)
-            observed_covariables_indexes_source1 = np.random.choice(indexes_chosen_for_generation,
-                                                                    math.floor(
-                                                                        self.observed_covariates_proportion_source * len(
-                                                                            indexes_chosen_for_generation)),
-                                                                    replace=False)
-
-            observed_covariables_indexes_source2 = np.random.choice(
-                np.setdiff1d(np.arange(self.dim_source), indexes_chosen_for_generation),
-                math.floor(
-                    self.observed_covariates_proportion_source * (
-                            self.dim_source - len(indexes_chosen_for_generation))),
-                replace=False)
-
-            x_source_masked = x_source[:,
-                              np.union1d(observed_covariables_indexes_source1, observed_covariables_indexes_source2)]
-
-            # target co-variables mask (prop% in co-variables used for generation + prop% in co-variables not used for generation)
-            observed_covariables_indexes_target1 = np.random.choice(indexes_chosen_for_generation,
-                                                                    math.floor(
-                                                                        self.observed_covariates_proportion_target * len(
-                                                                            indexes_chosen_for_generation)),
-                                                                    replace=False)
-
-            observed_covariables_indexes_target2 = np.random.choice(
-                np.setdiff1d(np.arange(self.dim_target), indexes_chosen_for_generation),
-                math.floor(self.observed_covariates_proportion_target * (self.dim_target - len(indexes_chosen_for_generation))),
-                replace=False)
-
-            x_target_masked = x_target[:,
-                              np.union1d(observed_covariables_indexes_target1, observed_covariables_indexes_target2)]
-
-            # Datasets
-            # source
-            data_source = pd.DataFrame(np.c_[x_source_masked, y_source, z_source])
-            col_names = ['X' + str(i) for i in
-                         np.union1d(observed_covariables_indexes_source1, observed_covariables_indexes_source2) + 1] + [
-                            'Y',
-                            'Z']
-            data_source.columns = col_names
-
-            # target
-            data_target = pd.DataFrame(np.c_[x_target_masked, y_target, z_target], columns= ['X' + str(i) for i in
-                         np.union1d(observed_covariables_indexes_target1, observed_covariables_indexes_target2) + 1] + [
-                            'Y',
-                            'Z'])
-
-
-        else:
-            x_source_masked = x_source
-            x_target_masked = x_target
-
-            # Datasets
-            # source
-            data_source = pd.DataFrame(np.c_[x_source_masked, y_source, z_source], columns =
-             ['X' + str(i) for i in np.arange(1, self.dim_source + 1)] + ['Y', 'Z'])
-
-            # target
-            data_target = pd.DataFrame(np.c_[x_target_masked, y_target, z_target],
-                                       columns = ['X' + str(i) for i in np.arange(1, self.dim_target + 1)] + ['Y', 'Z'])
-
-            data_source = data_source.loc[:, list(cols_chosen_for_observation_source) + ['Y', 'Z']]
-            data_target = data_target.loc[:, list(cols_chosen_for_observation_target) + ['Y', 'Z']]
+        data_source['Y'] = y_source
+        data_source['Z'] = z_source
+        data_target['Y'] = y_target
+        data_target['Z'] = z_target
 
         return data_source, data_target
 
@@ -274,9 +211,9 @@ class DataScenarioTest(DataScenario):
         super().__init__()
         self.size_source = 300
         self.size_target = 300
-        pxo = 1
-        self.observed_covariates_proportion_source = pxo
-        self.observed_covariates_proportion_target = pxo
+        pxo = 1.0
+        self.obs_covar_prop_source = pxo
+        self.obs_covar_prop_target = pxo
 
 
 
@@ -304,6 +241,6 @@ class DataScenarioPoissonTest(DataScenario):
         self.size_source = 3000
         self.size_target = 3000
         self.poisson = True
-        pxo = 1
-        self.observed_covariates_proportion_source = pxo
-        self.observed_covariates_proportion_target = pxo
+        pxo = 1.0
+        self.obs_covar_prop_source = pxo
+        self.obs_covar_prop_target = pxo
