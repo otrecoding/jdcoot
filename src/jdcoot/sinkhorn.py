@@ -10,16 +10,12 @@ def sinkhorn_scaling(a, b, K, numItermax=1000, stopThr=1e-9, verbose=False, log=
     Nini = len(a)
     Nfin = len(b)
 
-    if len(b.shape) > 1:
-        nbb = b.shape[1]
-    else:
-        nbb = 0
+    nbb = b.shape[1] if b.ndim > 1 else 0
 
     if log:
         log = {'err': []}
 
-    # we assume that no distances are null except those of the diagonal of
-    # distances
+    # we assume that no distances are null except those of the diagonal of distances
     if nbb:
         u = np.ones((Nini, nbb)) / Nini
         v = np.ones((Nfin, nbb)) / Nfin
@@ -27,10 +23,7 @@ def sinkhorn_scaling(a, b, K, numItermax=1000, stopThr=1e-9, verbose=False, log=
         u = np.ones(Nini) / Nini
         v = np.ones(Nfin) / Nfin
 
-    # print(reg)
-    # print(np.min(K))
-
-    Kp = (1 / a).reshape(-1, 1) * K
+    Kp = (1 / a[:, np.newaxis]) * K
     cpt = 0
     err = 1
     while (err > stopThr and cpt < numItermax):
@@ -47,23 +40,8 @@ def sinkhorn_scaling(a, b, K, numItermax=1000, stopThr=1e-9, verbose=False, log=
             # we have reached the machine precision
             # come back to previous solution and quit loop
             print('Warning: numerical errors at iteration in sinkhorn_scaling', cpt)
-            # if zero_in_transp:
-            # print('Zero in transp : ',KtransposeU)
-            # if nan_in_dual:
-            # print('Nan in dual')
-            # print('u : ',u)
-            # print('v : ',v)
-            # print('KtransposeU ',KtransposeU)
-            # print('K ',K)
-            # print('M ',M)
-
-            #    if always_raise:
-            #        raise NanInDualError
-            # if inf_in_dual:
-            #    print('Inf in dual')
             u = uprev
             v = vprev
-
             break
         if cpt % 10 == 0:
             # we can speed up the process by checking for the error only all
@@ -72,26 +50,22 @@ def sinkhorn_scaling(a, b, K, numItermax=1000, stopThr=1e-9, verbose=False, log=
                 err = np.sum((u - uprev) ** 2) / np.sum((u) ** 2) + \
                       np.sum((v - vprev) ** 2) / np.sum((v) ** 2)
             else:
-                transp = u.reshape(-1, 1) * (K * v)
+                transp = u[:,np.newaxis] * (K * v)
                 err = np.linalg.norm((np.sum(transp, axis=0) - b)) ** 2
             if log:
                 log['err'].append(err)
 
             if verbose:
                 if cpt % 200 == 0:
-                    print(
-                        '{:5s}|{:12s}'.format('It.', 'Err') + '\n' + '-' * 19)
-                print('{:5d}|{:8e}|'.format(cpt, err))
-        cpt = cpt + 1
+                    print('It.  | Err' + '\n' + '-' * 19)
+                print(f'{cpt:5d}|{err:8e}|')
+        cpt += 1
     if log:
         log['u'] = u
         log['v'] = v
     M = 1  # FIXME: add by Pierre to fix the undefined variable M
     if nbb:  # return only loss
-        res = np.zeros((nbb))
-        for i in range(nbb):
-            res[i] = np.sum(
-                u[:, i].reshape((-1, 1)) * K * v[:, i].reshape((1, -1)) * M)
+        res = np.sum(u.T[:, :, None] * K * v.T[:, None, :] * M, axis=(1, 2))
         if log:
             return res, log
         else:
@@ -100,6 +74,6 @@ def sinkhorn_scaling(a, b, K, numItermax=1000, stopThr=1e-9, verbose=False, log=
     else:  # return OT matrix
 
         if log:
-            return u.reshape((-1, 1)) * K * v.reshape((1, -1)), log
+            return u[:,np.newaxis] * K * v[np.newaxis,:], log
         else:
-            return u.reshape((-1, 1)) * K * v.reshape((1, -1))
+            return u[:,np.newaxis] * K * v[np.newaxis,:]
