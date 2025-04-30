@@ -5,10 +5,10 @@ from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 from sklearn.model_selection import train_test_split
 
 
-def discrete_partial_reference( source, target, test_source, test_target) :
+def discrete_partial_reference( source, target, test_source, test_target, **kwargs) :
 
-    prop_source = 0.1
-    prop_target = 0.1
+    prop_source = kwargs.get('prop_source', 0.1)
+    prop_target = kwargs.get('prop_target', 0.1)
 
     source_levels = np.sort(np.unique(source.Z))
     target_levels = np.sort(np.unique(target.Z))

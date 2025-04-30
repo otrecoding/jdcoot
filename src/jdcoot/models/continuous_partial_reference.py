@@ -2,10 +2,10 @@ from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_reference(source, target, source_test, target_test):
+def continuous_partial_reference(source, target, source_test, target_test, **kwargs):
 
-    prop_source = 0.1 
-    prop_target = 0.1 
+    prop_source = kwargs.get('prop_source', 0.1)
+    prop_target = kwargs.get('prop_target', 0.1)
     
     x_source = source.loc[:, xcolumns(source)].values
     y_source = source.Y.values

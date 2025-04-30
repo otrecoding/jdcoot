@@ -5,7 +5,7 @@ from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_accuracy, continuous_classifier
 
     
-def continuous_unsupervised_coot( source, target, source_test, target_test) :
+def continuous_unsupervised_coot( source, target, source_test, target_test, **kwargs) :
 
     x_source = source.loc[:, xcolumns(source)]
     x_target = target.loc[:, xcolumns(target)]

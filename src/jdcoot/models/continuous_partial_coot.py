@@ -6,11 +6,10 @@ from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
+def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
 
-def continuous_partial_coot(source, target, source_test, target_test):
-
-    prop_source = 0.1
-    prop_target = 0.1
+    prop_source = kwargs.get('prop_source', 0.1)
+    prop_target = kwargs.get('prop_target', 0.1)
 
     n_source = source.Y.size
     n_target = target.Y.size

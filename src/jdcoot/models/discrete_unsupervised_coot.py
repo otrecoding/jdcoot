@@ -4,7 +4,7 @@ from sklearn.preprocessing import OneHotEncoder as onehot
 from ..coot import cot_numpy
 from ..utils import discrete_classifier, xcolumns
 
-def discrete_unsupervised_coot( source, target, source_test, target_test):
+def discrete_unsupervised_coot( source, target, source_test, target_test, **kwargs):
 
     source_levels = np.unique(source.Z)
     target_levels = np.unique(source.Z)
@@ -31,17 +31,17 @@ def discrete_unsupervised_coot( source, target, source_test, target_test):
     Ts, Tv, cost = cot_numpy(X1=x_source, X2=x_target, niter=100,
                              algo='sinkhorn', reg=1, algo2='emd', verbose=False)
     
-    zpred_target = one_cold(size_target * np.dot(Ts.T, one_hot(z_source)))
+    z_target_pred = size_target * np.dot(Ts.T, one_hot(z_source))
     
-    perf_pure = np.mean(z_target == zpred_target)
+    perf_pure = np.mean(z_target == one_cold(z_target_pred))
     
     clf = discrete_classifier(target, 'sigmoid', 'sigmoid', nClass)
 
-    clf.fit(x_target, one_hot(zpred_target), batch_size=10, epochs=20, verbose=0)  
+    clf.fit(x_target, z_target_pred, batch_size=10, epochs=20, verbose=0)  
 
-    z_test = one_cold(clf.predict(target_test.loc[:, xcolumns(target_test)], verbose=0))
+    z_test = clf.predict(target_test.loc[:, xcolumns(target_test)], verbose=0)
 
-    perf_test = np.mean(z_test == target_test.Z)
+    perf_test = np.mean(one_cold(z_test) == target_test.Z)
 
     return perf_pure, perf_test
 

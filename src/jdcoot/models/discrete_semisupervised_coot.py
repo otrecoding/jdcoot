@@ -8,22 +8,21 @@ from ..utils import xcolumns, discrete_classifier
 from sklearn.model_selection import train_test_split
 
 
-def discrete_semisupervised_coot( source, target, source_test, target_test):
+def discrete_semisupervised_coot( source, target, source_test, target_test, **kwargs):
 
-    prop_target = 0.1
-    
+    prop_target = kwargs.get('prop_target', 0.1)
+
     source_levels = np.sort(np.unique(source.Z))
     target_levels = np.sort(np.unique(target.Z))
 
-    nClass = len(np.union1d(source_levels, target_levels))
-    categories=[np.arange(nClass)]
+    categories = np.union1d(source_levels, target_levels)
+    nClass = len(categories)
 
-    print(target_levels)
     def one_hot(z):
         return to_categorical(z, num_classes=nClass)
 
     def one_cold(z):
-        return np.argmax(z, axis=1) + min(target_levels)
+        return np.argmax(z, axis=1) + min(categories)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
@@ -39,7 +38,6 @@ def discrete_semisupervised_coot( source, target, source_test, target_test):
 
     z_target_train = z_target.copy()
     z_target_train[l_target_test] = -1
-
 
     def compute_cost_matrix(ys, yt, v=10000):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
@@ -61,11 +59,10 @@ def discrete_semisupervised_coot( source, target, source_test, target_test):
 
     z_target_test = target.loc[l_target_test, 'Z'].values
 
-    z_target_pred = one_cold(z_target_pred) + min(target_levels)
+    z_target_pred = one_cold(z_target_pred)
 
     perf_pure = np.mean(z_target_test == z_target_pred[l_target_test])
     
-
     z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
     perf_test = np.mean(one_cold(z_test) == target_test.Z) 
 

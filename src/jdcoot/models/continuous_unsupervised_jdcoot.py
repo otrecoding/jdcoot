@@ -5,9 +5,9 @@ from ..coot import cot_numpy
 from ..coot import init_matrix_np
 
 
-def continuous_unsupervised_jdcoot( source, target, test_source, test_target):
+def continuous_unsupervised_jdcoot( source, target, test_source, test_target, **kwargs):
 
-    alpha = 0.3
+    alpha = kwargs.get('alpha', 0.3)
     
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values

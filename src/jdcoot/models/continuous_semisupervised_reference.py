@@ -3,10 +3,10 @@ import numpy as np
 from ..utils import xcolumns, continuous_accuracy, continuous_classifier
 from sklearn.model_selection import train_test_split
 
-def continuous_semisupervised_reference( source, target, source_test, target_test):
-
-    prop_target = 0.1 
+def continuous_semisupervised_reference( source, target, source_test, target_test, **kwargs ):
     
+    prop_target = kwargs.get('prop_target', 0.1)
+
     x_target = target.loc[:, xcolumns(target)].values
 
     y_target = target.Y.values
