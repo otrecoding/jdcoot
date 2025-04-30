@@ -6,10 +6,9 @@ from ..comp import comp_regression
 from ..utils import xcolumns, continuous_classifier, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
+def continuous_semisupervised_coot(source, target, source_test, target_test, **kwargs):
 
-def continuous_semisupervised_coot(source, target, source_test, target_test):
-
-    prop_target = 0.1 # Labelled_Proportion_target
+    prop_target = kwargs.get('prop_target', 0.1)
 
     y_source = source.Y.values
     y_target = target.Y.values

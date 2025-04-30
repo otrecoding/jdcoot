@@ -12,9 +12,9 @@ def one_hot(y, nClass):
 def one_cold(z_encoded):
     return np.argmax(z_encoded, axis = 1)
 
-def discrete_unsupervised_jdcoot( source, target, source_test, target_test):
+def discrete_unsupervised_jdcoot( source, target, source_test, target_test, **kwargs):
 
-    alpha = 0.661
+    alpha = kwargs.get('alpha', 0.661)
     classes = np.union1d(np.unique(source.Z), np.unique(target.Z))
     nClass = len(classes)
     

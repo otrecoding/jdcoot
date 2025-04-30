@@ -7,10 +7,11 @@ import ot
 from ..coot import init_matrix_np
 
 
-def continuous_semisupervised_jdcoot( source, target, source_test, target_test ):
+def continuous_semisupervised_jdcoot( source, target, source_test, target_test, **kwargs):
 
-    prop_target = 0.1 
-    alpha = 2.625
+    prop_target = kwargs.get('prop_target', 0.1)
+
+    alpha = kwargs.get('alpha', 2.625)
 
     n_target = len(target.Y)
     

@@ -5,21 +5,12 @@ import ot
 from ..coot import init_matrix_np
 from sklearn.model_selection import train_test_split
 
+def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs):
 
-def continuous_partial_jdcoot(source, target, source_test, target_test):
-    """
-    jdcot multi-task for multi regression problems
-    npreds : number of parameters to predict (it has to be the same number 
-    for both datasets)
-    yAtruth is (nA,npreds),yBtruth is (nB,npreds) : true value of 
-    the parameters to estimate
-    YA is (nA,npreds), YB is (nB,npreds) : line of 0 if non observed labels 
-    and true values if observed labels (semi supervision)
-    """
+    prop_source = kwargs.get('prop_source', 0.1)
+    prop_target = kwargs.get('prop_target', 0.1)
 
-    prop_source = 0.1
-    prop_target = 0.1
-    alpha = 2.425
+    alpha = kwargs.get('alpha', 2.425)
 
     n_source = len(source.Y)
     n_target = len(target.Y)

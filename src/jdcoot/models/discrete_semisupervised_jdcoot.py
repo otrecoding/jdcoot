@@ -13,10 +13,10 @@ def one_hot(y, nClass):
 def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
-def discrete_semisupervised_jdcoot(source, target, source_test, target_test):
+def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **kwargs):
 
-    prop_target = 0.1 
-    alpha = 3.335
+    prop_target = kwargs.get('prop_target', 0.1 )
+    alpha = kwargs.get('alpha', 3.335)
     
     classes = np.union1d(np.unique(source.Z), np.unique(target.Z))
     nClass = len(classes)

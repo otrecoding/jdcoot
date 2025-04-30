@@ -5,9 +5,9 @@ from sklearn.model_selection import train_test_split
 from ..utils import xcolumns, discrete_classifier
 
 
-def discrete_semisupervised_reference( source, target, source_test, target_test):
+def discrete_semisupervised_reference( source, target, source_test, target_test, **kwargs):
 
-     prop_target = 0.1
+     prop_target = kwargs.get('prop_target', 0.1)
      z_target = target.Z.values
      n_target = len(target.Z)
 

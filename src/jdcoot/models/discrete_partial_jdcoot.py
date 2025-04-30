@@ -15,11 +15,12 @@ def one_cold(z_hot):
 
     return np.argmax(z_hot, axis=1)
 
-def discrete_partial_jdcoot( source, target, test_source, test_target) :
+def discrete_partial_jdcoot( source, target, test_source, test_target, **kwargs) :
 
-    prop_source = 0.1
-    prop_target = 0.1
-    alpha = 2.875
+    prop_source = kwargs.get('prop_source', 0.1)
+    prop_target = kwargs.get('prop_target', 0.1)
+
+    alpha = kwargs.get('alpha', 2.875)
 
     source_levels = np.sort(np.unique(source.Z))
     target_levels = np.sort(np.unique(target.Z))
