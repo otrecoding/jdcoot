@@ -29,7 +29,7 @@ def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
     y_source_train = source.Y.values.copy()
     y_source_train[l_source_test] = np.nan
     y_target_train = target.Y.values.copy()
-    y_source_train[l_target_test] = np.nan
+    y_target_train[l_target_test] = np.nan
 
     y_source_test = source.Y.values[l_source_test]
     y_target_test = target.Y.values[l_target_test]
