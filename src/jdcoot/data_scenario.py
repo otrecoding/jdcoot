@@ -20,7 +20,7 @@ class DataScenario:
     - `mean_x_source`, `mean_x_target` :  mean of the distribution of the co-variates of source/target
     - `mean_y_source`, `mean_y_target` :  mean of the distribution of the continuous objective variable of source/target
     - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
-    - `active_correlation_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
+    - `active_autocorr_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
     - `sparse_rate` : proportion of active co-variates for generation (Same for source and target because generation in the "same world"/ consider that this generation explains the observed phenomenon)
     - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
     - `r2_source`, `r2_target` : R^2 of the model of source/target (for white noise calculation in continuous case)
@@ -50,7 +50,7 @@ class DataScenario:
         self.mean_y_target = 0
         self.active_autocorr_source = 0.7
         self.inactive_autocorr_source = 0.2
-        self.active_correlation_target = 0.7
+        self.active_autocorr_target = 0.7
         self.inactive_autocorr_target = 0.2
         self.poisson = False
 
@@ -95,7 +95,7 @@ class DataScenario:
 
         for kk, ii in enumerate(actives):
             for ll, jj in enumerate(actives):
-                cov_target[ii, jj] = self.active_correlation_target ** abs(kk - ll)
+                cov_target[ii, jj] = self.active_autocorr_target ** abs(kk - ll)
 
         for kk, ii in enumerate(inactives):
             for ll, jj in enumerate(inactives):
