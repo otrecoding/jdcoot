@@ -65,16 +65,18 @@ def select_observations(source, target):
         target_n_per_class = math.ceil(min(np.unique(z_target, return_counts=True)[1]))
 
         z_kept_source = []
-        for lab in z_levels
-            z_kept_source.append(np.random.choice(np.where(z_source == lab)[0], source_n_per_class, replace=False))
+        for lab in z_levels:
+            z_values = np.random.choice(np.where(z_source == lab)[0], source_n_per_class, replace=False)
+            z_kept_source.append(*z_values)
 
-        source = source.loc[np.array(z_kept_source, dtype=int), :].reset_index(drop=True)
+        source = source.loc[z_kept_source, :].reset_index(drop=True)
 
         z_kept_target = []
         for lab in z_levels:
-            z_kept_target.append(np.random.choice(np.where(z_target == lab)[0], target_n_per_class, replace=False))
+            z_values = np.random.choice(np.where(z_target == lab)[0], target_n_per_class, replace=False)
+            z_kept_target.append(*z_values)
 
-        target = target.loc[np.array(z_kept_target, dtype=int), :].reset_index(drop=True)
+        target = target.loc[z_kept_target, :].reset_index(drop=True)
 
         return source, target
 

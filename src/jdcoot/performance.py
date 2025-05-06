@@ -1,3 +1,6 @@
+from copy import deepcopy
+import json
+
 from .models.continuous_partial_coot import continuous_partial_coot
 from .models.continuous_partial_jdcoot import continuous_partial_jdcoot
 from .models.continuous_partial_reference import continuous_partial_reference
@@ -38,3 +41,47 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised", "semisupervised", "partial"]
 
 recoding_methods = ["coot", "jdcoot", "reference"]
+
+
+def compute(json_file, train, test, indices, **kwargs):
+
+    prop_source = kwargs.get('prop_source', 0.2)
+    prop_target = kwargs.get('prop_target', 0.2)
+
+    source, target = train.generate(indices)
+    source_test, target_test = test.generate(indices)
+
+    source_test = source_test.loc[:, source.columns]
+    target_test = target_test.loc[:, target.columns]
+
+    for variable_type in variable_types:
+        for learning_method in learning_methods:
+            for recoding_method in recoding_methods:
+                try:
+                    otrecod = models[(variable_type, learning_method, recoding_method)]
+                    print(f"Model : {variable_type}_{learning_method}_{recoding_method}")
+                    results = deepcopy(train.__dict__)
+                    results['mean_x_source'] = np.mean(train.mean_x_source)
+                    results['mean_x_target'] = np.mean(train.mean_y_target)
+                    results['variable'] = variable_type 
+                    results['recoding'] = recoding_method
+                    results['learning'] = learning_method 
+                    results['prop_source'] = prop_source
+                    results['prop_target'] = prop_target
+
+                    pure_accuracy, test_accuracy = otrecod( source, target, source_test, target_test, 
+                                          prop_source = prop_source, prop_target = prop_target)
+
+                    results['pure'] = pure_accuracy
+                    results['test'] = test_accuracy
+                    results['size_source_test'] = test.size_source
+                    results['size_target_test'] = test.size_target
+
+                    with open(json_file, 'a') as f:
+                        json.dump(results, f)
+                        f.write("\n")
+                    
+                except KeyError:
+                    print(f"Model : {variable_type}_{learning_method}_{recoding_method} is not available")
+                    pass
+
