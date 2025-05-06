@@ -175,20 +175,6 @@ Correlation variations
    data_generation
    data_generation_variation
    data_observation
-   graph_multi
-   jdcot
-   krr_classifier
    losses
-   mean_shift_variation
-   observed_proportion_variations
-   performance
-   proportion_variations
-   qr_variation
-   r2_variations
    read_data
-   reference_scenario
    sinkhorn
-   sparse_rate_variation
-   store_data
-   svn_classifier
-
