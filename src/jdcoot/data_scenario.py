@@ -107,7 +107,7 @@ class DataScenario:
         data_source = pd.DataFrame(x_source, columns = [f'X{i+1}' for i in range(self.dim_source)])
         data_target = pd.DataFrame(x_target, columns = [f'X{i+1}' for i in range(self.dim_target)])
 
-        if selected_obs_source is None or selected_obs_target is None:
+        if (selected_obs_source is None) or (selected_obs_target is None):
 
             obs_covariables_ix_source1 = sample(actives, self.obs_covar_prop_source)
             obs_covariables_ix_source2 = sample(inactives, self.obs_covar_prop_source)
@@ -120,13 +120,8 @@ class DataScenario:
             selected_obs_source = [f'X{i+1}' for i in obs_covariables_ix_source]
             selected_obs_target = [f'X{i+1}' for i in obs_covariables_ix_target]
 
-
         data_source = data_source.loc[:, list(selected_obs_source)] 
         data_target = data_target.loc[:, list(selected_obs_target)]
-
-        # source objective variables generation
-
-        # Continuous
 
         if sum(self.mean_x_source[actives]) == 0 or self.mean_x_source == 0:
             b_source = 1
