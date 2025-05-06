@@ -18,39 +18,39 @@ np.random.seed(1972)
 
 nsimulations = 1
 
-prop_source, prop_target = 0.2, 0.2
-sizes = [10, 100, 500, 1000] 
-test_size = 300
 test_scenario = DataScenarioTest()
 reference_scenario = DataScenario()
+
+size_source_train = 1000
+size_target_train = 1000
+size_source_test = size_source_train // 3
+size_target_test = size_target_train // 3
+prop_source, prop_target = 0.2, 0.2
 
 json_file = 'correlation_variation.json'
 with open(json_file, 'w+') as f:
     f.seek(0)
 
+coef_values = [0, 0.2, 0.5, 0.7, 1]
+
 for i in range(nsimulations):
     
-    indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
-
-    size_source_train = 1000
-    size_target_train = 1000
-    size_source_test = size_source_train // 3
-    size_target_test = size_target_train // 3
-
     test_scenario.size_source = size_source_test
     test_scenario.size_target = size_target_test
 
     reference_scenario.size_source = size_source_train
     reference_scenario.size_target = size_target_train
 
-    for coef_source in [0, 0.2, 0.5, 0.7, 1]:
-        for coef_target in [0, 0.2, 0.5, 0.7, 1]:
+    for coef_source in coef_values:
+        for coef_target in coef_values:
 
             reference_scenario.active_autocorr_source = coef_source
             reference_scenario.active_autocorr_target = coef_target
 
             test_scenario.active_autocorr_source = coef_source
             test_scenario.active_autocorr_target = coef_target
+
+            indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
             source, target = reference_scenario.generate(indices)
             source_test, target_test = test_scenario.generate(indices)
