@@ -54,45 +54,30 @@ def select_observations(source, target):
         print(f' levels = {z_levels}')
 
         if len(z_levels) > 2:
-
-            del_idx = []
-            for k in z_levels:
-                if sum(z_source == k) < 0.01 * n_source:
-                    del_idx.append(k)
+            del_idx = [k for k in z_levels if sum(z_source == k) < 0.01 * n_source]
             source = source.loc[~np.in1d(z_source, del_idx), :].reset_index(drop=True)
 
         if len(z_levels) > 2:
-            del_idx = []
-            for k in z_levels:
-                if sum(z_target == k) < 0.01 * n_target:
-                    del_idx.append(k)
+            del_idx = [k for k in z_levels if sum(z_target == k) < 0.01 * n_target]
             target = target.loc[~np.isin(z_target, del_idx), :].reset_index(drop=True)
 
-        S_nPerClass = math.ceil(min(np.unique(z_source, return_counts=True)[1]))  
-        T_nPerClass = math.ceil(min(np.unique(z_target, return_counts=True)[1]))
+        source_n_per_class = math.ceil(min(np.unique(z_source, return_counts=True)[1]))  
+        target_n_per_class = math.ceil(min(np.unique(z_target, return_counts=True)[1]))
 
-        z_kept_source = np.array([]).astype(int)
-        for lab in np.unique(z_source):
-            z_kept_source = np.append(z_kept_source,
-                                      np.random.choice(np.where(z_source == lab)[0], S_nPerClass, replace=False))
+        z_kept_source = []
+        for lab in z_levels:
+            z_values = np.random.choice(np.where(z_source == lab)[0], source_n_per_class, replace=False)
+            z_kept_source.append(*z_values)
 
         source = source.loc[z_kept_source, :].reset_index(drop=True)
 
-        z_kept_target = np.array([]).astype(int)
+        z_kept_target = []
         for lab in z_levels:
-            z_kept_target = np.append(z_kept_target, np.random.choice(np.where(z_target == lab)[0], T_nPerClass, replace=False))
+            z_values = np.random.choice(np.where(z_target == lab)[0], target_n_per_class, replace=False)
+            z_kept_target.append(*z_values)
+
         target = target.loc[z_kept_target, :].reset_index(drop=True)
 
         return source, target
 
-
-
-if __name__ == '__main__':
-
-    source, target, test_source, test_target  = generate_data()
-
-    print(source.columns)
-    print(test_source.columns)
-    print(target.columns)
-    print(test_target.columns)
 

@@ -1,5 +1,4 @@
 import numpy as np
-from tf_keras import backend as K
 
 
 def loss_crossentropy(Y, F):
