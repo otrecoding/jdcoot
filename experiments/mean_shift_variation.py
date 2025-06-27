@@ -12,7 +12,7 @@ from jdcoot.performance import models, compute
 
 indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
-nsimulations = 1
+nsimulations = 100
 
 train_scenario = DataScenario()
 test_scenario = DataScenarioTest()
@@ -25,14 +25,15 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-#mean_values = [0, 0.1, 0.2, 0.3, 0.4]
-mean_values = [0, 0.1]
+mean_values = [0, 0.1, 0.2, 0.3, 0.4]
 
 for i in range(nsimulations):
     
     for mean_shift_source in mean_values:
-
         for mean_shift_target in mean_values:
+
+            train_scenario.mean_x_source.fill(0.0)
+            train_scenario.mean_x_target.fill(0.0)
 
             train_scenario.mean_x_source += mean_shift_source
             train_scenario.mean_x_target += mean_shift_target
