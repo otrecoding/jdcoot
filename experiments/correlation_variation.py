@@ -1,18 +1,14 @@
 import json
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-import seaborn as sns
 import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 sys.path.append(os.path.abspath('src'))
 
 from jdcoot import DataScenario, DataScenarioTest
-from jdcoot.performance import models, variable_types, learning_methods, recoding_methods
-from copy import deepcopy
+from jdcoot.performance import models, compute
 
 nsimulations = 100
 
@@ -24,6 +20,10 @@ with open(json_file, 'w+') as f:
     f.seek(0)
 
 coef_values = [0, 0.2, 0.5, 0.7, 1]
+
+variable_types = ["continuous", "discrete"]
+learning_methods = ["unsupervised"]
+recoding_methods = ["coot", "jdcoot", "reference"]
 
 for i in range(nsimulations):
     
@@ -38,4 +38,7 @@ for i in range(nsimulations):
             test_scenario.active_autocorr_source = coef_source
             test_scenario.active_autocorr_target = coef_target
             
-            compute( json_file, train_scenario, test_scenario, indices)
+            compute(json_file, train_scenario, test_scenario, indices, 
+                    variable_types, learning_methods, recoding_methods)
+    
+
