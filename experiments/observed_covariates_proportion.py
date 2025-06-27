@@ -16,7 +16,7 @@ nsimulations = 100
 train_scenario = DataScenario()
 test_scenario = DataScenarioTest()
     
-json_file = 'mean_shift_variation.json'
+json_file = 'observed_covariates_proportion.json'
 with open(json_file, 'w+') as f:
     f.seek(0)
 
@@ -24,25 +24,19 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-mean_values = [0, 0.1, 0.2, 0.3, 0.4]
+values = [0.2, 0.4, 0.6, 0.8]
 
 for i in range(nsimulations):
 
     indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
     
-    for mean_shift_source in mean_values:
-        for mean_shift_target in mean_values:
+    for pxo_source in values:
+        for pxo_target in values:
 
-            train_scenario.mean_x_source.fill(0.0)
-            train_scenario.mean_x_target.fill(0.0)
-
-            train_scenario.mean_x_source += mean_shift_source
-            train_scenario.mean_x_target += mean_shift_target
-
-            test_scenario.mean_x_source += mean_shift_source
-            test_scenario.mean_x_target += mean_shift_target
+            train_scenario.obs_covar_prop_source = pxo_source
+            train_scenario.obs_covar_prop_target = pxo_target
 
             compute(json_file, train_scenario, test_scenario, indices, 
-                    variable_types, learning_methods, recoding_methods)
+                      variable_types, learning_methods, recoding_methods)
     
 
