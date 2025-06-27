@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+import numpy as np
 
 from .models.continuous_partial_coot import continuous_partial_coot
 from .models.continuous_partial_jdcoot import continuous_partial_jdcoot
@@ -36,14 +37,8 @@ models[("discrete", "partial", "coot")] = discrete_partial_coot
 models[("discrete", "partial", "jdcoot")] = discrete_partial_jdcoot
 models[("discrete", "partial", "reference")] = discrete_partial_reference
 
-variable_types = ["continuous", "discrete"]
 
-learning_methods = ["unsupervised", "semisupervised", "partial"]
-
-recoding_methods = ["coot", "jdcoot", "reference"]
-
-
-def compute(json_file, train, test, indices, **kwargs):
+def compute(json_file, train, test, indices, variable_types, learning_methods, recoding_methods, **kwargs) :
 
     prop_source = kwargs.get('prop_source', 0.2)
     prop_target = kwargs.get('prop_target', 0.2)
@@ -84,4 +79,6 @@ def compute(json_file, train, test, indices, **kwargs):
                 except KeyError:
                     print(f"Model : {variable_type}_{learning_method}_{recoding_method} is not available")
                     pass
+
+    return True
 

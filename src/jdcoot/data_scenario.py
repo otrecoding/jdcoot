@@ -123,7 +123,7 @@ class DataScenario:
         data_source = data_source.loc[:, list(selected_obs_source)] 
         data_target = data_target.loc[:, list(selected_obs_target)]
 
-        if sum(self.mean_x_source[actives]) == 0 or self.mean_x_source == 0:
+        if sum(self.mean_x_source[actives]) == 0 :
             b_source = 1
         else:
             b_source = self.mean_y_source / sum(self.mean_x_source[actives])
