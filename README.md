@@ -45,13 +45,11 @@ For all expermiments we use three methods `reference`, `coot` and `jdcoot`
 
 - classification and regression
     - `mean_shift = [0, 0.1, 0.2, 0.3, 0.4]`
-    - reference
     - unsupervised
 
 ### Observed labels proportion variation
 
 - classification and regression
-   - reference
    - unsupervised
    - semi-supervised
       + `prop_target = [0.02, 0.05, 0.07, 0.1, 0.12, 0.15, 0.3, 0.5, 0.7, 0.9]`
@@ -62,14 +60,12 @@ For all expermiments we use three methods `reference`, `coot` and `jdcoot`
 ### Sample size variation
 
 - classification and regression
-   - reference
    - unsupervised
    - `size = [10, 100, 500, 1000]`
 
 ### Sparse rate variation
 
 - classification and regression
-   - reference
    - `rates = [0.25, 0.5, 0.75, 1]`
    - unsupervised
 
@@ -78,25 +74,21 @@ For all expermiments we use three methods `reference`, `coot` and `jdcoot`
 - classification and regression
    - `values = [0, 0.2, 0.5, 0.7, 1]`
    - unsupervised
-   - reference
 
 ### Proportion of observed covariates variation
 
 - classification and regression
-   - reference
    - unsupervised
    - `observed_covariates_proportion = [0.2, 0.4, 0.6, 0.8]`
 
 ### OR variations
 
 - classification
-   - reference
    - unsupervised
    - `OR = [0.2, 0.4, 0.6, 0.8]`
 
 ## R2 variations
 
 - regression
-   - reference
    - unsupervised
    - `values = [0.2, 0.4, 0.6, 0.8]`

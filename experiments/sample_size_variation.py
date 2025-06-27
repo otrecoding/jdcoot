@@ -10,11 +10,9 @@ import sys
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 sys.path.append(os.path.abspath('src'))
 from jdcoot import DataScenario, DataScenarioTest
-from jdcoot.performance import compute
+from jdcoot.performance import compute, models
 
-np.random.seed(1972)
-
-nsimulations = 1
+nsimulations = 100
 
 prop_source, prop_target = 0.2, 0.2
 sizes = [10, 100, 500, 1000] 
@@ -24,6 +22,10 @@ test_scenario = DataScenarioTest()
 json_file = 'sample_size_variation.json'
 with open(json_file, 'w+') as f:
     f.seek(0)
+
+variable_types = ["continuous", "discrete"]
+learning_methods = ["unsupervised"]
+recoding_methods = ["coot", "jdcoot", "reference"]
 
 for i in range(nsimulations):
     
@@ -37,4 +39,7 @@ for i in range(nsimulations):
             test_scenario.size_source = size_source // 3
             test_scenario.size_target = size_target // 3
             
-            compute(json_file, train_scenario, test_scenario, indices)
+            compute(json_file, train_scenario, test_scenario, indices, 
+                    variable_types, learning_methods, recoding_methods)
+    
+
