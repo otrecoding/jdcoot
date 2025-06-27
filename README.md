@@ -27,6 +27,8 @@ pixi run python examples/discrete_partial_jdcoot.py
 
 ## Numerical experiments
 
+For all expermiments we use three methods `reference`, `coot` and `jdcoot`
+
 ### alpha values
 
 - classification
