@@ -29,7 +29,29 @@ pixi run python examples/discrete_partial_jdcoot.py
 
 For all expermiments we use three methods `reference`, `coot` and `jdcoot`
 
+Input : 
+
+learning data, 2 dataframes (source and target) with the following format :
+
+$$
+| X_1 | ... | X_d | Y | Z |
+$$
+
+- $X_i$ the ith observed covariate,
+- $Y$ the continuous objective variable for regression analysis,
+- $Z$ the discrete objective variable for classification analysis
+
+test data, 2 dataframes (test_source and test_target)
+
+supervision : 
+
+- `unsupervised` : none of the observations of target are labelled and all source observations are labelled
+- `semi-supervised` : `prop_target` of the observations of target are labelled and all source observations are labelled
+- `partial` : `prop_target` of the observations of target are labelled and `prop_source` of the observations of source are labelled
+
 ### alpha values
+
+Hyper parameter of the problem formulation as in the paper. 
 
 - classification
    + unsupervised : 0.661
