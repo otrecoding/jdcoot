@@ -57,7 +57,7 @@ def compute(json_file, train, test, indices, variable_types, learning_methods, r
                     print(f"Model : {variable_type}_{learning_method}_{recoding_method}")
                     results = deepcopy(train.__dict__)
                     results['mean_x_source'] = np.mean(train.mean_x_source)
-                    results['mean_x_target'] = np.mean(train.mean_y_target)
+                    results['mean_x_target'] = np.mean(train.mean_x_target)
                     results['variable'] = variable_type 
                     results['recoding'] = recoding_method
                     results['learning'] = learning_method 
