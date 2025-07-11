@@ -12,8 +12,8 @@ def continuous_partial_reference(source, target, source_test, target_test, **kwa
     x_target = target.loc[:, xcolumns(target)].values
     y_target = target.Y.values
 
-    x_source_train, x_source_test, y_source_train, y_source_test = train_test_split(x_source, y_source, test_size = prop_source)
-    x_target_train, x_target_test, y_target_train, y_target_test = train_test_split(x_target, y_target, test_size = prop_target)
+    x_source_train, x_source_test, y_source_train, y_source_test = train_test_split(x_source, y_source, train_size = prop_source)
+    x_target_train, x_target_test, y_target_train, y_target_test = train_test_split(x_target, y_target, train_size = prop_target)
 
     clf_source, clf_target = continuous_classifiers(source, target)
     

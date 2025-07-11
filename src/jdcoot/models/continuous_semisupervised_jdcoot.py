@@ -15,7 +15,7 @@ def continuous_semisupervised_jdcoot( source, target, source_test, target_test, 
 
     n_target = len(target.Y)
     
-    l_train, l_test = train_test_split(np.arange(n_target), test_size = prop_target)
+    l_train, l_test = train_test_split(np.arange(n_target), train_size = prop_target)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values

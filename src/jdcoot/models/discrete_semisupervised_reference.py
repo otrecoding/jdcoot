@@ -11,7 +11,7 @@ def discrete_semisupervised_reference( source, target, source_test, target_test,
      z_target = target.Z.values
      n_target = len(target.Z)
 
-     l_train, l_test = train_test_split(np.arange(n_target), test_size = prop_target, stratify = z_target)
+     l_train, l_test = train_test_split(np.arange(n_target), train_size = prop_target)
 
      xtrain_target = target.loc[l_train, xcolumns(target)].values
      ztrain_target = target.Z.values[l_train]

@@ -15,7 +15,7 @@ def continuous_semisupervised_coot(source, target, source_test, target_test, **k
 
     n_target = len(y_target)
     
-    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size = prop_target)
 
     ytrain_target = target.Y.values.copy()
     ytrain_target[l_target_test] = np.nan

@@ -35,13 +35,13 @@ def discrete_partial_jdcoot( source, target, test_source, test_target, **kwargs)
 
     l_source_train, l_source_test = train_test_split(np.arange(n_source), 
                                                      random_state = 42, 
-                                                     test_size = prop_source, 
-                                                     stratify = z_source)
+                                                     train_size = prop_source, 
+                                                     )
 
     l_target_train, l_target_test = train_test_split(np.arange(n_target), 
                                                      random_state = 42, 
-                                                     test_size = prop_target, 
-                                                     stratify = z_target)
+                                                     train_size = prop_target, 
+                                                     )
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values

@@ -13,7 +13,7 @@ def continuous_semisupervised_reference( source, target, source_test, target_tes
 
     n_target = len(y_target)
 
-    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size = prop_target)
 
     xtrain_target = x_target[l_target_train, :]
     ytrain_target = y_target[l_target_train]

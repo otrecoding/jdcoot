@@ -18,8 +18,8 @@ def discrete_partial_reference( source, target, test_source, test_target, **kwar
 
     enc = onehot(handle_unknown='ignore', sparse_output=False, categories=categories)
 
-    source_train, source_test = train_test_split(source, test_size = prop_source, stratify = source.Z)
-    target_train, target_test = train_test_split(target, test_size = prop_target, stratify = target.Z)
+    source_train, source_test = train_test_split(source, train_size = prop_source)
+    target_train, target_test = train_test_split(target, train_size = prop_target)
 
     x_source_train = source_train.loc[:, xcolumns(source)].values
     z_source_train = enc.fit_transform(source_train.Z.values[:, np.newaxis])

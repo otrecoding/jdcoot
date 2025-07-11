@@ -35,8 +35,8 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
     n_source = len(z_source)
     n_target = len(z_target)
 
-    l_source_train, l_source_test = train_test_split(np.arange(n_source), test_size = prop_source, stratify = z_source)
-    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target, stratify = z_target)
+    l_source_train, l_source_test = train_test_split(np.arange(n_source), train_size = prop_source)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size = prop_target)
 
     z_source[l_source_test] = -1
     z_target[l_target_test] = -1

@@ -14,8 +14,8 @@ def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
     n_source = source.Y.size
     n_target = target.Y.size
 
-    l_source_train, l_source_test = train_test_split(np.arange(n_source), test_size=prop_source)
-    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size=prop_target)
+    l_source_train, l_source_test = train_test_split(np.arange(n_source), train_size=prop_source)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values

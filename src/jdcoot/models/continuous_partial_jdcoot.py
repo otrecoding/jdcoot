@@ -19,8 +19,8 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
     y_source = source.Y.values[:, np.newaxis]
     y_target = target.Y.values[:, np.newaxis]
 
-    l_source_train, l_source_test = train_test_split(np.arange(n_source), test_size = prop_source)
-    l_target_train, l_target_test = train_test_split(np.arange(n_target), test_size = prop_target)
+    l_source_train, l_source_test = train_test_split(np.arange(n_source), train_size = prop_source)
+    l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size = prop_target)
 
     clf_source, clf_target = continuous_classifiers(source, target)
 

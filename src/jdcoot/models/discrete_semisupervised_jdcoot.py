@@ -29,9 +29,8 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **k
     z_target = target.Z.values
 
     l_train, l_test = train_test_split(np.arange(n_target), 
-                                       test_size = prop_target, 
-                                       random_state = 42,
-                                       stratify = z_target)
+                                       train_size = prop_target, 
+                                       random_state = 42)
     
     x_target = target.loc[:, xcolumns(target)].values
 

@@ -33,8 +33,7 @@ def discrete_semisupervised_coot( source, target, source_test, target_test, **kw
     n_target = len(z_target)
 
     l_target_train, l_target_test = train_test_split(np.arange(n_target), 
-                                                     test_size = prop_target, 
-                                                     stratify = z_target)
+                                                     train_size = prop_target) 
 
     z_target_train = z_target.copy()
     z_target_train[l_target_test] = -1
