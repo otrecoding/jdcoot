@@ -11,7 +11,17 @@ if __name__ == '__main__':
 
     data = generate_data()
 
-    perf_pure, perf_test = jdcoot.discrete_semisupervised_reference( *data ) 
+    perf_pure, perf_test = jdcoot.discrete_semisupervised_reference( *data, prop_target = 0.01 ) 
+
+    print(f"Pure Performance Reference : {perf_pure}")
+    print(f"Test Performance Reference : {perf_test}")
+
+    perf_pure, perf_test = jdcoot.discrete_semisupervised_reference( *data, prop_target = 0.2 ) 
+
+    print(f"Pure Performance Reference : {perf_pure}")
+    print(f"Test Performance Reference : {perf_test}")
+
+    perf_pure, perf_test = jdcoot.discrete_semisupervised_reference( *data, prop_target = 0.3 ) 
 
     print(f"Pure Performance Reference : {perf_pure}")
     print(f"Test Performance Reference : {perf_test}")

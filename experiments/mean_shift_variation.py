@@ -10,8 +10,7 @@ sys.path.append(os.path.abspath('src'))
 from jdcoot import DataScenario, DataScenarioTest
 from jdcoot.performance import models, compute
 
-
-nsimulations = 100
+nsimulations = 200
 
 train_scenario = DataScenario()
 test_scenario = DataScenarioTest()
@@ -22,7 +21,7 @@ with open(json_file, 'w+') as f:
 
 variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
-recoding_methods = ["coot", "jdcoot", "reference"]
+recoding_methods = ["coot", "jdcoot"]
 
 mean_values = [0, 0.1, 0.2, 0.3, 0.4]
 
@@ -38,6 +37,9 @@ for i in range(nsimulations):
 
             train_scenario.mean_x_source += mean_shift_source
             train_scenario.mean_x_target += mean_shift_target
+
+            test_scenario.mean_x_source.fill(0.0)
+            test_scenario.mean_x_target.fill(0.0)
 
             test_scenario.mean_x_source += mean_shift_source
             test_scenario.mean_x_target += mean_shift_target
