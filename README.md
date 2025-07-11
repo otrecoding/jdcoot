@@ -91,7 +91,7 @@ Hyper parameter of the problem formulation as in the paper.
    - `rates = [0.25, 0.5, 0.75, 1]`
    - unsupervised
 
-### Correlation variation
+### Auto-correlation coefficients variation
 
 - classification and regression
    - `values = [0, 0.2, 0.5, 0.7, 1]`
@@ -103,7 +103,7 @@ Hyper parameter of the problem formulation as in the paper.
    - unsupervised
    - `observed_covariates_proportion = [0.2, 0.4, 0.6, 0.8]`
 
-### OR variations
+### Odds ratio coefficients variation
 
 - classification
    - unsupervised
