@@ -37,12 +37,12 @@ for i in range(nsimulations):
     indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
     for r2_source in r2_values:
-        for r2_target in r2_values:
+        #for r2_target in r2_values:
 
             train_scenario.r2_source = r2_source
-            train_scenario.r2_target = r2_target
+            train_scenario.r2_target = r2_source
             test_scenario.r2_source = r2_source
-            test_scenario.r2_target = r2_target
+            test_scenario.r2_target = r2_source
 
             compute(json_file, train_scenario, test_scenario, indices, 
                     variable_types, learning_methods, recoding_methods)

@@ -32,12 +32,12 @@ for i in range(nsimulations):
     indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
     for size_source in sizes:
-        for size_target in sizes:
+        #for size_target in sizes:
 
             train_scenario.size_source = size_source
-            train_scenario.size_target = size_target
-            test_scenario.size_source = size_source // 3
-            test_scenario.size_target = size_target // 3
+            train_scenario.size_target = size_source
+            test_scenario.size_source = size_source
+            test_scenario.size_target = size_source
             
             compute(json_file, train_scenario, test_scenario, indices, 
                     variable_types, learning_methods, recoding_methods)

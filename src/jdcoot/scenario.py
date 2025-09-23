@@ -24,8 +24,8 @@ def generate_data(size = 1000, seed = 2025):
         reference_scenario.size_source = size
         reference_scenario.size_target = size
         test_scenario = DataScenarioTest()
-        test_scenario.size_source = size // 5
-        test_scenario.size_target = size // 5
+        test_scenario.size_source = size 
+        test_scenario.size_target = size 
     
         source, target = reference_scenario.generate(INDEX_GENERATION)
         source.to_csv("source.csv", index = False)

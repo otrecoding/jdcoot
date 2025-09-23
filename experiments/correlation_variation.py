@@ -29,14 +29,14 @@ for i in range(nsimulations):
     
     indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 
-    for coef_source in coef_values:
+    #for coef_source in coef_values:
         for coef_target in coef_values:
 
             print(f"coef source = {coef_source} coef_target = {coef_target}")
-            train_scenario.active_autocorr_source = coef_source
+            train_scenario.active_autocorr_source = 0.2
             train_scenario.active_autocorr_target = coef_target
 
-            test_scenario.active_autocorr_source = coef_source
+            test_scenario.active_autocorr_source = 0.2
             test_scenario.active_autocorr_target = coef_target
             
             compute(json_file, train_scenario, test_scenario, indices, 

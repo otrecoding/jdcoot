@@ -159,7 +159,7 @@ class DataScenario:
             b_target = self.mean_y_target / sum(self.mean_x_target[actives])
 
         a_target = np.zeros(self.dim_target)
-        a_target[actives] = b_target
+        a_target[actives] = b_source
 
         y_target = np.dot(x_target, a_target)
         sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
