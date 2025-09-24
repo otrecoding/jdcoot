@@ -165,7 +165,11 @@ class DataScenario:
         #sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
 
         M = sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))
-        mx_target = (M @ (x_target - self.mean_x_target)) + self.mean_x_source  
+
+        def M(x):
+            return cov_source_sqrt  @ cov_target_sqrt_inv  @ (x_target - self.mean_x_target) + self.mean_x_source
+
+        mx_target = np.array([M(x) for x in x_target])   
 
         y_target =  np.dot(mx_target, a_target) + np.random.normal(loc=0, scale=np.sqrt(sigma_source), size=self.size_target)
 
