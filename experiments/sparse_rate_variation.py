@@ -28,8 +28,6 @@ recoding_methods = ["coot", "jdcoot", "reference"]
 
 for i in range(nsimulations):
     
-    
-
     size_source_train = 1000
     size_target_train = 1000
     size_source_test = size_source_train 

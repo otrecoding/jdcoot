@@ -123,10 +123,10 @@ class DataScenario:
         data_source = data_source.loc[:, list(selected_obs_source)] 
         data_target = data_target.loc[:, list(selected_obs_target)]
 
-        #if (sum(self.mean_x_source[actives]) == 0) or (self.mean_y_source == 0) :
+        #vg if (sum(self.mean_x_source[actives]) == 0) or (self.mean_y_source == 0) :
         b_source = 1
-        #else:
-        #b_source = self.mean_y_source / sum(self.mean_x_source[actives])
+        #vg else:
+        #vg b_source = self.mean_y_source / sum(self.mean_x_source[actives])
 
         a_source = np.zeros(self.dim_source)
         a_source[actives] = b_source
@@ -153,16 +153,16 @@ class DataScenario:
             at[actives] = 10 / 100
             z_source = np.random.poisson(np.exp(np.dot(x_source, at)), self.size_source)
 
-        #if sum(self.mean_x_target[actives]) == 0 or self.mean_y_target == 0:
-        #    b_target = 1
-        #else:
-        #    b_target = self.mean_y_target / sum(self.mean_x_target[actives])
+        #vg if sum(self.mean_x_target[actives]) == 0 or self.mean_y_target == 0:
+        #vg     b_target = 1
+        #vg else:
+        #vg     b_target = self.mean_y_target / sum(self.mean_x_target[actives])
 
         a_target = np.zeros(self.dim_target)
         a_target[actives] = b_source
 
         y_target = np.dot(x_target, a_target)
-        #sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
+        #vg sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
 
         M = sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))
 
