@@ -162,10 +162,10 @@ class DataScenario:
         a_target[actives] = b_source
 
         y_target = np.dot(x_target, a_target)
-        #vg sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
+        #sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
 
         def M(x):
-            return sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))  @ (x_target - self.mean_x_target) + self.mean_x_source
+            return sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))  @ (x - self.mean_x_target) + self.mean_x_source
 
         mx_target = np.array([M(x) for x in x_target])   
 
