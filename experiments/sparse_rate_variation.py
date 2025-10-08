@@ -28,12 +28,10 @@ recoding_methods = ["coot", "jdcoot", "reference"]
 
 for i in range(nsimulations):
     
-    indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
-
     size_source_train = 1000
     size_target_train = 1000
-    size_source_test = size_source_train // 3
-    size_target_test = size_target_train // 3
+    size_source_test = size_source_train 
+    size_target_test = size_target_train
 
     test_scenario.size_source = size_source_test
     test_scenario.size_target = size_target_test
@@ -45,7 +43,7 @@ for i in range(nsimulations):
 
         train_scenario.sparse_rate = sparse_rate
         test_scenario.sparse_rate = sparse_rate
-
+        indices = np.random.choice(np.arange(100), math.ceil(sparse_rate * 100), replace=False)
         compute(json_file, train_scenario, test_scenario, indices, 
                 variable_types, learning_methods, recoding_methods)
     
