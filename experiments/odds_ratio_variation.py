@@ -27,8 +27,8 @@ json_file = 'odds_ratio_variations.json'
 with open(json_file, 'w+') as f:
     f.seek(0)
 
-odds_ratio_source_values = [0.5]
-odds_ratio_target_values = [0.2, 0.4, 0.6, 0.8]
+odds_ratio_source_values = [0.2, 0.4, 0.6, 0.8]
+odds_ratio_target_values = [0.5]
 
 variable_types = ["discrete"]
 learning_methods = ["unsupervised"]
