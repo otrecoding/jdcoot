@@ -34,12 +34,10 @@ def discrete_partial_jdcoot( source, target, test_source, test_target, **kwargs)
     n_target = len(z_target)
 
     l_source_train, l_source_test = train_test_split(np.arange(n_source), 
-                                                     random_state = 42, 
                                                      train_size = prop_source, 
                                                      )
 
     l_target_train, l_target_test = train_test_split(np.arange(n_target), 
-                                                     random_state = 42, 
                                                      train_size = prop_target, 
                                                      )
 
