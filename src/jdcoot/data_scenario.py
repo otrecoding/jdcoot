@@ -21,7 +21,6 @@ class DataScenario:
     - `mean_y_source`, `mean_y_target` :  mean of the distribution of the continuous objective variable of source/target
     - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
     - `active_autocorr_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
-    - `sparse_rate` : proportion of active co-variates for generation (Same for source and target because generation in the "same world"/ consider that this generation explains the observed phenomenon)
     - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
     - `r2_source`, `r2_target` : R^2 of the model of source/target (for white noise calculation in continuous case)
     - `obs_covar_prop_source`, `obs_covar_prop_target` : proportion of observed co-variates of source/target
@@ -38,7 +37,6 @@ class DataScenario:
         pxo = 0.2
         self.obs_covar_prop_source = pxo
         self.obs_covar_prop_target = pxo
-        self.sparse_rate = 0.75
 
         self.odds_ratio_source = 0.5
         self.odds_ratio_target = 0.5

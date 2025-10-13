@@ -41,8 +41,6 @@ for i in range(nsimulations):
 
     for sparse_rate in [0.25, 0.5, 0.75, 1]:
 
-        train_scenario.sparse_rate = sparse_rate
-        test_scenario.sparse_rate = sparse_rate
         indices = np.random.choice(np.arange(100), math.ceil(sparse_rate * 100), replace=False)
         compute(json_file, train_scenario, test_scenario, indices, 
                 variable_types, learning_methods, recoding_methods)

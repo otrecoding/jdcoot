@@ -17,7 +17,7 @@ indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 nsimulations = 100
 
 train_size = 1000
-test_size = 1000 // 5
+test_size = 1000 
 
 train_scenario = DataScenario()
 train_scenario.size_source = train_size
@@ -34,15 +34,24 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["reference", "unsupervised", "semisupervised", "partial"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-prop_values = [0.02, 0.05, 0.07, 0.1, 0.12, 0.15, 0.3, 0.5, 0.7, 0.9]
+prop_source_values = [0.01, 0.02, 0.05, 0.07, 0.1, 0.15, 0.3, 0.5, 0.7]
+prop_target_values = [0.01, 0.02, 0.05, 0.07, 0.1, 0.15, 0.3, 0.5, 0.7]
 
 for i in range(nsimulations):
     
-    for prop_source in prop_values:
-        for prop_target in prop_values:
+    compute(json_file, train_scenario, test_scenario, indices, 
+            variable_types, ["unsupervised"], recoding_methods,
+            prop_source = prop_source, prop_target = prop_target)
+
+    for prop_target in prop_target_values:
+        compute(json_file, train_scenario, test_scenario, indices, 
+                variable_types, ["semisupervised"], recoding_methods,
+                prop_source = prop_source, prop_target = prop_target)
+
+        for prop_source in prop_source_values:
 
             compute(json_file, train_scenario, test_scenario, indices, 
-                    variable_types, learning_methods, recoding_methods,
+                    variable_types, ["reference", "partial"], recoding_methods,
                     prop_source = prop_source, prop_target = prop_target)
     
 
