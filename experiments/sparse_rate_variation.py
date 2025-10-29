@@ -13,10 +13,19 @@ from jdcoot.performance import models, compute
 nsimulations = 100
 
 prop_source, prop_target = 0.2, 0.2
-sizes = [10, 100, 500, 1000] 
-test_size = 300
+size = 1000 
+size_source_train = size
+size_target_train = size
+size_source_test = size
+size_target_test = size
+
 test_scenario = DataScenarioTest()
 train_scenario = DataScenario()
+
+train_scenario.size_source = size_source_train
+train_scenario.size_target = size_target_train
+test_scenario.size_source = size_source_test
+test_scenario.size_target = size_target_test
 
 json_file = 'sparse_rate_variation.json'
 with open(json_file, 'w+') as f:
@@ -28,17 +37,6 @@ recoding_methods = ["coot", "jdcoot", "reference"]
 
 for i in range(nsimulations):
     
-    size_source_train = 1000
-    size_target_train = 1000
-    size_source_test = size_source_train 
-    size_target_test = size_target_train
-
-    test_scenario.size_source = size_source_test
-    test_scenario.size_target = size_target_test
-
-    train_scenario.size_source = size_source_train
-    train_scenario.size_target = size_target_train
-
     for sparse_rate in [0.25, 0.5, 0.75, 1]:
 
         indices = np.random.choice(np.arange(100), math.ceil(sparse_rate * 100), replace=False)
