@@ -1,10 +1,7 @@
 import json
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-import seaborn as sns
 import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
@@ -28,15 +25,17 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
+sparse_rate = 75
+
 for i in range(nsimulations):
     
-    indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
+    indices = np.random.choice(np.arange(100), math.ceil(sparse_rate), replace=False)
 
     for size in sizes:
 
-        train_scenario.size_source = size
+        train_scenario.size_source = 1000
         train_scenario.size_target = size
-        test_scenario.size_source = size
+        test_scenario.size_source = 1000
         test_scenario.size_target = size
         
         compute(json_file, train_scenario, test_scenario, indices, 

@@ -23,7 +23,6 @@ class DataScenario:
     - `active_autocorr_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
     - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
     - `r2_source`, `r2_target` : R^2 of the model of source/target (for white noise calculation in continuous case)
-    - `obs_covar_prop_source`, `obs_covar_prop_target` : proportion of observed co-variates of source/target
 
     """
 
@@ -34,9 +33,6 @@ class DataScenario:
         d = 100
         self.dim_source = d
         self.dim_target = d
-        pxo = 0.2
-        self.obs_covar_prop_source = pxo
-        self.obs_covar_prop_target = pxo
 
         self.odds_ratio_source = 0.5
         self.odds_ratio_target = 0.5
@@ -52,13 +48,9 @@ class DataScenario:
         self.inactive_autocorr_target = 0.2
         self.poisson = False
 
-    def generate(self, active_variables_ix,
-                 selected_obs_source = None,
-                 selected_obs_target = None):
+    def generate(self, indices):
         """
-        - `active_variables_ix` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
-        - `selected_obs_source` ['X1', ... , 'Xd'] : names of observed variables in source (In order to keep the same observations when we want to compare performance with test sample) If None, chosen randomly
-        - `selected_obs_target` ['X1', ... , 'Xd'] : names of observed variables in target (In order to keep the same observations when we want to compare performance with test sample) If None, chosen randomly
+        - `indices` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
         - `poisson` : Uses Poisson modeling to generate more than 2 classes
 
         Returns
@@ -80,7 +72,7 @@ class DataScenario:
         cov_source = np.eye(self.dim_source)
         cov_target = np.eye(self.dim_target)
 
-        actives = active_variables_ix
+        actives = indices
         inactives = np.setdiff1d(np.arange(self.dim_source), actives)
 
         for kk,ii in enumerate(actives):
@@ -105,26 +97,13 @@ class DataScenario:
         data_source = pd.DataFrame(x_source, columns = [f'X{i+1}' for i in range(self.dim_source)])
         data_target = pd.DataFrame(x_target, columns = [f'X{i+1}' for i in range(self.dim_target)])
 
-        if (selected_obs_source is None) or (selected_obs_target is None):
-
-            obs_covariables_ix_source1 = sample(actives, self.obs_covar_prop_source)
-            obs_covariables_ix_source2 = sample(inactives, self.obs_covar_prop_source)
-            obs_covariables_ix_source = np.union1d(obs_covariables_ix_source1, obs_covariables_ix_source2)
-
-            obs_covariables_ix_target1 = sample(actives, self.obs_covar_prop_target)
-            obs_covariables_ix_target2 = sample(inactives, self.obs_covar_prop_target)
-            obs_covariables_ix_target = np.union1d(obs_covariables_ix_target1, obs_covariables_ix_target2)
-
-            selected_obs_source = [f'X{i+1}' for i in obs_covariables_ix_source]
-            selected_obs_target = [f'X{i+1}' for i in obs_covariables_ix_target]
+        selected_obs_source = [f'X{i+1}' for i in indices]
+        selected_obs_target = [f'X{i+1}' for i in indices]
 
         data_source = data_source.loc[:, list(selected_obs_source)] 
         data_target = data_target.loc[:, list(selected_obs_target)]
 
-        #vg if (sum(self.mean_x_source[actives]) == 0) or (self.mean_y_source == 0) :
         b_source = 1
-        #vg else:
-        #vg b_source = self.mean_y_source / sum(self.mean_x_source[actives])
 
         a_source = np.zeros(self.dim_source)
         a_source[actives] = b_source
@@ -151,16 +130,10 @@ class DataScenario:
             at[actives] = 10 / 100
             z_source = np.random.poisson(np.exp(np.dot(x_source, at)), self.size_source)
 
-        #vg if sum(self.mean_x_target[actives]) == 0 or self.mean_y_target == 0:
-        #vg     b_target = 1
-        #vg else:
-        #vg     b_target = self.mean_y_target / sum(self.mean_x_target[actives])
-
         a_target = np.zeros(self.dim_target)
         a_target[actives] = b_source
 
         y_target = np.dot(x_target, a_target)
-        #sigma_target = np.var(y_target) * (1 - self.r2_target) / self.r2_target
 
         def M(x):
             return sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))  @ (x - self.mean_x_target) + self.mean_x_source
@@ -186,7 +159,6 @@ class DataScenario:
             at[actives] = 10 / 100
             z_target = np.random.poisson(np.exp(np.dot(x_target, at)), self.size_target)
 
-
         data_source['Y'] = y_source
         data_source['Z'] = z_source
         data_target['Y'] = y_target
@@ -206,10 +178,6 @@ class DataScenarioTest(DataScenario):
         super().__init__()
         self.size_source = 300
         self.size_target = 300
-        pxo = 1.0
-        self.obs_covar_prop_source = pxo
-        self.obs_covar_prop_target = pxo
-
 
 
 class DataScenarioPoisson(DataScenario):
@@ -236,6 +204,3 @@ class DataScenarioPoissonTest(DataScenario):
         self.size_source = 3000
         self.size_target = 3000
         self.poisson = True
-        pxo = 1.0
-        self.obs_covar_prop_source = pxo
-        self.obs_covar_prop_target = pxo

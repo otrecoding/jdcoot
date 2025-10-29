@@ -1,6 +1,9 @@
 [project]
 authors = [{ name = "Lucas Offroy et al", email = "pierre.navaro@math.cnrs.fr" }]
-dependencies = []
+dependencies = [
+    "numpy>=2.3.4",
+    "pot>=0.9.6.post1",
+]
 description = "Algorithm for Transfer Learning in Incomparable Domains using Optimal Transport"
 name = "jdcoot"
 requires-python = ">= 3.11"
