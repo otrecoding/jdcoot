@@ -21,8 +21,10 @@ class DataScenario:
     - `mean_y_source`, `mean_y_target` :  mean of the distribution of the continuous objective variable of source/target
     - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
     - `active_autocorr_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
+    - `sparse_rate` : proportion of active co-variates for generation (Same for source and target because generation in the "same world"/ consider that this generation explains the observed phenomenon)
     - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
     - `r2_source`, `r2_target` : R^2 of the model of source/target (for white noise calculation in continuous case)
+    - `obs_covar_prop_source`, `obs_covar_prop_target` : proportion of observed co-variates of source/target
 
     """
 
@@ -30,9 +32,10 @@ class DataScenario:
 
         self.size_source = 1000
         self.size_target = 1000
-        d = 100
-        self.dim_source = d
-        self.dim_target = d
+        self.dim_source = 100
+        self.dim_target = 100
+        self.obs_covar_prop_source = 0.2
+        self.obs_covar_prop_target = 0.2
 
         self.odds_ratio_source = 0.5
         self.odds_ratio_target = 0.5
@@ -46,12 +49,10 @@ class DataScenario:
         self.inactive_autocorr_source = 0.2
         self.active_autocorr_target = 0.7
         self.inactive_autocorr_target = 0.2
-        self.poisson = False
 
     def generate(self, indices):
         """
-        - `indices` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample) If None, chosen randomly
-        - `poisson` : Uses Poisson modeling to generate more than 2 classes
+        - `indices` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample) 
 
         Returns
         -------
@@ -97,8 +98,16 @@ class DataScenario:
         data_source = pd.DataFrame(x_source, columns = [f'X{i+1}' for i in range(self.dim_source)])
         data_target = pd.DataFrame(x_target, columns = [f'X{i+1}' for i in range(self.dim_target)])
 
-        selected_obs_source = [f'X{i+1}' for i in indices]
-        selected_obs_target = [f'X{i+1}' for i in indices]
+        obs_covariables_ix_source1 = sample(actives, self.obs_covar_prop_source)
+        obs_covariables_ix_source2 = sample(inactives, self.obs_covar_prop_source)
+        obs_covariables_ix_source = np.union1d(obs_covariables_ix_source1, obs_covariables_ix_source2)
+
+        obs_covariables_ix_target1 = sample(actives, self.obs_covar_prop_target)
+        obs_covariables_ix_target2 = sample(inactives, self.obs_covar_prop_target)
+        obs_covariables_ix_target = np.union1d(obs_covariables_ix_target1, obs_covariables_ix_target2)
+
+        selected_obs_source = [f'X{i+1}' for i in obs_covariables_ix_source]
+        selected_obs_target = [f'X{i+1}' for i in obs_covariables_ix_target]
 
         data_source = data_source.loc[:, list(selected_obs_source)] 
         data_target = data_target.loc[:, list(selected_obs_target)]
@@ -125,11 +134,6 @@ class DataScenario:
         z_source = np.zeros(self.size_source, dtype = 'int')
         z_source[us < proba_z_source] = 1
 
-        if self.poisson:
-            at = np.zeros(self.dim_source)
-            at[actives] = 10 / 100
-            z_source = np.random.poisson(np.exp(np.dot(x_source, at)), self.size_source)
-
         a_target = np.zeros(self.dim_target)
         a_target[actives] = b_source
 
@@ -154,11 +158,6 @@ class DataScenario:
         z_target = np.zeros(self.size_target, dtype = 'int')
         z_target[us < proba_z_target] = 1
 
-        if self.poisson:
-            at = np.zeros(self.dim_target)
-            at[actives] = 10 / 100
-            z_target = np.random.poisson(np.exp(np.dot(x_target, at)), self.size_target)
-
         data_source['Y'] = y_source
         data_source['Z'] = z_source
         data_target['Y'] = y_target
@@ -178,29 +177,5 @@ class DataScenarioTest(DataScenario):
         super().__init__()
         self.size_source = 300
         self.size_target = 300
-
-
-class DataScenarioPoisson(DataScenario):
-
-    """
-    Sample a reference scenario but with more than 2 classes for the classification analysis
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.size_source = 10000
-        self.size_target = 10000
-        self.poisson = True
-
-
-class DataScenarioPoissonTest(DataScenario):
-
-    """
-    Sample a test sample for the Poisson reference scenario (3000 observations)
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.size_source = 3000
-        self.size_target = 3000
-        self.poisson = True
+        self.obs_covar_prop_source = 1.0
+        self.obs_covar_prop_target = 1.0
