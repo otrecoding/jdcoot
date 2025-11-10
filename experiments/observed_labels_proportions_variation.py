@@ -34,8 +34,8 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["reference", "unsupervised", "semisupervised", "partial"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-prop_source_values = [0.01, 0.02, 0.05, 0.07, 0.1, 0.15, 0.3, 0.5, 0.7]
-prop_target_values = [0.01, 0.02, 0.05, 0.07, 0.1, 0.15, 0.3, 0.5, 0.7]
+prop_source_values = [0.001, 0.005, 0.01, 0.05, 0.1]
+prop_target_values = [0.001, 0.005, 0.01, 0.05, 0.1]
 
 for i in range(nsimulations):
     compute(json_file, train_scenario, test_scenario, indices, 
