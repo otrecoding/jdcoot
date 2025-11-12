@@ -33,7 +33,7 @@ with open(json_file, 'w+') as f:
 
 variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
-recoding_methods = ["coot", "jdcoot", "reference"]
+recoding_methods = ["coot", "jdcoot"]
 
 for i in range(nsimulations):
     
