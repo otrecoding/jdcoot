@@ -30,6 +30,7 @@ def continuous_partial_reference(source, target, source_test, target_test, **kwa
     ytest1 = clf_target.predict(target_test.loc[:, xcolumns(target)], verbose=0).ravel()
     ytest2 = clf_source.predict(source_test.loc[:, xcolumns(source)], verbose=0).ravel()
 
-    perf_test = continuous_accuracy(ytest1, target_test.Y, ytest2, source_test.Y)
+    perf_source = continuous_accuracy(ytest2, source_test.Y)
+    perf_target = continuous_accuracy(ytest1, target_test.Y)
 
-    return perf_pure, perf_test
+    return perf_source, perf_target

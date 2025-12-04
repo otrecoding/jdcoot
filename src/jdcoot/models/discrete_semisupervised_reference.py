@@ -31,12 +31,14 @@ def discrete_semisupervised_reference( source, target, source_test, target_test,
      
      z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
      z_test = enc.inverse_transform(z_test).ravel()
-     perf_test = np.mean(z_test == target_test.Z)
+     perf_target = np.mean(z_test == target_test.Z)
      
      z_test = clf.predict(xtest_target, verbose=0)
      z_test = enc.inverse_transform(z_test).ravel()
      perf_pure = np.mean(z_test == ztest_target)
 
-     return perf_pure, perf_test
+     perf_source = 1.0
+
+     return perf_source, perf_target
 
 

@@ -124,6 +124,8 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
 
     yt_test = clf_target.predict(target_test.loc[:, xcolumns(target_test)], verbose=0).ravel()
     ys_test = clf_source.predict(source_test.loc[:, xcolumns(source_test)], verbose=0).ravel()
-    perf_test = continuous_accuracy(yt_test, target_test.Y, ys_test, source_test.Y)
 
-    return perf_pure, perf_test
+    perf_source = continuous_accuracy(ys_test, source_test.Y)
+    perf_target = continuous_accuracy(yt_test, target_test.Y)
+
+    return perf_source, perf_target

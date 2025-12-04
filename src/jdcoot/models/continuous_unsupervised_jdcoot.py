@@ -100,6 +100,7 @@ def continuous_unsupervised_jdcoot( source, target, test_source, test_target, **
     y_target = clf_target.predict(x_target, verbose=0).ravel()
     y_source = clf_source.predict(x_source, verbose=0).ravel()
     
-    perf_test = continuous_accuracy(y_target, test_target.Y, y_source, test_source.Y)
+    perf_source = continuous_accuracy(y_source, test_source.Y)
+    perf_target = continuous_accuracy(y_target, test_target.Y)
 
-    return perf_pure, perf_test
+    return perf_source, perf_target

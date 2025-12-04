@@ -121,7 +121,8 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **k
 
     z_target_test = one_cold(clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)) + min(np.unique(z_source))
 
-    perf_test = np.mean(z_target_test == target_test.Z)
+    perf_source = 1.0
+    perf_target = np.mean(z_target_test == target_test.Z)
     
-    return perf_pure, perf_test
+    return perf_source, perf_target
     

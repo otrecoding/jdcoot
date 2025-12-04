@@ -87,7 +87,8 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
     zt_test = one_cold(clf_target.predict(test_target.loc[:, xcolumns(test_target)], verbose=0))
     zs_test = one_cold(clf_source.predict(test_source.loc[:, xcolumns(test_source)], verbose=0))
      
-    perf_test = discrete_accuracy(zt_test, test_target.Z, zs_test, test_source.Z)
+    perf_source = discrete_accuracy(zs_test, test_source.Z)
+    perf_target = discrete_accuracy(zt_test, test_target.Z)
 
-    return perf_pure, perf_test
+    return perf_source, perf_target
 

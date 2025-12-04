@@ -49,9 +49,7 @@ def discrete_partial_reference( source, target, test_source, test_target, **kwar
     z_test_source = enc.inverse_transform(clf_source.predict(x_test_source, verbose=0)).ravel()
     z_test_target = enc.inverse_transform(clf_target.predict(x_test_target, verbose=0)).ravel()
     
-    perf_test = discrete_accuracy(z_test_target, test_target.Z, z_test_source, test_source.Z)
-    
+    perf_source = discrete_accuracy(z_test_source, test_source.Z)
+    perf_target = discrete_accuracy(z_test_target, test_target.Z)
 
-    return perf_pure, perf_test
-
-
+    return perf_source, perf_target

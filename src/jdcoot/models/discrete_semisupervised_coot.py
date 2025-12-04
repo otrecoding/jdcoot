@@ -63,7 +63,9 @@ def discrete_semisupervised_coot( source, target, source_test, target_test, **kw
     perf_pure = np.mean(z_target_test == z_target_pred[l_target_test])
     
     z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
-    perf_test = np.mean(one_cold(z_test) == target_test.Z) 
 
-    return perf_pure, perf_test
+    perf_source = 1.0
+    perf_target = np.mean(one_cold(z_test) == target_test.Z) 
+
+    return perf_source, perf_target
 

@@ -39,5 +39,3 @@ def continuous_unsupervised_coot( source, target, source_test, target_test, **kw
     perf_test = continuous_accuracy(ytest, target_test.Y.values)
 
     return perf_pure, perf_test
-
-

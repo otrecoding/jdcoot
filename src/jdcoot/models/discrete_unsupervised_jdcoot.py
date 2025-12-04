@@ -119,6 +119,6 @@ def discrete_unsupervised_jdcoot( source, target, source_test, target_test, **kw
 
     z_target_test = one_cold(clf.predict(target_test.loc[:, xcolumns(target_test)], verbose=0)) + min(classes)
 
-    perf_test = np.mean(z_target_test == target_test.Z)
+    perf_target = np.mean(z_target_test == target_test.Z)
 
-    return perf_pure, perf_test
+    return perf_pure, perf_target

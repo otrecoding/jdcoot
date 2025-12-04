@@ -166,8 +166,7 @@ def discrete_partial_jdcoot( source, target, test_source, test_target, **kwargs)
     zt_test = one_cold(clf_target.predict(test_target.loc[:, xcolumns(test_target)], verbose=0)) + min(target_levels)
     zs_test = one_cold(clf_source.predict(test_source.loc[:, xcolumns(test_source)], verbose=0)) + min(source_levels)
 
-    perf_test = discrete_accuracy(zt_test, test_target.Z, zs_test, test_source.Z)
+    perf_source = discrete_accuracy(zs_test, test_source.Z)
+    perf_target = discrete_accuracy(zt_test, test_target.Z)
 
-    return perf_pure, perf_test
-
-
+    return perf_source, perf_target

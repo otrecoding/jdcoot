@@ -115,7 +115,8 @@ def continuous_semisupervised_jdcoot( source, target, source_test, target_test, 
     zt_test = clf_target.predict(target_test.loc[:, xcolumns(target_test)], verbose=0).ravel()
     zs_test = clf_source.predict(source_test.loc[:, xcolumns(source_test)], verbose=0).ravel()
 
-    perf_test = continuous_accuracy(zs_test, source_test.Y, zt_test, target_test.Y) 
+    perf_source = continuous_accuracy(zs_test, source_test.Y) 
+    perf_target = continuous_accuracy(zt_test, target_test.Y) 
 
-    return perf_pure, perf_test
+    return perf_source, perf_target
     

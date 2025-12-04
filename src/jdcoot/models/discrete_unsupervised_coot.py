@@ -41,8 +41,9 @@ def discrete_unsupervised_coot( source, target, source_test, target_test, **kwar
 
     z_test = clf.predict(target_test.loc[:, xcolumns(target_test)], verbose=0)
 
-    perf_test = np.mean(one_cold(z_test) == target_test.Z)
+    perf_source = 1.0
+    perf_target = np.mean(one_cold(z_test) == target_test.Z)
 
-    return perf_pure, perf_test
+    return perf_source, perf_target
 
 
