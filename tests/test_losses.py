@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from jdcoot.losses import loss_crossentropy
 
 

@@ -116,11 +116,11 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
 
         fcost = ot.dist(y_source_pred, y_target_pred, metric='sqeuclidean')  
 
-    ypred_target = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
-    ypred_source = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()
+    # ypred_target = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
+    # ypred_source = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()
 
-    perf_pure = continuous_accuracy(ypred_source, source.loc[l_source_test, 'Y'], 
-                                    ypred_target, target.loc[l_target_test, 'Y'])
+    # perf_pure = continuous_accuracy(ypred_source, source.loc[l_source_test, 'Y'], 
+    #                                ypred_target, target.loc[l_target_test, 'Y'])
 
     yt_test = clf_target.predict(target_test.loc[:, xcolumns(target_test)], verbose=0).ravel()
     ys_test = clf_source.predict(source_test.loc[:, xcolumns(source_test)], verbose=0).ravel()

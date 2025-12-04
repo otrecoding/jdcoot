@@ -50,11 +50,11 @@ def discrete_partial_jdcoot( source, target, test_source, test_target, **kwargs)
     z_source_train = one_hot(z_source[l_source_train], nClass)
     z_target_train = one_hot(z_target[l_target_train], nClass)
 
-    x_source_test = x_source[l_source_test, :]
-    z_source_test = z_source[l_source_test]
+    # x_source_test = x_source[l_source_test, :]
+    # z_source_test = z_source[l_source_test]
 
-    x_target_test = x_target[l_target_test, :]
-    z_target_test = z_target[l_target_test]
+    # x_target_test = x_target[l_target_test, :]
+    # z_target_test = z_target[l_target_test]
 
     clf_source, clf_target = discrete_classifiers(source, target, 'relu', 'softmax')
     
@@ -155,11 +155,11 @@ def discrete_partial_jdcoot( source, target, test_source, test_target, **kwargs)
 
         fcost = loss_crossentropy2(z_source_pred, z_target_pred)
 
-    zpred_target = one_cold(clf_target.predict(x_target_test, verbose=0)) + min(target_levels)
+    # zpred_target = one_cold(clf_target.predict(x_target_test, verbose=0)) + min(target_levels)
     
-    zpred_source = one_cold(clf_source.predict(x_source_test, verbose=0)) + min(source_levels)
+    # zpred_source = one_cold(clf_source.predict(x_source_test, verbose=0)) + min(source_levels)
     
-    perf_pure = discrete_accuracy(zpred_source, z_source_test, zpred_target, z_target_test)
+    # perf_pure = discrete_accuracy(zpred_source, z_source_test, zpred_target, z_target_test)
 
     zt_test = one_cold(clf_target.predict(test_target.loc[:, xcolumns(test_target)], verbose=0)) + min(target_levels)
     zs_test = one_cold(clf_source.predict(test_source.loc[:, xcolumns(test_source)], verbose=0)) + min(source_levels)

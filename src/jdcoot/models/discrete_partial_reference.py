@@ -27,21 +27,21 @@ def discrete_partial_reference( source, target, test_source, test_target, **kwar
     x_target_train = target_train.loc[:, xcolumns(target)].values
     z_target_train = enc.fit_transform(target_train.Z.values[:, np.newaxis])
 
-    x_source_test = source_test.loc[:, xcolumns(source)].values
-    z_source_test = source_test.Z.values
+    # x_source_test = source_test.loc[:, xcolumns(source)].values
+    # z_source_test = source_test.Z.values
 
-    x_target_test = target_test.loc[:, xcolumns(target)].values
-    z_target_test = target_test.Z.values
+    # x_target_test = target_test.loc[:, xcolumns(target)].values
+    # z_target_test = target_test.Z.values
 
     clf_source, clf_target = discrete_classifiers(source, target, 'sigmoid', 'sigmoid')
 
     clf_target.fit( x_target_train, z_target_train, batch_size=10, epochs=20, verbose=0)  
     clf_source.fit( x_source_train, z_source_train, batch_size=10, epochs=20, verbose=0)  
 
-    z_target_pred = enc.inverse_transform(clf_target.predict(x_target_test, verbose=0)).ravel()
-    z_source_pred = enc.inverse_transform(clf_source.predict(x_source_test, verbose=0)).ravel()
+    # z_target_pred = enc.inverse_transform(clf_target.predict(x_target_test, verbose=0)).ravel()
+    # z_source_pred = enc.inverse_transform(clf_source.predict(x_source_test, verbose=0)).ravel()
     
-    perf_pure = discrete_accuracy(z_target_pred, z_target_test, z_source_pred, z_source_test)
+    # perf_pure = discrete_accuracy(z_target_pred, z_target_test, z_source_pred, z_source_test)
 
     x_test_source = test_source.loc[:, xcolumns(source)]
     x_test_target = test_target.loc[:, xcolumns(target)]

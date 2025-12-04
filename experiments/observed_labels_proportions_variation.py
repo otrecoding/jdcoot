@@ -1,16 +1,12 @@
-import json
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-import seaborn as sns
 import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 sys.path.append(os.path.abspath('src'))
 from jdcoot import DataScenario, DataScenarioTest
-from jdcoot.performance import models, compute
+from jdcoot.performance import compute
 
 indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
 

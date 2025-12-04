@@ -19,13 +19,13 @@ def continuous_partial_reference(source, target, source_test, target_test, **kwa
     
     clf_target.fit(x_target_train, y_target_train, batch_size=10, epochs=20, verbose=0)  
     
-    y_target_pred = clf_target.predict(x_target_test, verbose=0).ravel()
+    # y_target_pred = clf_target.predict(x_target_test, verbose=0).ravel()
     
     clf_source.fit(x_source_train, y_source_train, batch_size=10, epochs=20, verbose=0)  
     
-    y_source_pred = clf_source.predict(x_source_test, verbose=0).ravel()
+    # y_source_pred = clf_source.predict(x_source_test, verbose=0).ravel()
     
-    perf_pure = continuous_accuracy(y_source_pred, y_source_test, y_target_pred, y_target_test)
+    # perf_pure = continuous_accuracy(y_source_pred, y_source_test, y_target_pred, y_target_test)
     
     ytest1 = clf_target.predict(target_test.loc[:, xcolumns(target)], verbose=0).ravel()
     ytest2 = clf_source.predict(source_test.loc[:, xcolumns(source)], verbose=0).ravel()

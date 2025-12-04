@@ -47,8 +47,8 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
     x_target_train = target.loc[l_target_train, xcolumns(target)].values
     z_target_train = target.loc[l_target_train, 'Z'].values
 
-    z_source_test = source.loc[l_source_test, 'Z'].values
-    z_target_test = target.loc[l_target_test, 'Z'].values
+    # z_source_test = source.loc[l_source_test, 'Z'].values
+    # z_target_test = target.loc[l_target_test, 'Z'].values
 
     def compute_cost_matrix(ys, yt, v=10000):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
@@ -63,7 +63,7 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
 
     zs_onehot = one_hot(z_source_train)
     zt_onehot_estimated = n_target * np.dot(Ts.T, zs_onehot)
-    zt_estimated = one_cold(zt_onehot_estimated)
+    # zt_estimated = one_cold(zt_onehot_estimated)
 
     M_lin = compute_cost_matrix(yt=z_source, ys=z_target_train)
 
@@ -74,10 +74,10 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
 
     zt_onehot = one_hot(z_target_train)
     zs_onehot_estimated = n_source * np.dot(Ts.T, zt_onehot)
-    zs_estimated = one_cold(zs_onehot_estimated)
+    # zs_estimated = one_cold(zs_onehot_estimated)
 
-    perf_pure = discrete_accuracy(z_target_test, zt_estimated[l_target_test],
-                                  z_source_test, zs_estimated[l_source_test])
+    # perf_pure = discrete_accuracy(z_target_test, zt_estimated[l_target_test],
+    #                              z_source_test, zs_estimated[l_source_test])
      
     clf_source, clf_target = discrete_classifiers( source, target, 'sigmoid', 'sigmoid')
      

@@ -106,11 +106,10 @@ def continuous_semisupervised_jdcoot( source, target, source_test, target_test, 
 
         fcost = ot.dist(y_source, y_target_pred, metric='sqeuclidean')  
     
-    xtest_target = x_target[l_test,:]
-    ytest_target = y_target[l_test]
-
-    ypred_target = clf_target.predict(xtest_target, verbose=0).ravel()
-    perf_pure = continuous_accuracy(ypred_target, ytest_target.ravel())
+    # xtest_target = x_target[l_test,:]
+    # ytest_target = y_target[l_test]
+    # ypred_target = clf_target.predict(xtest_target, verbose=0).ravel()
+    # perf_pure = continuous_accuracy(ypred_target, ytest_target.ravel())
     
     zt_test = clf_target.predict(target_test.loc[:, xcolumns(target_test)], verbose=0).ravel()
     zs_test = clf_source.predict(source_test.loc[:, xcolumns(source_test)], verbose=0).ravel()

@@ -15,7 +15,6 @@ def discrete_unsupervised_coot( source, target, source_test, target_test, **kwar
     x_target = target.loc[:, xcolumns(target)].values
 
     z_source = source.Z.values
-    z_target = target.Z.values
     
     nClass=len(np.union1d(source_levels, target_levels))
     categories=[np.arange(nClass)]
@@ -33,7 +32,7 @@ def discrete_unsupervised_coot( source, target, source_test, target_test, **kwar
     
     z_target_pred = size_target * np.dot(Ts.T, one_hot(z_source))
     
-    perf_pure = np.mean(z_target == one_cold(z_target_pred))
+    #PN perf_pure = np.mean(z_target == one_cold(z_target_pred))
     
     clf = discrete_classifier(target, 'sigmoid', 'sigmoid', nClass)
 

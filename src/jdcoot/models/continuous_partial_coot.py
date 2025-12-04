@@ -31,8 +31,8 @@ def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
     y_target_train = target.Y.values.copy()
     y_target_train[l_target_test] = np.nan
 
-    y_source_test = source.Y.values[l_source_test]
-    y_target_test = target.Y.values[l_target_test]
+    # y_source_test = source.Y.values[l_source_test]
+    # y_target_test = target.Y.values[l_target_test]
 
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
@@ -56,8 +56,8 @@ def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
 
     zs_estimated = n_source * np.dot(Ts.T, y_target[l_target_train])
 
-    perf_pure = continuous_accuracy(y_target_test, zt_estimated[l_target_test],
-                                    y_source_test, zs_estimated[l_source_test])
+    # perf_pure = continuous_accuracy(y_target_test, zt_estimated[l_target_test],
+    #                                 y_source_test, zs_estimated[l_source_test])
 
     clf_source, clf_target = continuous_classifiers(source, target)
 

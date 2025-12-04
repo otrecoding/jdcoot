@@ -1,4 +1,3 @@
-import json
 import math
 import numpy as np
 import os
@@ -8,7 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 sys.path.append(os.path.abspath('src'))
 
 from jdcoot import DataScenario, DataScenarioTest
-from jdcoot.performance import models, compute
+from jdcoot.performance import compute
 
 
 nsimulations = 100

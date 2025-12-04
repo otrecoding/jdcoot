@@ -56,11 +56,11 @@ def discrete_semisupervised_coot( source, target, source_test, target_test, **kw
     
     clf.fit(x_target, z_target_pred, batch_size=10, epochs=10, verbose=0) 
 
-    z_target_test = target.loc[l_target_test, 'Z'].values
+    # z_target_test = target.loc[l_target_test, 'Z'].values
 
     z_target_pred = one_cold(z_target_pred)
 
-    perf_pure = np.mean(z_target_test == z_target_pred[l_target_test])
+    # perf_pure = np.mean(z_target_test == z_target_pred[l_target_test])
     
     z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
 
