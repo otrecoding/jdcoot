@@ -65,11 +65,11 @@ def compute(json_file, train, test, indices, variable_types, learning_methods, r
                     results['prop_target'] = prop_target
                     results['sparse_rate'] = len(indices) / 100
 
-                    pure_accuracy, test_accuracy = otrecod( source, target, source_test, target_test, 
+                    source_accuracy, target_accuracy = otrecod( source, target, source_test, target_test, 
                                           prop_source = prop_source, prop_target = prop_target)
 
-                    results['pure'] = pure_accuracy
-                    results['test'] = test_accuracy
+                    results['source'] = source_accuracy
+                    results['target'] = target_accuracy
                     results['size_source_test'] = test.size_source
                     results['size_target_test'] = test.size_target
 
