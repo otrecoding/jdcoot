@@ -26,7 +26,8 @@ json_file = 'odds_ratio_variations.json'
 with open(json_file, 'w+') as f:
     f.seek(0)
 
-odds_ratio_values = [0.2, 0.4, 0.6, 0.8]
+odds_ratio_source_values = [0.2, 0.4, 0.6, 0.8]
+odds_ratio_target_values = [0.5]
 
 variable_types = ["discrete"]
 learning_methods = ["unsupervised"]
@@ -36,6 +37,7 @@ for i in range(nsimulations):
 
     indices = np.random.choice(np.arange(100), math.ceil(0.75 * 100), replace=False)
     
+
     for odds_ratio in odds_ratio_values:
 
         train_scenario.odds_ratio_source = odds_ratio
