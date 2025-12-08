@@ -26,4 +26,3 @@ def test_loss_crossentropy_with_uniform_distribution():
     result = loss_crossentropy(Y, F)
     expected = np.array([[0.69314718, 0.69314718], [0.69314718, 0.69314718]])
     np.testing.assert_almost_equal(result, expected, decimal=6)
-

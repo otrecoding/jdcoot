@@ -7,8 +7,7 @@ from .sinkhorn import sinkhorn_scaling
 
 
 def random_gamma_init(p, q, **kwargs):
-    """ Returns random coupling matrix with marginal p,q
-    """
+    """Returns random coupling matrix with marginal p,q"""
     rvs = stats.beta(1e-1, 1e-1).rvs
     S = random(len(p), len(q), density=1, data_rvs=rvs)
     return sinkhorn_scaling(p, q, S.A, **kwargs)
@@ -42,7 +41,7 @@ def init_matrix_np(X1, X2, v1, v2):
         h1(X1) matrix (see paragraph 1.2 of supplementary material in [1])
     hC2 : ndarray, shape (n', d')
         h2(X2) matrix (see paragraph 1.2 of supplementary material in [1])
-        
+
     References
     ----------
     .. [1] Redko Ievgen, Vayer Titouan, Flamary R{\'e}mi and Courty Nicolas
@@ -53,10 +52,10 @@ def init_matrix_np(X1, X2, v1, v2):
     """
 
     def f1(a):
-        return (a ** 2)
+        return a**2
 
     def f2(b):
-        return (b ** 2)
+        return b**2
 
     def h1(a):
         return a
@@ -64,10 +63,12 @@ def init_matrix_np(X1, X2, v1, v2):
     def h2(b):
         return 2 * b
 
-    constC1 = np.dot(np.dot(f1(X1), v1.reshape(-1, 1)),
-                     np.ones(f1(X2).shape[0]).reshape(1, -1))
-    constC2 = np.dot(np.ones(f1(X1).shape[0]).reshape(-1, 1),
-                     np.dot(v2.reshape(1, -1), f2(X2).T))
+    constC1 = np.dot(
+        np.dot(f1(X1), v1.reshape(-1, 1)), np.ones(f1(X2).shape[0]).reshape(1, -1)
+    )
+    constC2 = np.dot(
+        np.ones(f1(X1).shape[0]).reshape(-1, 1), np.dot(v2.reshape(1, -1), f2(X2).T)
+    )
 
     constC = constC1 + constC2
     hX1 = h1(X1)
@@ -76,11 +77,24 @@ def init_matrix_np(X1, X2, v1, v2):
     return constC, hX1, hX2
 
 
-def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
-              niter=10, algo='emd', reg=0, algo2='emd',
-              reg2=0, verbose=True, log=False, random_init=False, C_lin=None):
-
-    """ Returns COOT between two datasets X1,X2 (see [1])
+def cot_numpy(
+    X1,
+    X2,
+    w1=None,
+    w2=None,
+    v1=None,
+    v2=None,
+    niter=10,
+    algo="emd",
+    reg=0,
+    algo2="emd",
+    reg2=0,
+    verbose=True,
+    log=False,
+    random_init=False,
+    C_lin=None,
+):
+    """Returns COOT between two datasets X1,X2 (see [1])
 
     The function solves the following optimization problem:
 
@@ -169,8 +183,12 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
         w2 = np.ones(X2.shape[0]) / X2.shape[0]  # is (n,)
 
     if not random_init:
-        Ts = np.ones((X1.shape[0], X2.shape[0])) / (X1.shape[0] * X2.shape[0])  # is (n,n')
-        Tv = np.ones((X1.shape[1], X2.shape[1])) / (X1.shape[1] * X2.shape[1])  # is (d,d')
+        Ts = np.ones((X1.shape[0], X2.shape[0])) / (
+            X1.shape[0] * X2.shape[0]
+        )  # is (n,n')
+        Tv = np.ones((X1.shape[1], X2.shape[1])) / (
+            X1.shape[1] * X2.shape[1]
+        )  # is (d,d')
     else:
         Ts = random_gamma_init(w1, w2)
         Tv = random_gamma_init(v1, v2)
@@ -181,7 +199,7 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
     cost = np.inf
 
     log_out = {}
-    log_out['cost'] = []
+    log_out["cost"] = []
 
     verbose = True
 
@@ -193,30 +211,30 @@ def cot_numpy(X1, X2, w1=None, w2=None, v1=None, v2=None,
         M = constC_s - np.dot(hC1_s, Tv).dot(hC2_s.T)
         if C_lin is not None:
             M = M + C_lin
-        if algo == 'emd':
+        if algo == "emd":
             Ts = ot.emd(w1, w2, M, numItermax=1e7)
-        elif algo == 'sinkhorn':
+        elif algo == "sinkhorn":
             Ts = ot.sinkhorn(w1, w2, M, reg)
 
         M = constC_v - np.dot(hC1_v, Ts).dot(hC2_v.T)
 
-        if algo2 == 'emd':
+        if algo2 == "emd":
             Tv = ot.emd(v1, v2, M, numItermax=1e7)
-        elif algo2 == 'sinkhorn':
+        elif algo2 == "sinkhorn":
             Tv = ot.sinkhorn(v1, v2, M, reg2)
 
         delta = np.linalg.norm(Ts - Tsold) + np.linalg.norm(Tv - Tvold)
         cost = np.sum(M * Tv)
 
         if log:
-            log_out['cost'].append(cost)
+            log_out["cost"].append(cost)
 
         if verbose:
-            print(f'Delta: {delta:15.7f} \t Loss: {cost:15.7f}')
+            print(f"Delta: {delta:15.7f} \t Loss: {cost:15.7f}")
 
         if delta < 1e-16 or np.abs(costold - cost) < 1e-7:
             if verbose:
-                print('converged at iter ', i)
+                print("converged at iter ", i)
             break
     if log:
         return Ts, Tv, cost, log_out

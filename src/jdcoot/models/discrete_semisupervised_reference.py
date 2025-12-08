@@ -2,43 +2,48 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder as onehot
 from sklearn.model_selection import train_test_split
 
-from ..utils import xcolumns, discrete_classifier
+from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
 
-def discrete_semisupervised_reference( source, target, source_test, target_test, **kwargs):
+def discrete_semisupervised_reference(
+    source, target, source_test, target_test, **kwargs
+):
+    prop_target = kwargs.get("prop_target", 0.1)
+    n_target = len(target.Z)
 
-     prop_target = kwargs.get('prop_target', 0.1)
-     # z_target = target.Z.values
-     n_target = len(target.Z)
+    l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
-     l_train, l_test = train_test_split(np.arange(n_target), train_size = prop_target)
+    xtrain_target = target.loc[l_train, xcolumns(target)].values
+    ztrain_target = target.Z.values[l_train]
 
-     xtrain_target = target.loc[l_train, xcolumns(target)].values
-     ztrain_target = target.Z.values[l_train]
+    xtest_target = target.loc[l_test, xcolumns(target)].values
+    ztest_target = target.Z.values[l_test]
 
-     # xtest_target = target.loc[l_test, xcolumns(target)].values
-     # ztest_target = target.Z.values[l_test]
-     
-     nClass=len(np.union1d(np.unique(source.Z), np.unique(target.Z)))
-     categories=[np.arange(nClass)]
+    nClass = len(np.union1d(np.unique(source.Z), np.unique(target.Z)))
+    categories = [np.arange(nClass)]
 
-     clf = discrete_classifier(target, 'sigmoid', 'sigmoid', nClass)
+    clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
 
-     enc = onehot(handle_unknown='ignore', sparse_output = False, categories=categories)
-     
-     clf.fit( xtrain_target, enc.fit_transform(ztrain_target[:,np.newaxis]),
-              batch_size=10, epochs=20, verbose=0)  
-     
-     z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
-     z_test = enc.inverse_transform(z_test).ravel()
-     perf_target = np.mean(z_test == target_test.Z)
-     
-     #PN z_test = clf.predict(xtest_target, verbose=0)
-     #PN z_test = enc.inverse_transform(z_test).ravel()
-     #PN perf_pure = np.mean(z_test == ztest_target)
+    enc = onehot(handle_unknown="ignore", sparse_output=False, categories=categories)
 
-     perf_source = 1.0
+    clf.fit(
+        xtrain_target,
+        enc.fit_transform(ztrain_target[:, np.newaxis]),
+        batch_size=10,
+        epochs=20,
+        verbose=0,
+    )
 
-     return perf_source, perf_target
+    z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
+    z_test = enc.inverse_transform(z_test).ravel()
 
+    perf_pure_source = 1.0
+    perf_pure_target = discrete_accuracy(z_test, target_test.Z)
 
+    z_test = clf.predict(xtest_target, verbose=0)
+    z_test = enc.inverse_transform(z_test).ravel()
+
+    perf_test_source = 1.0
+    perf_test_target = discrete_accuracy(z_test, ztest_target)
+
+    return perf_pure_source, perf_pure_target, perf_test_source, perf_test_target

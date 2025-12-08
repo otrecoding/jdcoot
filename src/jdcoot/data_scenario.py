@@ -2,11 +2,12 @@ import math
 
 import numpy as np
 import pandas as pd
-from scipy.linalg  import sqrtm
+from scipy.linalg import sqrtm
 
 
-def sample( x, px ):
-     return np.random.choice(x, math.floor(px * len(x)), replace=False)
+def sample(x, px):
+    return np.random.choice(x, math.floor(px * len(x)), replace=False)
+
 
 class DataScenario:
     r"""
@@ -16,7 +17,7 @@ class DataScenario:
     ----------
 
     - `size_source`, `size_target` : number of obs of source/target
-    - `dim_source`, `dim_target` : number of variables of source/target 
+    - `dim_source`, `dim_target` : number of variables of source/target
     - `mean_x_source`, `mean_x_target` :  mean of the distribution of the co-variates of source/target
     - `mean_y_source`, `mean_y_target` :  mean of the distribution of the continuous objective variable of source/target
     - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
@@ -29,7 +30,6 @@ class DataScenario:
     """
 
     def __init__(self):
-
         self.size_source = 1000
         self.size_target = 1000
         self.dim_source = 100
@@ -52,7 +52,7 @@ class DataScenario:
 
     def generate(self, indices):
         """
-        - `indices` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample) 
+        - `indices` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample)
 
         Returns
         -------
@@ -76,8 +76,8 @@ class DataScenario:
         actives = indices
         inactives = np.setdiff1d(np.arange(self.dim_source), actives)
 
-        for kk,ii in enumerate(actives):
-            for ll,jj in enumerate(actives):
+        for kk, ii in enumerate(actives):
+            for ll, jj in enumerate(actives):
                 cov_source[ii, jj] = self.active_autocorr_source ** abs(kk - ll)
 
         for kk, ii in enumerate(inactives):
@@ -92,24 +92,36 @@ class DataScenario:
             for ll, jj in enumerate(inactives):
                 cov_target[ii, jj] = self.inactive_autocorr_target ** abs(kk - ll)
 
-        x_source = np.random.multivariate_normal(self.mean_x_source, cov_source, self.size_source)
-        x_target = np.random.multivariate_normal(self.mean_x_target, cov_target, self.size_target)
+        x_source = np.random.multivariate_normal(
+            self.mean_x_source, cov_source, self.size_source
+        )
+        x_target = np.random.multivariate_normal(
+            self.mean_x_target, cov_target, self.size_target
+        )
 
-        data_source = pd.DataFrame(x_source, columns = [f'X{i+1}' for i in range(self.dim_source)])
-        data_target = pd.DataFrame(x_target, columns = [f'X{i+1}' for i in range(self.dim_target)])
+        data_source = pd.DataFrame(
+            x_source, columns=[f"X{i+1}" for i in range(self.dim_source)]
+        )
+        data_target = pd.DataFrame(
+            x_target, columns=[f"X{i+1}" for i in range(self.dim_target)]
+        )
 
         obs_covariables_ix_source1 = sample(actives, self.obs_covar_prop_source)
         obs_covariables_ix_source2 = sample(inactives, self.obs_covar_prop_source)
-        obs_covariables_ix_source = np.union1d(obs_covariables_ix_source1, obs_covariables_ix_source2)
+        obs_covariables_ix_source = np.union1d(
+            obs_covariables_ix_source1, obs_covariables_ix_source2
+        )
 
         obs_covariables_ix_target1 = sample(actives, self.obs_covar_prop_target)
         obs_covariables_ix_target2 = sample(inactives, self.obs_covar_prop_target)
-        obs_covariables_ix_target = np.union1d(obs_covariables_ix_target1, obs_covariables_ix_target2)
+        obs_covariables_ix_target = np.union1d(
+            obs_covariables_ix_target1, obs_covariables_ix_target2
+        )
 
-        selected_obs_source = [f'X{i+1}' for i in obs_covariables_ix_source]
-        selected_obs_target = [f'X{i+1}' for i in obs_covariables_ix_target]
+        selected_obs_source = [f"X{i+1}" for i in obs_covariables_ix_source]
+        selected_obs_target = [f"X{i+1}" for i in obs_covariables_ix_target]
 
-        data_source = data_source.loc[:, list(selected_obs_source)] 
+        data_source = data_source.loc[:, list(selected_obs_source)]
         data_target = data_target.loc[:, list(selected_obs_target)]
 
         b_source = 1
@@ -121,7 +133,9 @@ class DataScenario:
 
         sigma_source = np.var(y_source) * (1 - self.r2_source) / self.r2_source
 
-        y_source += np.random.normal(loc=0, scale=np.sqrt(sigma_source), size=self.size_source)
+        y_source += np.random.normal(
+            loc=0, scale=np.sqrt(sigma_source), size=self.size_source
+        )
 
         a_source = np.zeros(self.dim_source)
         a_source[actives] = np.log(self.odds_ratio_source)
@@ -131,7 +145,7 @@ class DataScenario:
 
         us = np.random.uniform(0, 1, self.size_source)
 
-        z_source = np.zeros(self.size_source, dtype = 'int')
+        z_source = np.zeros(self.size_source, dtype="int")
         z_source[us < proba_z_source] = 1
 
         a_target = np.zeros(self.dim_target)
@@ -140,11 +154,18 @@ class DataScenario:
         y_target = np.dot(x_target, a_target)
 
         def M(x):
-            return sqrtm(cov_source) @ sqrtm(np.linalg.inv(cov_target))  @ (x - self.mean_x_target) + self.mean_x_source
+            return (
+                sqrtm(cov_source)
+                @ sqrtm(np.linalg.inv(cov_target))
+                @ (x - self.mean_x_target)
+                + self.mean_x_source
+            )
 
-        mx_target = np.array([M(x) for x in x_target])   
+        mx_target = np.array([M(x) for x in x_target])
 
-        y_target =  np.dot(mx_target, a_target) + np.random.normal(loc=0, scale=np.sqrt(sigma_source), size=self.size_target)
+        y_target = np.dot(mx_target, a_target) + np.random.normal(
+            loc=0, scale=np.sqrt(sigma_source), size=self.size_target
+        )
 
         a_target = np.zeros(self.dim_target)
         a_target[actives] = np.log(self.odds_ratio_target)
@@ -155,25 +176,23 @@ class DataScenario:
 
         us = np.random.uniform(0, 1, self.size_target)
 
-        z_target = np.zeros(self.size_target, dtype = 'int')
+        z_target = np.zeros(self.size_target, dtype="int")
         z_target[us < proba_z_target] = 1
 
-        data_source['Y'] = y_source
-        data_source['Z'] = z_source
-        data_target['Y'] = y_target
-        data_target['Z'] = z_target
+        data_source["Y"] = y_source
+        data_source["Z"] = z_source
+        data_target["Y"] = y_target
+        data_target["Z"] = z_target
 
         return data_source, data_target
 
 
 class DataScenarioTest(DataScenario):
-
     """
     Sample a test sample for the reference scenario (300 observations)
     """
 
     def __init__(self):
-
         super().__init__()
         self.size_source = 300
         self.size_target = 300
