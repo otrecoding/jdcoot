@@ -11,7 +11,9 @@ if __name__ == "__main__":
 
     data = generate_data()
 
-    perf_pure, perf_test = jdcoot.discrete_semisupervised_coot(*data)
+    pure_source, pure_target, test_source, test_target = jdcoot.discrete_semisupervised_coot(*data)
 
-    print(f"Pure Performance : {perf_pure}")
-    print(f"Test Performance : {perf_test}")
+    print(f"Pure performance on source : {pure_source} ")
+    print(f"Pure performance on target : {pure_target} ")
+    print(f"Test performance on source : {test_source} ")
+    print(f"Test performance on target : {test_target} ")

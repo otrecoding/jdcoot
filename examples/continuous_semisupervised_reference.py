@@ -11,7 +11,9 @@ if __name__ == "__main__":
 
     data = generate_data()
 
-    pure, test = jdcoot.continuous_semisupervised_reference(*data)
+    pure_source, pure_target, test_source, test_target = jdcoot.continuous_semisupervised_reference(*data)
 
-    print(f"Pure Performance Reference : {pure}")
-    print(f"Test Performance Reference : {test}")
+    print(f"Pure performance on source : {pure_source} ")
+    print(f"Pure performance on target : {pure_target} ")
+    print(f"Test performance on source : {test_source} ")
+    print(f"Test performance on target : {test_target} ")

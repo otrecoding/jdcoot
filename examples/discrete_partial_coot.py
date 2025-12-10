@@ -11,9 +11,11 @@ for prop_source in proportions:
     for prop_target in proportions:
         print(f"prop_source: {prop_source} prop_target: {prop_target}")
 
-        perf_source, perf_target = jdcoot.discrete_partial_coot(
+        pure_source, pure_target, test_source, test_target = jdcoot.discrete_partial_coot(
             *data, prop_source=prop_source, prop_target=prop_target
         )
 
-        print(f"Performance on source : {perf_source} ")
-        print(f"Performance on target : {perf_target} ")
+        print(f"Pure performance on source : {pure_source} ")
+        print(f"Pure performance on target : {pure_target} ")
+        print(f"Test performance on source : {test_source} ")
+        print(f"Test performance on target : {test_target} ")

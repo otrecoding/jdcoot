@@ -10,7 +10,9 @@ if __name__ == "__main__":
 
     data = generate_data()
 
-    perf_pure, perf_test = jdcoot.discrete_unsupervised_coot(*data)
+    pure_source, pure_target, test_source, test_target = jdcoot.discrete_unsupervised_coot(*data)
 
-    print(f"Pure Performance COOT : {perf_pure}")
-    print(f"Test Performance COOT : {perf_test}")
+    print(f"Pure performance source : {pure_source}")
+    print(f"Pure performance target : {pure_target}")
+    print(f"Test performance source : {test_source}")
+    print(f"Test performance target : {test_target}")
