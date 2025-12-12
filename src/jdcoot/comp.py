@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def comp_(v=1e6):
     return lambda x, y: 0 if x == y or y == -1 else v
 

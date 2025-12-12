@@ -7,35 +7,36 @@ import ot
 from ..coot import init_matrix_np
 
 
-def continuous_semisupervised_jdcoot( source, target, source_test, target_test, **kwargs):
+def continuous_semisupervised_jdcoot(
+    source, target, source_test, target_test, **kwargs
+):
+    prop_target = kwargs.get("prop_target", 0.1)
 
-    prop_target = kwargs.get('prop_target', 0.1)
-
-    alpha = kwargs.get('alpha', 2.625)
+    alpha = kwargs.get("alpha", 2.625)
 
     n_target = len(target.Y)
-    
-    l_train, l_test = train_test_split(np.arange(n_target), train_size = prop_target)
+
+    l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
-    y_source = source.Y.values[:,np.newaxis]
-    y_target = target.Y.values[:,np.newaxis]
+    y_source = source.Y.values[:, np.newaxis]
+    y_target = target.Y.values[:, np.newaxis]
 
     x_target_train = x_target[l_train, :]
     y_target_train = y_target[l_train, :]
-    
-    clf_source, clf_target = continuous_classifiers(source, target)
-    
-    algo1='sinkhorn'
-    reg=100 
 
-    algo2='emd'
-    reg2=0
-    alpha=1
-    numIterBCD=10
-    nb_epoch=10
-    batch_size=10
+    clf_source, clf_target = continuous_classifiers(source, target)
+
+    algo1 = "sinkhorn"
+    reg = 100
+
+    algo2 = "emd"
+    reg2 = 0
+    alpha = 1
+    numIterBCD = 10
+    nb_epoch = 10
+    batch_size = 10
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -54,39 +55,42 @@ def continuous_semisupervised_jdcoot( source, target, source_test, target_test, 
 
     clf_source.fit(x_source, y_source, batch_size=10, epochs=nb_epoch, verbose=0)
 
-    clf_target.fit(x_target_train, y_target_train, batch_size=10, epochs=nb_epoch, verbose=0)  
+    clf_target.fit(
+        x_target_train, y_target_train, batch_size=10, epochs=nb_epoch, verbose=0
+    )
 
     y_target_pred = clf_target.predict(x_target, verbose=0)
     y_target_pred[l_train] = y_target_train
 
-    fcost = ot.dist(y_source, y_target_pred, metric='sqeuclidean')
+    fcost = ot.dist(y_source, y_target_pred, metric="sqeuclidean")
 
     cost = np.inf
 
     for k in range(numIterBCD):
-
         costold = cost
         Gsold = Gs
         Gvold = Gv
 
-        # step 1 : samples coupling optimization 
+        # step 1 : samples coupling optimization
         Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
-        if algo1 == 'emd':
+        if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
-        elif algo1 == 'sinkhorn':
+        elif algo1 == "sinkhorn":
             Gs = ot.sinkhorn(wA, wB, Ms, reg)
 
-        # step 2 : features coupling optimization     
+        # step 2 : features coupling optimization
         Mv = C_v - np.dot(h1_v, Gs).dot(h2_v.T)  # is (dA,dB)
-        if algo2 == 'emd':
+        if algo2 == "emd":
             Gv = ot.emd(vA, vB, Mv, numItermax=1e7)
-        elif algo2 == 'sinkhorn':
+        elif algo2 == "sinkhorn":
             Gv = ot.sinkhorn(vA, vB, Mv, reg2)
 
         y_target_hat = nB * Gs.T.dot(y_source)
         y_target_hat[l_train] = y_target_train
 
-        clf_target.fit(x_target, y_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0)
+        clf_target.fit(
+            x_target, y_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
+        )
 
         y_target_pred = clf_target.predict(x_target, verbose=0)
         y_target_pred[l_train] = y_target_train
@@ -96,26 +100,31 @@ def continuous_semisupervised_jdcoot( source, target, source_test, target_test, 
         delta = np.linalg.norm(Gs - Gsold) + np.linalg.norm(Gv - Gvold)
         cost = np.sum(Mv * Gv)
 
-        perf = clf_target.evaluate(x_target, target.Y, verbose = 0)
+        perf = clf_target.evaluate(x_target, target.Y, verbose=0)
 
-        print(f'Delta: {delta:15.7f} \t  Loss: {cost} \t Accuracy: {perf[0]}')
+        print(f"Delta: {delta:15.7f} \t  Loss: {cost} \t Accuracy: {perf[0]}")
 
         if delta < 1e-16 or np.abs(costold - cost) < 1e-7:
-            print('converged at iter ', k)
+            print("converged at iter ", k)
             break
 
-        fcost = ot.dist(y_source, y_target_pred, metric='sqeuclidean')  
-    
-    xtest_target = x_target[l_test,:]
+        fcost = ot.dist(y_source, y_target_pred, metric="sqeuclidean")
+
+    xtest_target = x_target[l_test, :]
     ytest_target = y_target[l_test]
-
     ypred_target = clf_target.predict(xtest_target, verbose=0).ravel()
-    perf_pure = continuous_accuracy(ypred_target, ytest_target.ravel())
-    
-    zt_test = clf_target.predict(target_test.loc[:, xcolumns(target_test)], verbose=0).ravel()
-    zs_test = clf_source.predict(source_test.loc[:, xcolumns(source_test)], verbose=0).ravel()
 
-    perf_test = continuous_accuracy(zs_test, source_test.Y, zt_test, target_test.Y) 
+    perf_pure_source = 0.0
+    perf_pure_target = continuous_accuracy(ypred_target, ytest_target.ravel())
 
-    return perf_pure, perf_test
-    
+    zt_test = clf_target.predict(
+        target_test.loc[:, xcolumns(target_test)], verbose=0
+    ).ravel()
+    zs_test = clf_source.predict(
+        source_test.loc[:, xcolumns(source_test)], verbose=0
+    ).ravel()
+
+    perf_test_source = continuous_accuracy(zs_test, source_test.Y)
+    perf_test_target = continuous_accuracy(zt_test, target_test.Y)
+
+    return perf_pure_source, perf_pure_target, perf_test_source, perf_test_target
