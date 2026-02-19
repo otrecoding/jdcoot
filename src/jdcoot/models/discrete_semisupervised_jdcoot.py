@@ -39,19 +39,19 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **k
 
     x_target_train = x_target[l_train, :]
 
-    z_source_train = one_hot(z_source, nClass)
+    z_source_train = one_hot(z_source, nClass).astype(np.float64)
     z_target_train = one_hot(z_target[l_train], nClass)
 
-    clf = discrete_classifier(target, "relu", "softmax", nClass)
+    clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
 
     algo = "sinkhorn"
     reg = 1
     algo2 = "emd"
     reg2 = 0
 
-    numIterBCD = 10
-    nb_epoch = 10
-    batch_size = 10
+    numIterBCD = 100
+    nb_epoch = 20
+    batch_size = 20
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -82,7 +82,7 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **k
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
 
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)

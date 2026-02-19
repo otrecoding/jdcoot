@@ -81,7 +81,7 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
     Ts, Tv, cost = cot_numpy(
         X1=x_target_train,
         X2=x_source,
-        niter=100,
+        niter=10,
         C_lin=M_lin,
         algo="sinkhorn",
         reg=1,

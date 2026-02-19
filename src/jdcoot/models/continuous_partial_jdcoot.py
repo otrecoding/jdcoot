@@ -38,9 +38,9 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
     alpha = alpha
     algo2 = "emd"
     reg2 = 0
-    numIterBCD = 10
-    nb_epoch = 10
-    batch_size = 10
+    numIterBCD = 100
+    nb_epoch = 20
+    batch_size =20
 
     # Initializations
     nA, dA = x_source.shape
@@ -59,14 +59,14 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
     clf_source.fit(
-        x_source_train, y_source_train, batch_size=10, epochs=nb_epoch, verbose=0
+        x_source_train, y_source_train, batch_size=20, epochs=nb_epoch, verbose=0
     )
 
     y_source_pred = clf_source.predict(x_source, verbose=0)
     y_source_pred[l_source_train] = y_source_train
 
     clf_target.fit(
-        x_target_train, y_target_train, batch_size=10, epochs=nb_epoch, verbose=0
+        x_target_train, y_target_train, batch_size=20, epochs=nb_epoch, verbose=0
     )
 
     y_target_pred = clf_target.predict(x_target, verbose=0)
@@ -81,7 +81,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
         Gvold = Gv
 
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

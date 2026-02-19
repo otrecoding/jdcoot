@@ -51,7 +51,7 @@ def continuous_semisupervised_coot(source, target, source_test, target_test, **k
 
     clf_target = continuous_classifier(target)
 
-    clf_target.fit(x_target, y_target_pred, batch_size=10, epochs=20, verbose=0)
+    clf_target.fit(x_target, y_target_pred, batch_size=20, epochs=20, verbose=0)
 
     y_target_test_pred = clf_target.predict(
         target_test.loc[:, xcolumns(target_test)], verbose=0

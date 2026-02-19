@@ -26,19 +26,19 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
     x_target = target.loc[:, xcolumns(target)].values
     z_target = target.Z.values
 
-    clf = discrete_classifier(target, "relu", "softmax", nClass)
+    clf = discrete_classifier(target,"relu", "softmax", nClass)
 
-    z_source_train = one_hot(z_source, nClass)
+    z_source_train = one_hot(z_source, nClass).astype(np.float64)
     x_target_train = x_target
 
     algo = "sinkhorn"
-    reg = 0.6
+    reg = 0.1
 
     algo2 = "emd"
     reg2 = 0
-    numIterBCD = 10
-    nb_epoch = 10
-    batch_size = 10
+    numIterBCD = 100
+    nb_epoch = 20
+    batch_size = 20
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -57,7 +57,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
 
     # step 1 : samples coupling optimization
 
-    Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T))  # is (nA,nB)
+    Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T))  # is (nA,nB)
     if algo == "emd":
         Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
     elif algo == "sinkhorn":
@@ -74,7 +74,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
         z_source_train  # injection of known labels in the classifier predictions
     )
 
-    z_target_hat = nB * Gs.T.dot(z_source_pred)
+    z_target_hat = nB * np.dot(Gs.T, z_source_pred)
     clf.fit(
         x_target_train, z_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
     )
@@ -89,7 +89,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":
@@ -106,7 +106,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
         cost = np.sum(Mv * Gv)
 
         z_source_pred = z_source_train
-        z_target_hat = nB * Gs.T.dot(z_source_pred)
+        z_target_hat = nB * np.dot(Gs.T, z_source_pred)
 
         clf.fit(
             x_target, z_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0

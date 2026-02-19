@@ -29,7 +29,7 @@ def discrete_semisupervised_reference(
     clf.fit(
         xtrain_target,
         enc.fit_transform(ztrain_target[:, np.newaxis]),
-        batch_size=10,
+        batch_size=20,
         epochs=20,
         verbose=0,
     )

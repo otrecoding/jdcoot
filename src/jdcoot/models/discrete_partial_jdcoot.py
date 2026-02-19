@@ -49,8 +49,8 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
     x_source_train = x_source[l_source_train, :]
     x_target_train = x_target[l_target_train, :]
 
-    z_source_train = one_hot(z_source[l_source_train], nClass)
-    z_target_train = one_hot(z_target[l_target_train], nClass)
+    z_source_train = one_hot(z_source[l_source_train], nClass).astype(np.float64)
+    z_target_train = one_hot(z_target[l_target_train], nClass).astype(np.float64)
 
     x_source_test = x_source[l_source_test, :]
     z_source_test = z_source[l_source_test]
@@ -58,15 +58,15 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
     x_target_test = x_target[l_target_test, :]
     z_target_test = z_target[l_target_test]
 
-    clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
+    clf_source, clf_target = discrete_classifiers(source, target, "sigmoid", "sigmoid")
 
     algo = "sinkhorn"
     reg = 1
 
     algo2 = "emd"
     reg2 = 0
-    numIterBCD = 10
-    nb_epoch = 10
+    numIterBCD = 100
+    nb_epoch = 20
     batch_size = 10
 
     nA, dA = x_source.shape
@@ -121,7 +121,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
         Gvold = Gv
         costold = cost
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":

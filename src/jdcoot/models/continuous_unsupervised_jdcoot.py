@@ -16,14 +16,14 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
-    algo1 = "sinkhorn"
-    reg = 100
+    algo1 = "emd"
+    reg = 1
 
     algo2 = "emd"
-    reg2 = 0
-    numIterBCD = 10
-    nb_epoch = 10
-    batch_size = 10
+    reg2 = 1
+    numIterBCD = 100
+    nb_epoch = 20
+    batch_size = 20
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -46,7 +46,7 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
         X2=x_target,
         niter=100,
         C_lin=None,
-        algo="sinkhorn",
+        algo="emd",
         reg=1,
         algo2="emd",
         verbose=False,
@@ -64,7 +64,7 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
         Gvold = Gv
 
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

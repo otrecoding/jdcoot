@@ -25,7 +25,7 @@ def continuous_unsupervised_coot(source, target, source_test, target_test, **kwa
         X2=x_target,
         niter=100,
         C_lin=M_lin,
-        algo="sinkhorn",
+        algo="emd",
         reg=1,
         algo2="emd",
         verbose=False,
@@ -39,7 +39,7 @@ def continuous_unsupervised_coot(source, target, source_test, target_test, **kwa
 
     clf = continuous_classifier(target)
 
-    clf.fit(x_target, ypred, batch_size=10, epochs=10, verbose=0)
+    clf.fit(x_target, ypred, batch_size=20, epochs=20, verbose=0)
     xtest = target_test.loc[:, xcolumns(target)].values
     ytest = clf.predict(xtest, verbose=0).ravel()
 

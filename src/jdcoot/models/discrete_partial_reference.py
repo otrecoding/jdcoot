@@ -34,8 +34,8 @@ def discrete_partial_reference(source, target, test_source, test_target, **kwarg
 
     clf_source, clf_target = discrete_classifiers(source, target, "sigmoid", "sigmoid")
 
-    clf_target.fit(x_target_train, z_target_train, batch_size=10, epochs=20, verbose=0)
-    clf_source.fit(x_source_train, z_source_train, batch_size=10, epochs=20, verbose=0)
+    clf_target.fit(x_target_train, z_target_train, batch_size=20, epochs=20, verbose=0)
+    clf_source.fit(x_source_train, z_source_train, batch_size=20, epochs=20, verbose=0)
 
     z_target_pred = enc.inverse_transform(
         clf_target.predict(x_target_test, verbose=0)

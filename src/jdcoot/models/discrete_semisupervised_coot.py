@@ -59,7 +59,7 @@ def discrete_semisupervised_coot(source, target, source_test, target_test, **kwa
 
     clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
 
-    clf.fit(x_target, z_target_pred, batch_size=10, epochs=10, verbose=0)
+    clf.fit(x_target, z_target_pred, batch_size=20, epochs=20, verbose=0)
 
     z_target_test = target.loc[l_target_test, "Z"].values
 

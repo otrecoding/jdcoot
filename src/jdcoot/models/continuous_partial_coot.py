@@ -77,8 +77,8 @@ def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
-    clf_target.fit(x_target, zt_estimated, batch_size=10, epochs=20, verbose=0)
-    clf_source.fit(x_source, zs_estimated, batch_size=10, epochs=20, verbose=0)
+    clf_target.fit(x_target, zt_estimated, batch_size=20, epochs=20, verbose=0)
+    clf_source.fit(x_source, zs_estimated, batch_size=20, epochs=20, verbose=0)
 
     zt_test = clf_target.predict(
         target_test.loc[:, xcolumns(target_test)], verbose=0

@@ -35,7 +35,7 @@ def discrete_unsupervised_coot(source, target, source_test, target_test, **kwarg
         X2=x_target,
         niter=100,
         algo="sinkhorn",
-        reg=1,
+        reg=0.1,
         algo2="emd",
         verbose=False,
     )
@@ -45,9 +45,9 @@ def discrete_unsupervised_coot(source, target, source_test, target_test, **kwarg
     perf_pure_source = 1.0
     perf_pure_target = discrete_accuracy(z_target, one_cold(z_target_pred))
 
-    clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
+    clf = discrete_classifier(target, "relu", "softmax", nClass)
 
-    clf.fit(x_target, z_target_pred, batch_size=10, epochs=20, verbose=0)
+    clf.fit(x_target, z_target_pred, batch_size=20, epochs=20, verbose=0)
 
     z_test = clf.predict(target_test.loc[:, xcolumns(target_test)], verbose=0)
 
