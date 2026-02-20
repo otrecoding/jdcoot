@@ -32,7 +32,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
     x_target_train = x_target
 
     algo = "sinkhorn"
-    reg = 0.1
+    reg = 1
 
     algo2 = "emd"
     reg2 = 0

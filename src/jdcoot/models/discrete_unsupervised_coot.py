@@ -5,7 +5,7 @@ from ..coot import cot_numpy
 from ..utils import discrete_classifier, xcolumns, discrete_accuracy
 
 
-def discrete_unsupervised_coot(source, target, source_test, target_test, **kwargs):
+def discrete_unsupervised_coot(source, target, source_test, target_test,reg, **kwargs):
     source_levels = np.unique(source.Z)
     target_levels = np.unique(source.Z)
 
@@ -35,7 +35,7 @@ def discrete_unsupervised_coot(source, target, source_test, target_test, **kwarg
         X2=x_target,
         niter=100,
         algo="sinkhorn",
-        reg=0.1,
+        reg=reg,
         algo2="emd",
         verbose=False,
     )
