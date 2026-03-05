@@ -65,7 +65,7 @@ kf_target = KFold(n_splits=num_folds, shuffle=True, random_state=42)
 
 results = []
 
-algo = "emd"
+algo = "sinkhorn"
 reg = 0.1
 
 best_alpha_global = None
