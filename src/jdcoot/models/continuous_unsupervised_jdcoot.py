@@ -5,9 +5,11 @@ from ..coot import cot_numpy
 from ..coot import init_matrix_np
 
 
-def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **kwargs):
+def continuous_unsupervised_jdcoot(source, target, test_source, test_target, algo,reg,**kwargs):
     alpha = kwargs.get("alpha", 0.3)
-
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
 
@@ -16,14 +18,14 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
-    algo1 = "emd"
-    reg = 1
+    algo1 = algo
+    reg1 = reg
 
     algo2 = "emd"
     reg2 = 1
     numIterBCD = 100
-    nb_epoch = 20
-    batch_size = 20
+    nb_epoch = 10
+    batch_size = batch_size
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -39,7 +41,7 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
     Gs = np.ones((nA, nB)) / (nA * nB)
     Gv = np.ones((dA, dB)) / (dA * dB)
 
-    clf_source.fit(x_source, y_source, batch_size=10, epochs=nb_epoch, verbose=0)
+    clf_source.fit(x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0)
 
     Ts, Tv, cost = cot_numpy(
         X1=x_source,

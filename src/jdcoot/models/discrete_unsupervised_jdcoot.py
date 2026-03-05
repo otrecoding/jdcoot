@@ -15,8 +15,11 @@ def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
 
-def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwargs):
+def discrete_unsupervised_jdcoot(source, target, source_test, target_test, algo,reg,batch_size,**kwargs):
     alpha = kwargs.get("alpha", 0.661)
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
     classes = np.union1d(np.unique(source.Z), np.unique(target.Z))
     nClass = len(classes)
 
@@ -31,15 +34,16 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test, **kwa
     z_source_train = one_hot(z_source, nClass).astype(np.float64)
     x_target_train = x_target
 
-    algo = "sinkhorn"
-    reg = 1
-
+    #algo = "sinkhorn"
+    #reg = 1
+    algo = algo
+    reg = reg
     algo2 = "emd"
     reg2 = 0
     numIterBCD = 100
-    nb_epoch = 20
-    batch_size = 20
-
+    nb_epoch = 10
+    #batch_size = 20
+    batch_size = batch_size 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
 

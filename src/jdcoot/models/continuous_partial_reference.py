@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 def continuous_partial_reference(source, target, source_test, target_test, **kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
+    batch_size = kwargs.get("batch_size", 20)
 
     x_source = source.loc[:, xcolumns(source)].values
     y_source = source.Y.values
@@ -20,11 +21,11 @@ def continuous_partial_reference(source, target, source_test, target_test, **kwa
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
-    clf_target.fit(x_target_train, y_target_train, batch_size=10, epochs=20, verbose=0)
+    clf_target.fit(x_target_train, y_target_train, batch_size=batch_size, epochs=20, verbose=0)
 
     y_target_pred = clf_target.predict(x_target_test, verbose=0).ravel()
 
-    clf_source.fit(x_source_train, y_source_train, batch_size=10, epochs=20, verbose=0)
+    clf_source.fit(x_source_train, y_source_train, batch_size=batch_size, epochs=20, verbose=0)
 
     y_source_pred = clf_source.predict(x_source_test, verbose=0).ravel()
 

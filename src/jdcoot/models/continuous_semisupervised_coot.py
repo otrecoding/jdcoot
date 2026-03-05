@@ -7,8 +7,11 @@ from ..utils import xcolumns, continuous_classifier, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def continuous_semisupervised_coot(source, target, source_test, target_test, **kwargs):
+def continuous_semisupervised_coot(source, target, source_test, target_test, algo,reg, **kwargs):
     prop_target = kwargs.get("prop_target", 0.1)
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
 
     y_source = source.Y.values
     y_target = target.Y.values
@@ -36,8 +39,8 @@ def continuous_semisupervised_coot(source, target, source_test, target_test, **k
         X2=x_target,
         niter=100,
         C_lin=M_lin,
-        algo="sinkhorn",
-        reg=100,
+        algo=algo,
+        reg=reg,
         algo2="emd",
         verbose=False,
     )
@@ -51,7 +54,7 @@ def continuous_semisupervised_coot(source, target, source_test, target_test, **k
 
     clf_target = continuous_classifier(target)
 
-    clf_target.fit(x_target, y_target_pred, batch_size=20, epochs=20, verbose=0)
+    clf_target.fit(x_target, y_target_pred, batch_size=batch_size, epochs=10, verbose=0)
 
     y_target_test_pred = clf_target.predict(
         target_test.loc[:, xcolumns(target_test)], verbose=0

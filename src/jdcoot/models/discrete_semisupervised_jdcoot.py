@@ -16,10 +16,12 @@ def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
 
-def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **kwargs):
+def discrete_semisupervised_jdcoot(source, target, source_test, target_test, algo,reg, **kwargs):
     prop_target = kwargs.get("prop_target", 0.1)
     alpha = kwargs.get("alpha", 3.335)
-
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20) 
     classes = np.union1d(np.unique(source.Z), np.unique(target.Z))
     nClass = len(classes)
 
@@ -42,16 +44,18 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **k
     z_source_train = one_hot(z_source, nClass).astype(np.float64)
     z_target_train = one_hot(z_target[l_train], nClass)
 
-    clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
+    clf = discrete_classifier(target, "relu", "softmax", nClass)
 
-    algo = "sinkhorn"
-    reg = 1
+    #algo = "sinkhorn"
+    #reg = 1
+    algo = algo
+    reg = reg
     algo2 = "emd"
     reg2 = 0
 
     numIterBCD = 100
-    nb_epoch = 20
-    batch_size = 20
+    nb_epoch = 10
+    batch_size = batch_size
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -69,7 +73,7 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, **k
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
     # we train the classifier with labelled examples only
-    clf.fit(x_target_train, z_target_train, batch_size=10, epochs=nb_epoch, verbose=0)
+    clf.fit(x_target_train, z_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0)
     z_target_pred = clf.predict(x_target, verbose=0)  # first estimate of XB labels
     z_target_pred[l_train] = z_target_train
 

@@ -1,6 +1,3 @@
-%load_ext autoreload
-%autoreload 2
-
 import sklearn
 import scipy 
 import numpy as np
@@ -26,7 +23,7 @@ from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
 featuresToUse = ["CaffeNet4096", "GoogleNet1024"] 
 #featuresToUse = ["CaffeNet4096", "CaffeNet4096"] 
-sourceDomainName = ['amazon'] #['caltech10','amazon','webcam']
+sourceDomainName = ['caltech10'] #['caltech10','amazon','webcam']
 targetDomainName = ['amazon'] #['caltech10','amazon','webcam']
 
 min_max_scaler = sklearn.preprocessing.MinMaxScaler()
@@ -52,6 +49,9 @@ target.loc[:,'Z'] = target.loc[:, 'Z'] - 1
 
 results = []
 numRepetitions = 10
+algo = "sinkhorn"
+reg = 1
+batch_size= 20
 alpha =1.5# hyperparamètre devant la loss a été optimé
 prop_target_values_s = [0.01, 0.05, 0.1, 0.2, 0.4]
 prop_target_values_p = [0.01, 0.05, 0.1, 0.2, 0.4]
@@ -71,8 +71,7 @@ for repe in range(numRepetitions):
     # UNSUPERVISED
     # =========================================================
      # COOT
-    pure_source, pure_target, test_source, test_target = \
-        discrete_unsupervised_coot(S, T, S_test, T_test,reg=1,alpha=alpha)
+    pure_source, pure_target, test_source, test_target =  discrete_unsupervised_coot(S, T, S_test, T_test,algo=algo,reg=reg)
 
     results.append({
         "repetition": repe,
@@ -88,19 +87,141 @@ for repe in range(numRepetitions):
     
     # JDCOOT
     pure_source, pure_target, test_source, test_target = \
-        discrete_unsupervised_jdcoot(S, T, S_test, T_test,alpha=alpha)
+         discrete_unsupervised_jdcoot(S, T, S_test, T_test, algo=algo, reg=reg, alpha=alpha)
 
     results.append({
-        "repetition": repe,
-        "recoding": "jdcoot",
-        "learning": "unsupervised",
-        "prop_source": 1,
-        "prop_target": 0,
-        "pure_source": pure_source,
-        "test_source": test_source,
-        "pure_target": pure_target,
-        "test_target": test_target,
-    })
+         "repetition": repe,
+         "recoding": "jdcoot",
+         "learning": "unsupervised",
+         "prop_source": 1,
+         "prop_target": 0,
+         "pure_source": pure_source,
+         "test_source": test_source,
+         "pure_target": pure_target,
+         "test_target": test_target,
+     })
+
+    for prop_target in prop_target_values_s:
+
+        # JDCOOT
+        pure_source, pure_target, test_source, test_target = discrete_semisupervised_jdcoot(
+                S, T, S_test, T_test,
+                alpha=alpha,
+                prop_target=prop_target,
+                algo=algo,
+                reg=reg
+            )
+
+        results.append({
+            "repetition": repe,
+            "recoding": "jdcoot",
+            "learning": "semisupervised",
+            "prop_source": 1,
+            "prop_target": prop_target,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
+
+        # COOT
+        pure_source, pure_target, test_source, test_target = discrete_semisupervised_coot(
+                S, T, S_test, T_test,algo=algo,reg=reg,
+                prop_target=prop_target
+            )
+
+        results.append({
+            "repetition": repe,
+            "recoding": "coot",
+            "learning": "semisupervised",
+            "prop_source": 1,
+            "prop_target": prop_target,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
+
+        # Reference
+        pure_source, pure_target, test_source, test_target = discrete_semisupervised_reference(
+                S, T, S_test, T_test,
+                prop_target=prop_target,algo=algo,reg=reg
+            )
+
+        results.append({
+            "repetition": repe,
+            "recoding": "reference",
+            "learning": "semisupervised",
+            "prop_source": 1,
+            "prop_target": prop_target,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
+
+    # =========================================================
+    # PARTIAL
+    # =========================================================
+    for prop_target in prop_target_values_p:
+
+        # JDCOOT
+        pure_source, pure_target, test_source, test_target = discrete_partial_jdcoot(
+                S, T, S_test, T_test,algo=algo,reg=reg,
+                alpha=alpha,
+                prop_source=0.5,
+                prop_target=prop_target
+            )
+
+        results.append({
+            "repetition": repe,
+            "recoding": "jdcoot",
+            "learning": "partial",
+            "prop_source": 0.5,
+            "prop_target": prop_target,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
+
+        # COOT
+        pure_source, pure_target, test_source, test_target = discrete_partial_coot(
+                S, T, S_test, T_test,algo=algo,reg=reg,
+                prop_source=0.5,
+                prop_target=prop_target
+            )
+
+        results.append({
+            "repetition": repe,
+            "recoding": "coot",
+            "learning": "partial",
+            "prop_source": 0.5,
+            "prop_target": prop_target,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
+
+        # Reference
+        pure_source, pure_target, test_source, test_target = discrete_partial_reference(
+                S, T, S_test, T_test,algo=algo,reg=reg,
+                prop_source=0.5,
+                prop_target=prop_target
+            )
+
+        results.append({
+            "repetition": repe,
+            "recoding": "reference",
+            "learning": "partial",
+            "prop_source": 0.5,
+            "prop_target": prop_target,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })    
 
    
 
@@ -129,129 +250,5 @@ df_summary = (
 
 df_summary
 
-
- # =========================================================
-    # SEMI-SUPERVISED
-    # =========================================================
-    for prop_target in prop_target_values_s:
-
-        # JDCOOT
-        pure_source, pure_target, test_source, test_target = discrete_semisupervised_jdcoot(
-                S, T, S_test, T_test,
-                alpha=0.5,
-                prop_target=prop_target
-            )
-
-        results.append({
-            "repetition": repe,
-            "recoding": "jdcoot",
-            "learning": "semisupervised",
-            "prop_source": 1,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
-
-        # COOT
-        pure_source, pure_target, test_source, test_target = \
-            discrete_semisupervised_coot(
-                S, T, S_test, T_test,
-                prop_target=prop_target
-            )
-
-        results.append({
-            "repetition": repe,
-            "recoding": "coot",
-            "learning": "semisupervised",
-            "prop_source": 1,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
-
-        # Reference
-        pure_source, pure_target, test_source, test_target = discrete_semisupervised_reference(
-                S, T, S_test, T_test,
-                prop_target=prop_target
-            )
-
-        results.append({
-            "repetition": repe,
-            "recoding": "reference",
-            "learning": "semisupervised",
-            "prop_source": 1,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
-
-    # =========================================================
-    # PARTIAL
-    # =========================================================
-    for prop_target in prop_target_values_p:
-
-        # JDCOOT
-        pure_source, pure_target, test_source, test_target = discrete_partial_jdcoot(
-                S, T, S_test, T_test,
-                alpha=0.5,
-                prop_source=0.5,
-                prop_target=prop_target
-            )
-
-        results.append({
-            "repetition": repe,
-            "recoding": "jdcoot",
-            "learning": "partial",
-            "prop_source": 0.5,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
-
-        # COOT
-        pure_source, pure_target, test_source, test_target = discrete_partial_coot(
-                S, T, S_test, T_test,
-                prop_source=0.5,
-                prop_target=prop_target
-            )
-
-        results.append({
-            "repetition": repe,
-            "recoding": "coot",
-            "learning": "partial",
-            "prop_source": 0.5,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
-
-        # Reference
-        pure_source, pure_target, test_source, test_target = discrete_partial_reference(
-                S, T, S_test, T_test,
-                prop_source=0.5,
-                prop_target=prop_target
-            )
-
-        results.append({
-            "repetition": repe,
-            "recoding": "reference",
-            "learning": "partial",
-            "prop_source": 0.5,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })    
-
-df_summary.to_excel("results_mean.xlsx", index=False)
+df_summary.to_excel("results_mean_CA.xlsx", index=False)
+  

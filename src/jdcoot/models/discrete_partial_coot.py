@@ -8,10 +8,12 @@ from sklearn.model_selection import train_test_split
 from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 
 
-def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
+def discrete_partial_coot(source, target, test_source, test_target, algo,reg,**kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
-
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
     source_levels = np.unique(source.Z)
     target_levels = np.unique(target.Z)
 
@@ -66,8 +68,8 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
         X2=x_target,
         niter=100,
         C_lin=M_lin,
-        algo="sinkhorn",
-        reg=1,
+        algo=algo,
+        reg=reg,
         algo2="emd",
         verbose=False,
     )
@@ -81,7 +83,7 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
     Ts, Tv, cost = cot_numpy(
         X1=x_target_train,
         X2=x_source,
-        niter=10,
+        niter=100,
         C_lin=M_lin,
         algo="sinkhorn",
         reg=1,
@@ -96,10 +98,10 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
     perf_pure_source = discrete_accuracy(z_source_test, zs_estimated[l_source_test])
     perf_pure_target = discrete_accuracy(z_target_test, zt_estimated[l_target_test])
 
-    clf_source, clf_target = discrete_classifiers(source, target, "sigmoid", "sigmoid")
+    clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
 
-    clf_source.fit(x_source, zs_onehot_estimated, batch_size=10, epochs=20, verbose=0)
-    clf_target.fit(x_target, zt_onehot_estimated, batch_size=10, epochs=20, verbose=0)
+    clf_source.fit(x_source, zs_onehot_estimated, batch_size=batch_size, epochs=20, verbose=0)
+    clf_target.fit(x_target, zt_onehot_estimated, batch_size=batch_size, epochs=20, verbose=0)
 
     zt_test = one_cold(
         clf_target.predict(test_target.loc[:, xcolumns(test_target)], verbose=0)

@@ -8,6 +8,8 @@ from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 def discrete_semisupervised_reference(
     source, target, source_test, target_test, **kwargs
 ):
+
+    batch_size = kwargs.get("batch_size", 20)
     prop_target = kwargs.get("prop_target", 0.1)
     n_target = len(target.Z)
 
@@ -22,15 +24,15 @@ def discrete_semisupervised_reference(
     nClass = len(np.union1d(np.unique(source.Z), np.unique(target.Z)))
     categories = [np.arange(nClass)]
 
-    clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
+    clf = discrete_classifier(target, "relu", "softmax", nClass)
 
     enc = onehot(handle_unknown="ignore", sparse_output=False, categories=categories)
 
     clf.fit(
         xtrain_target,
         enc.fit_transform(ztrain_target[:, np.newaxis]),
-        batch_size=20,
-        epochs=20,
+        batch_size=batch_size,
+        epochs=10,
         verbose=0,
     )
 

@@ -34,8 +34,8 @@ class DataScenario:
         self.size_target = 1000
         self.dim_source = 100
         self.dim_target = 100
-        self.obs_covar_prop_source = 0.2
-        self.obs_covar_prop_target = 0.2
+        self.obs_covar_prop_source = 0.4
+        self.obs_covar_prop_target = 0.4
 
         self.odds_ratio_source = 0.5
         self.odds_ratio_target = 0.5
@@ -45,10 +45,10 @@ class DataScenario:
         self.mean_x_target = np.zeros(self.dim_target)
         self.mean_y_source = 0
         self.mean_y_target = 0
-        self.active_autocorr_source = 0.7
-        self.inactive_autocorr_source = 0.2
-        self.active_autocorr_target = 0.7
-        self.inactive_autocorr_target = 0.2
+        self.active_autocorr_source = 0.3
+        self.inactive_autocorr_source = 0.3
+        self.active_autocorr_target = 0.3
+        self.inactive_autocorr_target = 0.3
 
     def generate(self, indices):
         """

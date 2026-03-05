@@ -30,7 +30,7 @@ for i in range(nsimulations):
     indices = np.random.choice(np.arange(100), math.ceil(sparse_rate), replace=False)
 
     for size in sizes:
-        train_scenario.size_source = size
+        train_scenario.size_source = 1000
         train_scenario.size_target = size
         test_scenario.size_source = 1000
         test_scenario.size_target = 1000

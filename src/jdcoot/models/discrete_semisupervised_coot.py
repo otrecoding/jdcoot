@@ -8,8 +8,11 @@ from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def discrete_semisupervised_coot(source, target, source_test, target_test, **kwargs):
+def discrete_semisupervised_coot(source, target, source_test, target_test, algo,reg, **kwargs):
     prop_target = kwargs.get("prop_target", 0.1)
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20) 
 
     source_levels = np.sort(np.unique(source.Z))
     target_levels = np.sort(np.unique(target.Z))
@@ -49,17 +52,17 @@ def discrete_semisupervised_coot(source, target, source_test, target_test, **kwa
         X2=x_target,
         niter=100,
         C_lin=M_lin,
-        algo="sinkhorn",
-        reg=1,
+        algo=algo,
+        reg=reg,
         algo2="emd",
         verbose=False,
     )
 
     z_target_pred = n_target * np.dot(Ts.T, one_hot(z_source))
 
-    clf = discrete_classifier(target, "sigmoid", "sigmoid", nClass)
+    clf = discrete_classifier(target, "relu", "softmax", nClass)
 
-    clf.fit(x_target, z_target_pred, batch_size=20, epochs=20, verbose=0)
+    clf.fit(x_target, z_target_pred, batch_size=batch_size, epochs=10, verbose=0)
 
     z_target_test = target.loc[l_target_test, "Z"].values
 

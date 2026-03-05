@@ -6,11 +6,14 @@ from ..coot import init_matrix_np
 from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs):
+def continuous_partial_jdcoot(source, target, source_test, target_test,  algo,reg,**kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
 
     alpha = kwargs.get("alpha", 2.425)
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
 
     n_source = len(source.Y)
     n_target = len(target.Y)
@@ -33,14 +36,14 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
     x_target_train = x_target[l_target_train, :]
     y_target_train = y_target[l_target_train, :]
 
-    algo1 = "sinkhorn"
-    reg = 100
+    algo1 = algo
+    reg = reg
     alpha = alpha
     algo2 = "emd"
     reg2 = 0
     numIterBCD = 100
-    nb_epoch = 20
-    batch_size =20
+    nb_epoch = 10
+    batch_size = batch_size
 
     # Initializations
     nA, dA = x_source.shape
@@ -59,14 +62,14 @@ def continuous_partial_jdcoot(source, target, source_test, target_test, **kwargs
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
     clf_source.fit(
-        x_source_train, y_source_train, batch_size=20, epochs=nb_epoch, verbose=0
+        x_source_train, y_source_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
     )
 
     y_source_pred = clf_source.predict(x_source, verbose=0)
     y_source_pred[l_source_train] = y_source_train
 
     clf_target.fit(
-        x_target_train, y_target_train, batch_size=20, epochs=nb_epoch, verbose=0
+        x_target_train, y_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
     )
 
     y_target_pred = clf_target.predict(x_target, verbose=0)

@@ -16,10 +16,12 @@ def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
 
-def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
+def discrete_partial_jdcoot(source, target, test_source, test_target, algo,reg, **kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
-
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
     alpha = kwargs.get("alpha", 2.875)
 
     source_levels = np.sort(np.unique(source.Z))
@@ -58,16 +60,17 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
     x_target_test = x_target[l_target_test, :]
     z_target_test = z_target[l_target_test]
 
-    clf_source, clf_target = discrete_classifiers(source, target, "sigmoid", "sigmoid")
+    clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
 
-    algo = "sinkhorn"
-    reg = 1
-
+    #algo = "sinkhorn"
+     #reg = 1
+    algo = algo
+    reg = reg
     algo2 = "emd"
     reg2 = 0
     numIterBCD = 100
-    nb_epoch = 20
-    batch_size = 10
+    nb_epoch = 10
+    batch_size = 20
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -103,7 +106,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
 
     # we train the classifier with labelled examples only
     clf_target.fit(
-        x_target_train, z_target_train, batch_size=10, epochs=nb_epoch, verbose=0
+        x_target_train, z_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
     )
 
     z_target_pred = clf_target.predict(x_target, verbose=0)

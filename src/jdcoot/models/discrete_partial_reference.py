@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 def discrete_partial_reference(source, target, test_source, test_target, **kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
-
+    batch_size = kwargs.get("batch_size", 20) 
     source_levels = np.sort(np.unique(source.Z))
     target_levels = np.sort(np.unique(target.Z))
 
@@ -32,10 +32,10 @@ def discrete_partial_reference(source, target, test_source, test_target, **kwarg
     x_target_test = target_test.loc[:, xcolumns(target)].values
     z_target_test = target_test.Z.values
 
-    clf_source, clf_target = discrete_classifiers(source, target, "sigmoid", "sigmoid")
+    clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
 
-    clf_target.fit(x_target_train, z_target_train, batch_size=20, epochs=20, verbose=0)
-    clf_source.fit(x_source_train, z_source_train, batch_size=20, epochs=20, verbose=0)
+    clf_target.fit(x_target_train, z_target_train, batch_size=batch_size, epochs=10, verbose=0)
+    clf_source.fit(x_source_train, z_source_train, batch_size=batch_size, epochs=10, verbose=0)
 
     z_target_pred = enc.inverse_transform(
         clf_target.predict(x_target_test, verbose=0)

@@ -8,6 +8,9 @@ def continuous_semisupervised_reference(
     source, target, source_test, target_test, **kwargs
 ):
     prop_target = kwargs.get("prop_target", 0.1)
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
 
     x_target = target.loc[:, xcolumns(target)].values
 
@@ -27,7 +30,7 @@ def continuous_semisupervised_reference(
 
     clf = continuous_classifier(target)
 
-    clf.fit(xtrain_target, ytrain_target, batch_size=10, epochs=20, verbose=0)
+    clf.fit(xtrain_target, ytrain_target, batch_size=batch_size, epochs=10, verbose=0)
 
     z_test = clf.predict(xtest_target, verbose=0).ravel()
 
