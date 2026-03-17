@@ -6,7 +6,7 @@ from ..coot import init_matrix_np
 from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_jdcoot(source, target, source_test, target_test,  algo,reg,**kwargs):
+def continuous_partial_jdcoot(source, target, source_test, target_test,  **kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
 

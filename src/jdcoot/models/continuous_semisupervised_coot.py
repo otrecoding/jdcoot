@@ -7,7 +7,7 @@ from ..utils import xcolumns, continuous_classifier, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def continuous_semisupervised_coot(source, target, source_test, target_test, algo,reg, **kwargs):
+def continuous_semisupervised_coot(source, target, source_test, target_test,  **kwargs):
     prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -46,7 +46,7 @@ def continuous_semisupervised_coot(source, target, source_test, target_test, alg
     )
 
     y_target_pred = n_target * np.dot(Ts.T, y_source)
-
+    y_target_pred[l_train] = y_target_train
     perf_pure_source = 0.0
     perf_pure_target = continuous_accuracy(
         y_target_pred[l_target_test], y_target[l_target_test]

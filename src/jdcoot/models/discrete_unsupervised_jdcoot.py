@@ -15,7 +15,7 @@ def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
 
-def discrete_unsupervised_jdcoot(source, target, source_test, target_test, algo,reg,batch_size,**kwargs):
+def discrete_unsupervised_jdcoot(source, target, source_test, target_test,**kwargs):
     alpha = kwargs.get("alpha", 0.661)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)

@@ -5,7 +5,7 @@ from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_accuracy, continuous_classifier
 
 
-def continuous_unsupervised_coot(source, target, source_test, target_test,  algo,reg,**kwargs):
+def continuous_unsupervised_coot(source, target, source_test, target_test,  **kwargs):
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)

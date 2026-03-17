@@ -5,7 +5,7 @@ from ..coot import cot_numpy
 from ..coot import init_matrix_np
 
 
-def continuous_unsupervised_jdcoot(source, target, test_source, test_target, algo,reg,**kwargs):
+def continuous_unsupervised_jdcoot(source, target, test_source, test_target,**kwargs):
     alpha = kwargs.get("alpha", 0.3)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)

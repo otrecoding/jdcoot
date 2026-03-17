@@ -1,3 +1,5 @@
+export CUDA_VISIBLE_DEVICES=""
+
 import sklearn
 import scipy 
 import numpy as np
@@ -71,7 +73,7 @@ for repe in range(numRepetitions):
     # UNSUPERVISED
     # =========================================================
      # COOT
-    pure_source, pure_target, test_source, test_target =  discrete_unsupervised_coot(S, T, S_test, T_test,algo=algo,reg=reg)
+    pure_source, pure_target, test_source, test_target =  discrete_unsupervised_coot(S, T, S_test, T_test,algo=algo,reg=reg,batch_size=batch_size)
 
     results.append({
         "repetition": repe,
@@ -87,7 +89,7 @@ for repe in range(numRepetitions):
     
     # JDCOOT
     pure_source, pure_target, test_source, test_target = \
-         discrete_unsupervised_jdcoot(S, T, S_test, T_test, algo=algo, reg=reg, alpha=alpha)
+         discrete_unsupervised_jdcoot(S, T, S_test, T_test, algo=algo, reg=reg, alpha=alpha, batch_size=batch_size)
 
     results.append({
          "repetition": repe,
@@ -109,7 +111,7 @@ for repe in range(numRepetitions):
                 alpha=alpha,
                 prop_target=prop_target,
                 algo=algo,
-                reg=reg
+                reg=reg, batch_size=batch_size
             )
 
         results.append({
@@ -127,7 +129,7 @@ for repe in range(numRepetitions):
         # COOT
         pure_source, pure_target, test_source, test_target = discrete_semisupervised_coot(
                 S, T, S_test, T_test,algo=algo,reg=reg,
-                prop_target=prop_target
+                prop_target=prop_target, batch_size=batch_size
             )
 
         results.append({
@@ -145,7 +147,7 @@ for repe in range(numRepetitions):
         # Reference
         pure_source, pure_target, test_source, test_target = discrete_semisupervised_reference(
                 S, T, S_test, T_test,
-                prop_target=prop_target,algo=algo,reg=reg
+                prop_target=prop_target,algo=algo,reg=reg, batch_size=batch_size
             )
 
         results.append({
@@ -170,7 +172,7 @@ for repe in range(numRepetitions):
                 S, T, S_test, T_test,algo=algo,reg=reg,
                 alpha=alpha,
                 prop_source=0.5,
-                prop_target=prop_target
+                prop_target=prop_target, batch_size=batch_size
             )
 
         results.append({
@@ -189,7 +191,7 @@ for repe in range(numRepetitions):
         pure_source, pure_target, test_source, test_target = discrete_partial_coot(
                 S, T, S_test, T_test,algo=algo,reg=reg,
                 prop_source=0.5,
-                prop_target=prop_target
+                prop_target=prop_target, batch_size=batch_size
             )
 
         results.append({
@@ -208,7 +210,7 @@ for repe in range(numRepetitions):
         pure_source, pure_target, test_source, test_target = discrete_partial_reference(
                 S, T, S_test, T_test,algo=algo,reg=reg,
                 prop_source=0.5,
-                prop_target=prop_target
+                prop_target=prop_target, batch_size=batch_size
             )
 
         results.append({

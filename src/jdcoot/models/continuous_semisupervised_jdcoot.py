@@ -8,7 +8,7 @@ from ..coot import init_matrix_np
 
 
 def continuous_semisupervised_jdcoot(
-    source, target, source_test, target_test, algo,reg, **kwargs
+    source, target, source_test, target_test,  **kwargs
 ):
     prop_target = kwargs.get("prop_target", 0.1)
 

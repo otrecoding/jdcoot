@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 
 
-def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
+def discrete_partial_coot(source, target, test_source, test_target, algo,reg,**kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
@@ -61,10 +61,10 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
         return M
 
-    M_lin = compute_cost_matrix(yt=z_target, ys=z_source)
+    M_lin = compute_cost_matrix(yt=z_target, ys=z_source_train)
 
     Ts, Tv, cost = cot_numpy(
-        X1=x_source,
+        X1=x_source_train,
         X2=x_target,
         niter=100,
         C_lin=M_lin,
@@ -74,12 +74,12 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
         verbose=False,
     )
 
-    zs_onehot = one_hot(z_source)
+    zs_onehot = one_hot(z_source_train)
     zt_onehot_estimated = n_target * np.dot(Ts.T, zs_onehot)
     zt_onehot_estimated [l_target_train] = one_hot(z_target_train)
     zt_estimated = one_cold(zt_onehot_estimated)
 
-    M_lin = compute_cost_matrix(yt=z_source, ys=z_target)
+    M_lin = compute_cost_matrix(yt=z_source, ys=z_target_train)
 
     Ts, Tv, cost = cot_numpy(
         X1=x_target_train,
@@ -92,7 +92,7 @@ def discrete_partial_coot(source, target, test_source, test_target, **kwargs):
         verbose=False,
     )
 
-    zt_onehot = one_hot(z_target)
+    zt_onehot = one_hot(z_target_train)
     zs_onehot_estimated = n_source * np.dot(Ts.T, zt_onehot)
     zs_onehot_estimated[l_source_train] = zs_onehot
     zs_estimated = one_cold(zs_onehot_estimated)

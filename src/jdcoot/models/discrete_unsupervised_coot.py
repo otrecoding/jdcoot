@@ -5,7 +5,7 @@ from ..coot import cot_numpy
 from ..utils import discrete_classifier, xcolumns, discrete_accuracy
 
 
-def discrete_unsupervised_coot(source, target, source_test, target_test, algo,reg,batch_size, **kwargs):
+def discrete_unsupervised_coot(source, target, source_test, target_test,  **kwargs):
 
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)

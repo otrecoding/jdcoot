@@ -16,7 +16,7 @@ def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
 
-def discrete_semisupervised_jdcoot(source, target, source_test, target_test, algo,reg, **kwargs):
+def discrete_semisupervised_jdcoot(source, target, source_test, target_test,  **kwargs):
     prop_target = kwargs.get("prop_target", 0.1)
     alpha = kwargs.get("alpha", 3.335)
     algo = kwargs.get("algo", "emd")

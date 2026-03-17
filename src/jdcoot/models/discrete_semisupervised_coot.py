@@ -8,7 +8,7 @@ from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def discrete_semisupervised_coot(source, target, source_test, target_test, algo,reg, **kwargs):
+def discrete_semisupervised_coot(source, target, source_test, target_test, **kwargs):
     prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -59,7 +59,7 @@ def discrete_semisupervised_coot(source, target, source_test, target_test, algo,
     )
 
     z_target_pred = n_target * np.dot(Ts.T, one_hot(z_source))
-
+    z_target_pred[l_target_train] = z_target_train
     clf = discrete_classifier(target, "relu", "softmax", nClass)
 
     clf.fit(x_target, z_target_pred, batch_size=batch_size, epochs=10, verbose=0)

@@ -7,7 +7,7 @@ from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_coot(source, target, source_test, target_test, algo,reg, **kwargs):
+def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
     prop_source = kwargs.get("prop_source", 0.1)
     prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
@@ -45,10 +45,10 @@ def continuous_partial_coot(source, target, source_test, target_test, algo,reg, 
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
 
-    M_lin = compute_cost_matrix(yt=y_target_train, ys=y_source[l_source_train])
+    M_lin = compute_cost_matrix(yt=y_target, ys=y_source)
 
     Ts, Tv, cost = cot_numpy(
-        X1=x_source_train,
+        X1=x_source,
         X2=x_target,
         niter=100,
         C_lin=M_lin,
@@ -58,12 +58,13 @@ def continuous_partial_coot(source, target, source_test, target_test, algo,reg, 
         verbose=False,
     )
 
-    zt_estimated = n_target * np.dot(Ts.T, y_source[l_source_train])
-
-    M_lin = compute_cost_matrix(yt=y_source_train, ys=y_target[l_target_train])
+    zt_estimated = n_target * np.dot(Ts.T, y_source)
+    zt_estimated[l_target_train] = y_target_train
+    
+    M_lin = compute_cost_matrix(yt=y_source, ys=y_target)
 
     Ts, Tv, cost = cot_numpy(
-        X1=x_target_train,
+        X1=x_target,
         X2=x_source,
         niter=100,
         C_lin=M_lin,
@@ -73,7 +74,8 @@ def continuous_partial_coot(source, target, source_test, target_test, algo,reg, 
         verbose=False,
     )
 
-    zs_estimated = n_source * np.dot(Ts.T, y_target[l_target_train])
+    zs_estimated = n_source * np.dot(Ts.T, y_target)
+    zs_estimated[l_source_train] = y_source_train
 
     perf_pure_target = continuous_accuracy(y_target_test, zt_estimated[l_target_test])
     perf_pure_source = continuous_accuracy(y_source_test, zs_estimated[l_source_test])
