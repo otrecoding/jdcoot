@@ -3,14 +3,14 @@ import numpy as np
 from ..utils import continuous_accuracy, xcolumns, continuous_classifiers
 from sklearn.model_selection import train_test_split
 import ot
-
+from ..comp import comp_regression
 from ..coot import init_matrix_np
 
 
 def continuous_semisupervised_jdcoot(
-    source, target, source_test, target_test,  **kwargs
+    source, target, source_test, target_test, l_train, l_test, **kwargs
 ):
-    prop_target = kwargs.get("prop_target", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
 
     alpha = kwargs.get("alpha", 2.625)
     algo = kwargs.get("algo", "emd")
@@ -19,7 +19,7 @@ def continuous_semisupervised_jdcoot(
 
     n_target = len(target.Y)
 
-    l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
+    #l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
@@ -69,13 +69,21 @@ def continuous_semisupervised_jdcoot(
 
     cost = np.inf
 
+    y_target2 = y_target.copy()
+    y_target2[l_target_test] = -1
+    def compute_cost_matrix(ys, yt):
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
+        return M
+
+    M_lin = compute_cost_matrix(yt=y_target2, ys=y_source)
+
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs
         Gvold = Gv
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin + alpha *fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

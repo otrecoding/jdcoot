@@ -3,7 +3,14 @@ from sklearn.preprocessing import OneHotEncoder as onehot
 
 from ..coot import cot_numpy
 from ..utils import discrete_classifier, xcolumns, discrete_accuracy
+from tf_keras.utils import to_categorical
 
+def one_hot(z, nClass):
+    return to_categorical(z, num_classes=nClass)
+
+
+def one_cold(z_hot):
+    return np.argmax(z_hot, axis=1)
 
 def discrete_unsupervised_coot(source, target, source_test, target_test,  **kwargs):
 
@@ -28,11 +35,6 @@ def discrete_unsupervised_coot(source, target, source_test, target_test,  **kwar
         handle_unknown="ignore", sparse_output=False, categories=categories
     )
 
-    def one_hot(z):
-        return encoder.fit_transform(z.reshape(-1, 1))
-
-    def one_cold(z):
-        return encoder.inverse_transform(z).ravel()
 
     Ts, Tv, cost = cot_numpy(
         X1=x_source,
@@ -44,7 +46,7 @@ def discrete_unsupervised_coot(source, target, source_test, target_test,  **kwar
         verbose=False,
     )
 
-    z_target_pred = size_target * np.dot(Ts.T, one_hot(z_source))
+    z_target_pred = size_target * np.dot(Ts.T, one_hot(z_source, nClass).astype(np.float64))
 
     perf_pure_source = 1.0
     perf_pure_target = discrete_accuracy(z_target, one_cold(z_target_pred))
@@ -56,6 +58,6 @@ def discrete_unsupervised_coot(source, target, source_test, target_test,  **kwar
     z_test = clf.predict(target_test.loc[:, xcolumns(target_test)], verbose=0)
 
     perf_test_source = 1.0
-    perf_test_target = discrete_accuracy(one_cold(z_test), target_test.Z)
+    perf_test_target = discrete_accuracy(one_cold(z_test)+ min(target_levels), target_test.Z)
 
     return perf_pure_source, perf_pure_target, perf_test_source, perf_test_target

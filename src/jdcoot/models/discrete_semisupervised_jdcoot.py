@@ -4,6 +4,7 @@ from tf_keras.utils import to_categorical
 
 import ot
 from ..coot import init_matrix_np
+from ..comp import comp_
 from ..losses import loss_crossentropy2
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
@@ -16,8 +17,8 @@ def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
 
-def discrete_semisupervised_jdcoot(source, target, source_test, target_test,  **kwargs):
-    prop_target = kwargs.get("prop_target", 0.1)
+def discrete_semisupervised_jdcoot(source, target, source_test, target_test, l_train, l_test, **kwargs):
+    #prop_target = kwargs.get("prop_target", 0.1)
     alpha = kwargs.get("alpha", 3.335)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -32,10 +33,10 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test,  **
 
     z_target = target.Z.values
 
-    l_train, l_test = train_test_split(
-        np.arange(n_target),
-        train_size=prop_target,
-    )
+    #l_train, l_test = train_test_split(
+    #    np.arange(n_target),
+    #    train_size=prop_target,
+    #)
 
     x_target = target.loc[:, xcolumns(target)].values
 
@@ -80,13 +81,19 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test,  **
     fcost = loss_crossentropy2(z_source_train, z_target_pred)
     cost = np.inf
 
+    def compute_cost_matrix(ys, yt, v=10000):
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
+        return M
+    z_target2 = z_target.copy()
+    z_target2[l_test] = -1
+    M_lin = compute_cost_matrix(yt=z_target2, ys=z_source)
     for k in range(numIterBCD):
         Gsold = Gs
         Gvold = Gv
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T))+  M_lin + alpha *fcost  # is (nA,nB)
 
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)

@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 
 import ot
 from ..coot import init_matrix_np
+from ..comp import comp_
 from ..losses import loss_crossentropy2
 from ..utils import xcolumns, discrete_classifiers, discrete_accuracy
 from tf_keras.utils import to_categorical
@@ -16,9 +17,9 @@ def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
 
-def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
-    prop_source = kwargs.get("prop_source", 0.1)
-    prop_target = kwargs.get("prop_target", 0.1)
+def discrete_partial_jdcoot(source, target, test_source, test_target,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+    #prop_source = kwargs.get("prop_source", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -35,15 +36,15 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
     n_source = len(z_source)
     n_target = len(z_target)
 
-    l_source_train, l_source_test = train_test_split(
-        np.arange(n_source),
-        train_size=prop_source,
-    )
+    #l_source_train, l_source_test = train_test_split(
+    #    np.arange(n_source),
+    #    train_size=prop_source
+    #)
 
-    l_target_train, l_target_test = train_test_split(
-        np.arange(n_target),
-        train_size=prop_target,
-    )
+    #l_target_train, l_target_test = train_test_split(
+    #    np.arange(n_target),
+    #    train_size=prop_target
+    #)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
@@ -64,13 +65,12 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
 
     #algo = "sinkhorn"
      #reg = 1
-    algo = algo
-    reg = reg
+
     algo2 = "emd"
     reg2 = 0
     numIterBCD = 100
     nb_epoch = 10
-    batch_size = 20
+
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -100,7 +100,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
 
     z_source_pred = clf_source.predict(x_source, verbose=0)
 
-    z_source_pred[l_source_train, :] = (
+    z_source_pred[l_source_train] = (
         z_source_train  # injection of known labels in the classifier predictions
     )
 
@@ -119,12 +119,21 @@ def discrete_partial_jdcoot(source, target, test_source, test_target, **kwargs):
 
     fcost = loss_crossentropy2(z_source_pred, z_target_pred)
 
+    def compute_cost_matrix(ys, yt, v=10000):
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
+        return M
+    z_target_2 = z_target.copy()
+    z_target_2[l_target_test] = -1
+    z_source_2 = z_source.copy()
+    z_source_2[l_source_test] = -1
+    M_lin = compute_cost_matrix(yt=z_target_2, ys=z_source_2)
+
     for k in range(numIterBCD):
         Gsold = Gs
         Gvold = Gv
         costold = cost
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T))+  M_lin + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":

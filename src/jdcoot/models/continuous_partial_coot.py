@@ -1,51 +1,63 @@
 import numpy as np
 import ot
-
+from sklearn.model_selection import train_test_split
 from ..comp import comp_regression
 from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
-from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
-    prop_source = kwargs.get("prop_source", 0.1)
-    prop_target = kwargs.get("prop_target", 0.1)
+
+def continuous_partial_coot(source, target, source_test, target_test,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+    #prop_source = kwargs.get("prop_source", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
+    nb_epoch = 10
+    n_source = len(source.Y)
+    n_target = len(target.Y)
 
-    n_source = source.Y.size
-    n_target = target.Y.size
-
-    l_source_train, l_source_test = train_test_split(
-        np.arange(n_source), train_size=prop_source
-    )
-    l_target_train, l_target_test = train_test_split(
-        np.arange(n_target), train_size=prop_target
-    )
+    #l_source_train, l_source_test = train_test_split(
+    #    np.arange(n_source), train_size=prop_source
+   #)
+    #l_target_train, l_target_test = train_test_split(
+    #    np.arange(n_target), train_size=prop_target
+    #)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
 
+    y_source = source.Y.values[:, np.newaxis]
+    y_target = target.Y.values[:, np.newaxis]
+
+    clf_source, clf_target = continuous_classifiers(source, target)
+
     x_source_train = x_source[l_source_train, :]
+    y_source_train = y_source[l_source_train, :]
     x_target_train = x_target[l_target_train, :]
+    y_target_train = y_target[l_target_train, :]
 
-    y_source = source.Y.values
-    y_target = target.Y.values
+    clf_source.fit(
+        x_source_train, y_source_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
+    )
 
-    y_source_train = source.Y.values.copy()
-    y_source_train[l_source_test] = np.nan
-    y_target_train = target.Y.values.copy()
-    y_target_train[l_target_test] = np.nan
+    y_source_pred = clf_source.predict(x_source, verbose=0)
+    y_source_pred[l_source_train] = y_source_train
 
-    y_source_test = source.Y.values[l_source_test]
-    y_target_test = target.Y.values[l_target_test]
+    clf_target.fit(
+        x_target_train, y_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
+    )
 
+    y_target_pred = clf_target.predict(x_target, verbose=0)
+    y_target_pred[l_target_train] = y_target_train
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
-
-    M_lin = compute_cost_matrix(yt=y_target, ys=y_source)
+    y_target2 = y_target.copy()
+    y_target2[l_target_test] = -1
+    y_source2 = y_source.copy()
+    y_source2[l_source_test] = -1
+    M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
 
     Ts, Tv, cost = cot_numpy(
         X1=x_source,
@@ -58,32 +70,34 @@ def continuous_partial_coot(source, target, source_test, target_test, **kwargs):
         verbose=False,
     )
 
-    zt_estimated = n_target * np.dot(Ts.T, y_source)
+    zt_estimated = n_target * np.dot(Ts.T, y_source_pred)
     zt_estimated[l_target_train] = y_target_train
     
-    M_lin = compute_cost_matrix(yt=y_source, ys=y_target)
+    #M_lin = compute_cost_matrix(yt=y_source, ys=y_target)
 
-    Ts, Tv, cost = cot_numpy(
-        X1=x_target,
-        X2=x_source,
-        niter=100,
-        C_lin=M_lin,
-        algo="emd",
-        reg=1,
-        algo2="emd",
-        verbose=False,
-    )
+    # Ts, Tv, cost = cot_numpy(
+    #     X1=x_target,
+    #     X2=x_source,
+    #     niter=100,
+    #     C_lin=M_lin,
+    #     algo="emd",
+    #     reg=1,
+    #     algo2="emd",
+    #     verbose=False,
+    # )
 
-    zs_estimated = n_source * np.dot(Ts.T, y_target)
+    zs_estimated = n_source * np.dot(Ts, y_target_pred)
     zs_estimated[l_source_train] = y_source_train
-
-    perf_pure_target = continuous_accuracy(y_target_test, zt_estimated[l_target_test])
-    perf_pure_source = continuous_accuracy(y_source_test, zs_estimated[l_source_test])
-
-    clf_source, clf_target = continuous_classifiers(source, target)
 
     clf_target.fit(x_target, zt_estimated, batch_size=batch_size, epochs=10, verbose=0)
     clf_source.fit(x_source, zs_estimated, batch_size=batch_size, epochs=10, verbose=0)
+
+    ypred_target = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
+    ypred_source = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()
+
+    perf_pure_source = continuous_accuracy(ypred_source, source.loc[l_source_test, "Y"])
+    perf_pure_target = continuous_accuracy(ypred_target, target.loc[l_target_test, "Y"])
+  
 
     zt_test = clf_target.predict(
         target_test.loc[:, xcolumns(target_test)], verbose=0
