@@ -70,20 +70,20 @@ def continuous_semisupervised_jdcoot(
     cost = np.inf
 
     y_target2 = y_target.copy()
-    y_target2[l_target_test] = -1
+    y_target2[l_test] = -1
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
 
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source)
-
+    fcost= M_lin
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs
         Gvold = Gv
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin + alpha *fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  alpha *fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

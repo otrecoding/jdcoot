@@ -88,14 +88,14 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     y_source2 = y_source.copy()
     y_source2[l_source_test] = -1
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
-
+    fcost = M_lin
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs
         Gvold = Gv
 
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin  + alpha * fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  alpha * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

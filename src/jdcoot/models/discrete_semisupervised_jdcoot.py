@@ -93,7 +93,7 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, l_t
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T))+  M_lin + alpha *fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin + alpha *fcost  # is (nA,nB)
 
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)

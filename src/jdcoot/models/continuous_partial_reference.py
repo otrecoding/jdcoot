@@ -2,9 +2,9 @@ from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_reference(source, target, source_test, target_test, **kwargs):
-    prop_source = kwargs.get("prop_source", 0.1)
-    prop_target = kwargs.get("prop_target", 0.1)
+def continuous_partial_reference(source, target, l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
+    #prop_source = kwargs.get("prop_source", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
     batch_size = kwargs.get("batch_size", 20)
 
     x_source = source.loc[:, xcolumns(source)].values
@@ -12,13 +12,21 @@ def continuous_partial_reference(source, target, source_test, target_test, **kwa
     x_target = target.loc[:, xcolumns(target)].values
     y_target = target.Y.values
 
-    x_source_train, x_source_test, y_source_train, y_source_test = train_test_split(
-        x_source, y_source, train_size=prop_source
-    )
-    x_target_train, x_target_test, y_target_train, y_target_test = train_test_split(
-        x_target, y_target, train_size=prop_target
-    )
+    #x_source_train, x_source_test, y_source_train, y_source_test = train_test_split(
+    #    x_source, y_source, train_size=prop_source
+    #)
+    #x_target_train, x_target_test, y_target_train, y_target_test = train_test_split(
+    #    x_target, y_target, train_size=prop_target
+    #)
 
+    x_target_train = x_target[l_target_train, :]
+    y_target_train = y_target[l_target_train, :]
+    x_source_train = x_source[l_source_train, :]
+    y_source_train = y_source[l_source_train, :]
+    x_target_test = x_target[l_target_test, :]
+    y_target_test = y_target[l_target_test, :]
+    x_source_test = x_source[l_source_test, :]
+    y_source_test = y_source[l_source_test, :]
     clf_source, clf_target = continuous_classifiers(source, target)
 
     clf_target.fit(x_target_train, y_target_train, batch_size=batch_size, epochs=20, verbose=0)

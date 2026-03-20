@@ -5,9 +5,9 @@ from sklearn.model_selection import train_test_split
 
 
 def continuous_semisupervised_reference(
-    source, target, source_test, target_test, **kwargs
+    source, target, source_test, target_test,l_target_train, l_target_test, **kwargs
 ):
-    prop_target = kwargs.get("prop_target", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -18,9 +18,9 @@ def continuous_semisupervised_reference(
 
     n_target = len(y_target)
 
-    l_target_train, l_target_test = train_test_split(
-        np.arange(n_target), train_size=prop_target
-    )
+    #l_target_train, l_target_test = train_test_split(
+    #    np.arange(n_target), train_size=prop_target
+    #)
 
     xtrain_target = x_target[l_target_train, :]
     ytrain_target = y_target[l_target_train]

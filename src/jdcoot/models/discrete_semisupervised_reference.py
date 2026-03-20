@@ -6,14 +6,14 @@ from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
 
 def discrete_semisupervised_reference(
-    source, target, source_test, target_test, **kwargs
+    source, target, source_test, target_test,l_train, l_test, **kwargs
 ):
 
     batch_size = kwargs.get("batch_size", 20)
-    prop_target = kwargs.get("prop_target", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
     n_target = len(target.Z)
 
-    l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
+    #l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
     xtrain_target = target.loc[l_train, xcolumns(target)].values
     ztrain_target = target.Z.values[l_train]

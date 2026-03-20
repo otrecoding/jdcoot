@@ -5,9 +5,9 @@ from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 from sklearn.model_selection import train_test_split
 
 
-def discrete_partial_reference(source, target, test_source, test_target, **kwargs):
-    prop_source = kwargs.get("prop_source", 0.1)
-    prop_target = kwargs.get("prop_target", 0.1)
+def discrete_partial_reference(source, target, test_source, test_target,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+    #prop_source = kwargs.get("prop_source", 0.1)
+    #prop_target = kwargs.get("prop_target", 0.1)
     batch_size = kwargs.get("batch_size", 20) 
     source_levels = np.sort(np.unique(source.Z))
     target_levels = np.sort(np.unique(target.Z))
@@ -17,8 +17,12 @@ def discrete_partial_reference(source, target, test_source, test_target, **kwarg
 
     enc = onehot(handle_unknown="ignore", sparse_output=False, categories=categories)
 
-    source_train, source_test = train_test_split(source, train_size=prop_source)
-    target_train, target_test = train_test_split(target, train_size=prop_target)
+    #source_train, source_test = train_test_split(source, train_size=prop_source)
+    #target_train, target_test = train_test_split(target, train_size=prop_target)
+    source_train = source.iloc[l_source_train, :]
+    target_train = target.iloc[l_target_train, :]
+    source_test = source.iloc[l_source_test, :]
+    target_test = target.iloc[l_target_test, :]
 
     x_source_train = source_train.loc[:, xcolumns(source)].values
     z_source_train = enc.fit_transform(source_train.Z.values[:, np.newaxis])
