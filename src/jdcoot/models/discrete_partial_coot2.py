@@ -16,7 +16,7 @@ def one_hot(z, nClass):
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
-def discrete_partial_coot(source, target, test_source, test_target, l_source_train, l_source_test,l_target_train, l_target_test,**kwargs):
+def discrete_partial_coot2(source, target, test_source, test_target, l_source_train, l_source_test,l_target_train, l_target_test,**kwargs):
     #prop_source = kwargs.get("prop_source", 0.1)
     #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
@@ -86,12 +86,12 @@ def discrete_partial_coot(source, target, test_source, test_target, l_source_tra
         return M
     z_target_2 = z_target.copy()
     z_target_2[l_target_test] = -1
-    z_source_2 = z_source.copy()
-    z_source_2[l_source_test] = -1
+    z_source_2 = z_source[l_source_train]
+
     M_lin = compute_cost_matrix(yt=z_target_2, ys=z_source_2)
 
     Ts, Tv, cost = cot_numpy(
-        X1=x_source,
+        X1=x_source_train,
         X2=x_target,
         niter=100,
         C_lin=M_lin,
@@ -101,25 +101,29 @@ def discrete_partial_coot(source, target, test_source, test_target, l_source_tra
         verbose=False,
     )
 
-    zs_onehot = z_source_pred
+    zs_onehot = z_source_pred[l_source_train]
     zt_onehot_estimated = n_target * np.dot(Ts.T, zs_onehot)
     zt_onehot_estimated [l_target_train] = z_target_train
     zt_estimated = one_cold(zt_onehot_estimated)+ min(target_levels)
-    #M_lin = compute_cost_matrix(yt=z_source, ys=z_target)
 
-    # Ts, Tv, cost = cot_numpy(
-    #     X1=x_target,
-    #     X2=x_source,
-    #     niter=100,
-    #     C_lin=M_lin,
-    #     algo="sinkhorn",
-    #     reg=1,
-    #     algo2="emd",
-    #     verbose=False,
-    # )
+    z_target_2 = z_target[l_target_train]
+    z_source_2 = z_source.copy()
+    z_source_2[l_source_test] = -1
+    M_lin = compute_cost_matrix(yt=z_source_2, ys=z_target_2)
 
-    zt_onehot = z_target_pred
-    zs_onehot_estimated = n_source * np.dot(Ts, zt_onehot)
+    Ts, Tv, cost = cot_numpy(
+         X1=x_target_train,
+         X2=x_source,
+         niter=100,
+         C_lin=M_lin,
+         algo="sinkhorn",
+         reg=1,
+         algo2="emd",
+         verbose=False,
+    )
+
+    zt_onehot = z_target_pred[l_target_train]
+    zs_onehot_estimated = n_source * np.dot(Ts.T, zt_onehot)
     zs_onehot_estimated[l_source_train] = z_source_train
     zs_estimated = one_cold(zs_onehot_estimated)+ min(source_levels)
 

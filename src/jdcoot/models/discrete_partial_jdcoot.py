@@ -133,7 +133,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,l_source_tr
         Gvold = Gv
         costold = cost
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  M_lin+ alpha * fcost #+  M_lin# + alpha * fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +   alpha * fcost #+  M_lin# + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":

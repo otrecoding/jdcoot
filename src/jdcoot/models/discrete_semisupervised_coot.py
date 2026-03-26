@@ -64,7 +64,8 @@ def discrete_semisupervised_coot(source, target, source_test, target_test,l_targ
     clf = discrete_classifier(target, "relu", "softmax", nClass)
 
     clf.fit(x_target, z_target_pred, batch_size=batch_size, epochs=10, verbose=0)
-
+    z_target_pred = clf.predict(x_target, verbose=0)
+    z_target_pred[l_target_train] = one_hot(z_target[l_target_train], nClass).astype(np.float64)
     z_target_test = target.loc[l_target_test, "Z"].values
 
     z_target_pred = one_cold(z_target_pred)+ min(target_levels)
