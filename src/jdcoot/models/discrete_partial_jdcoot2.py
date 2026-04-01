@@ -32,7 +32,7 @@ def one_cold2(z_hot, seen_levels):
     return seen_levels[indices]
 
 
-def discrete_partial_jdcoot(source, target, test_source, test_target,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+def discrete_partial_jdcoot2(source, target, test_source, test_target,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
     #prop_source = kwargs.get("prop_source", 0.1)
     #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
@@ -139,13 +139,6 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,l_source_tr
     z_source_pred_c = one_cold2(z_source_pred, source_levels_train) 
     z_source_pred = one_hot(z_source_pred_c, nClass).astype(np.float64)
     z_target_pred = one_hot(z_target_pred_c, nClass).astype(np.float64)
-
-    accuracy = np.mean(
-            z_target_pred_c[l_target_test]== z_target[l_target_test]
-        )
-
-    print(f" Accuracy: {accuracy}")
-    
     clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
     log_out = {}
     log_out["cost"] = []
@@ -193,36 +186,36 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,l_source_tr
 
         # estimated labels of XA using transport map on samples
         #zs_onehot_estimated = nA * Gs.dot(z_target_pred_init) {si je mets init j'ai la meme chose que COOT}
-        zs_onehot_estimated = nA * Gs.dot(z_target_pred)
-        zs_onehot_estimated[l_source_train] = z_source_train
+    zs_onehot_estimated = nA * Gs.dot(z_target_pred)
+    zs_onehot_estimated[l_source_train] = z_source_train
         #zt_onehot_estimated = nB * Gs.T.dot(z_source_pred_init)
-        zt_onehot_estimated = nB * Gs.T.dot(z_source_pred)
-        zt_onehot_estimated[l_target_train] = z_target_train
+    zt_onehot_estimated = nB * Gs.T.dot(z_source_pred)
+    zt_onehot_estimated[l_target_train] = z_target_train
         # update label estimate with models predictions
-        clf_source.fit(
+    clf_source.fit(
             x_source, zs_onehot_estimated, batch_size=batch_size, epochs=nb_epoch, verbose=0
         )
-        z_source_pred = clf_source.predict(x_source, verbose=0)
+    z_source_pred = clf_source.predict(x_source, verbose=0)
 
-        z_source_pred[l_source_train] = z_source_train
+    z_source_pred[l_source_train] = z_source_train
 
     
 
-        clf_target.fit(
+    clf_target.fit(
             x_target, zt_onehot_estimated, batch_size=batch_size, epochs=nb_epoch, verbose=0
         )
-        z_target_pred = clf_target.predict(x_target, verbose=0)
+    z_target_pred = clf_target.predict(x_target, verbose=0)
 
-        z_target_pred[l_target_train] = z_target_train
+    z_target_pred[l_target_train] = z_target_train
 
-        accuracy = np.mean(
+    accuracy = np.mean(
             (one_cold(z_target_pred[l_target_test]) + min(target_levels))
             == z_target[l_target_test]
         )
 
-        print(f"Delta: {delta} \t  Loss: {cost} \t Accuracy: {accuracy}")
+    print(f"Delta: {delta} \t  Loss: {cost} \t Accuracy: {accuracy}")
 
-        fcost = loss_crossentropy2(z_source_pred, z_target_pred)
+    fcost = loss_crossentropy2(z_source_pred, z_target_pred)
     
     print("Gs sum:", Gs.sum())
     print("Gs max:", Gs.max())

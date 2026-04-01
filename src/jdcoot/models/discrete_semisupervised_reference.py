@@ -5,7 +5,10 @@ from tf_keras.utils import to_categorical
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
 
-def one_hot(z, seen_levels):
+def one_hot(z, nClass):
+    return to_categorical(z, num_classes=nClass)
+
+def one_hot2(z, seen_levels):
     """
     One-hot encoding sur les classes vues dans ce fold.
 
@@ -18,6 +21,11 @@ def one_hot(z, seen_levels):
     return to_categorical(indices, num_classes=len(seen_levels))
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
+
+def one_cold2(z_hot, seen_levels):
+    indices = np.argmax(z_hot, axis=1)
+    seen_levels = np.array(seen_levels)
+    return seen_levels[indices]
 
 def discrete_semisupervised_reference(
     source, target, source_test, target_test,l_train, l_test, **kwargs
@@ -53,15 +61,15 @@ def discrete_semisupervised_reference(
     )
 
     z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
-    z_test = one_cold(
-        clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)) + min(target_levels_train)
+    z_test = one_cold2(
+        clf.predict(target_test.loc[:, xcolumns(target)], verbose=0),target_levels_train)
 
 
     perf_pure_source = 1.0
     perf_pure_target = discrete_accuracy(z_test, target_test.Z)
 
     z_test = clf.predict(xtest_target, verbose=0)
-    z_test = one_cold(z_test) + min(target_levels_train)
+    z_test = one_cold2(z_test,target_levels_train)
     
     perf_test_source = 1.0
     perf_test_target = discrete_accuracy(z_test, ztest_target)

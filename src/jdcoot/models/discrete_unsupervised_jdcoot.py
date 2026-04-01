@@ -88,8 +88,8 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test,**kwar
     cost = np.inf
 
     for k in range(numIterBCD):
-        Gsold = Gs
-        Gvold = Gv
+        Gsold = Gs.copy()
+        Gvold = Gv.copy()
         costold = cost
 
         # step 1 : samples coupling optimization

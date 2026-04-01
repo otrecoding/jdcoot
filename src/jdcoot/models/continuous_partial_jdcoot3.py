@@ -5,6 +5,7 @@ from jdcoot.comp import comp_regression
 from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 import ot
 from ..coot import init_matrix_np
+from ..coot import cot_numpy
 from sklearn.model_selection import train_test_split
 
 
@@ -63,18 +64,55 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     Gs = np.ones((nA, nB)) / (nA * nB)  # is (n,n')
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
-    clf_source.fit(
-        x_source_train, y_source_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
+    def compute_cost_matrix(ys, yt):
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
+        return M
+    y_target2 = y_target.copy()
+    y_target2[l_target_test] = -1
+    y_source2 = y_source_train.copy()
+    M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
+
+    Ts, Tv, cost = cot_numpy(
+        X1=x_source_train,
+        X2=x_target,
+        niter=100,
+        C_lin=M_lin,
+        algo=algo,
+        reg=reg,
+        algo2="emd",
+        verbose=False,
     )
 
-    y_source_pred = clf_source.predict(x_source, verbose=0)
+    zt_estimated = n_target * np.dot(Ts.T, y_source_train)
+    zt_estimated[l_target_train] = y_target_train
+
+    y_target2 = y_target_train.copy()
+    y_source2 = y_source.copy()
+    y_source2[l_source_test] = -1
+    M_lin = compute_cost_matrix(yt=y_source2, ys=y_target2)
+
+    Ts, Tv, cost = cot_numpy(
+         X1=x_target_train,
+         X2=x_source,
+         niter=100,
+         C_lin=M_lin,
+         algo=algo,
+         reg=reg,
+         algo2="emd",
+         verbose=False,
+     )
+
+    zs_estimated = n_source * np.dot(Ts.T, y_target_train)
+    zs_estimated[l_source_train] = y_source_train
+
+    clf_target.fit(x_target, zt_estimated, batch_size=batch_size, epochs=10, verbose=0)
+    clf_source.fit(x_source, zs_estimated, batch_size=batch_size, epochs=10, verbose=0)
+
+    y_target_pred = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
+    y_source_pred = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()
+
+
     y_source_pred[l_source_train] = y_source_train
-
-    clf_target.fit(
-        x_target_train, y_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
-    )
-
-    y_target_pred = clf_target.predict(x_target, verbose=0)
     y_target_pred[l_target_train] = y_target_train
     fcost = ot.dist(y_source_pred, y_target_pred, metric="sqeuclidean")  # is (nA,nB)
 
@@ -88,7 +126,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     y_source2 = y_source.copy()
     y_source2[l_source_test] = -1
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
-    fcost = M_lin
+    #fcost = M_lin
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs.copy()

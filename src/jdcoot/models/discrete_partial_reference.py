@@ -19,6 +19,11 @@ def one_hot(z, seen_levels):
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
+def one_cold2(z_hot, seen_levels):
+    indices = np.argmax(z_hot, axis=1)
+    seen_levels = np.array(seen_levels)
+    return seen_levels[indices]
+
 def discrete_partial_reference(source, target, test_source, test_target,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
     #prop_source = kwargs.get("prop_source", 0.1)
     #prop_target = kwargs.get("prop_target", 0.1)
@@ -29,7 +34,6 @@ def discrete_partial_reference(source, target, test_source, test_target,l_source
     nClass = len(np.union1d(source_levels, target_levels))
     categories = [np.arange(nClass)]
 
-    enc = onehot(handle_unknown="ignore", sparse_output=False, categories=categories)
 
     #source_train, source_test = train_test_split(source, train_size=prop_source)
     #target_train, target_test = train_test_split(target, train_size=prop_target)
@@ -59,10 +63,10 @@ def discrete_partial_reference(source, target, test_source, test_target,l_source
     clf_target.fit(x_target_train, z_target_train, batch_size=batch_size, epochs=10, verbose=0)
     clf_source.fit(x_source_train, z_source_train, batch_size=batch_size, epochs=10, verbose=0)
 
-    z_target_pred = one_cold(
-        clf_target.predict(x_target_test, verbose=0)) + min(target_levels_train)
-    z_source_pred = one_cold(
-        clf_source.predict(x_source_test, verbose=0)) + min(source_levels_train)
+    z_target_pred = one_cold2(
+        clf_target.predict(x_target_test, verbose=0),target_levels_train) 
+    z_source_pred = one_cold2(
+        clf_source.predict(x_source_test, verbose=0),source_levels_train) 
 
     perf_pure_source = discrete_accuracy(z_source_pred, z_source_test)
     perf_pure_target = discrete_accuracy(z_target_pred, z_target_test)
@@ -70,10 +74,10 @@ def discrete_partial_reference(source, target, test_source, test_target,l_source
     x_test_source = test_source.loc[:, xcolumns(source)]
     x_test_target = test_target.loc[:, xcolumns(target)]
 
-    z_test_source = one_cold(
-        clf_source.predict(x_test_source, verbose=0)) + min(source_levels_train)
-    z_test_target = one_cold(
-        clf_target.predict(x_test_target, verbose=0)) + min(target_levels_train)
+    z_test_source = one_cold2(
+        clf_source.predict(x_test_source, verbose=0),source_levels_train) 
+    z_test_target = one_cold2(
+        clf_target.predict(x_test_target, verbose=0),target_levels_train) 
   
     perf_test_source = discrete_accuracy(z_test_source, test_source.Z)
     perf_test_target = discrete_accuracy(z_test_target, test_target.Z)

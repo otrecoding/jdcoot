@@ -9,12 +9,27 @@ from ..losses import loss_crossentropy2
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
 
-def one_hot(y, nClass):
-    return to_categorical(y, num_classes=nClass)
+def one_hot(z, nClass):
+    return to_categorical(z, num_classes=nClass)
 
+def one_hot2(z, seen_levels):
+    """
+    One-hot encoding sur les classes vues dans ce fold.
 
-def one_cold(z_encoded):
-    return np.argmax(z_encoded, axis=1)
+    z : array-like, labels (float ou int)
+    seen_levels : array-like, original labels present
+    """
+    z = np.array(z)
+    seen_levels = np.array(seen_levels)
+    indices = np.searchsorted(seen_levels, z)
+    return to_categorical(indices, num_classes=len(seen_levels))
+def one_cold(z_hot):
+    return np.argmax(z_hot, axis=1)
+
+def one_cold2(z_hot, seen_levels):
+    indices = np.argmax(z_hot, axis=1)
+    seen_levels = np.array(seen_levels)
+    return seen_levels[indices]
 
 
 def discrete_semisupervised_jdcoot(source, target, source_test, target_test, l_train, l_test, **kwargs):
@@ -87,13 +102,14 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test, l_t
     z_target2 = z_target.copy()
     z_target2[l_test] = -1
     M_lin = compute_cost_matrix(yt=z_target2, ys=z_source)
+    fcost  = M_lin
     for k in range(numIterBCD):
-        Gsold = Gs
-        Gvold = Gv
+        Gsold = Gs.copy()
+        Gvold = Gv.copy()
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin + alpha *fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
 
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)

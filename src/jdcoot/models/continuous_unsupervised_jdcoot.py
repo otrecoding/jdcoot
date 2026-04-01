@@ -62,8 +62,8 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target,**kw
 
     for k in range(numIterBCD):
         costold = cost
-        Gsold = Gs
-        Gvold = Gv
+        Gsold = Gs.copy()
+        Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
         Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
