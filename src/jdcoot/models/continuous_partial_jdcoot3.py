@@ -9,7 +9,7 @@ from ..coot import cot_numpy
 from sklearn.model_selection import train_test_split
 
 
-def continuous_partial_jdcoot(source, target, source_test, target_test,  l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
     #prop_source = kwargs.get("prop_source", 0.1)
     #prop_target = kwargs.get("prop_target", 0.1)
 
@@ -108,13 +108,13 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     clf_target.fit(x_target, zt_estimated, batch_size=batch_size, epochs=10, verbose=0)
     clf_source.fit(x_source, zs_estimated, batch_size=batch_size, epochs=10, verbose=0)
 
-    y_target_pred = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
-    y_source_pred = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()
+    y_target_pred = clf_target.predict(x_target, verbose=0).ravel()
+    y_source_pred = clf_source.predict(x_source, verbose=0).ravel()
 
 
-    y_source_pred[l_source_train] = y_source_train
-    y_target_pred[l_target_train] = y_target_train
-    fcost = ot.dist(y_source_pred, y_target_pred, metric="sqeuclidean")  # is (nA,nB)
+    y_source_pred[l_source_train] = y_source_train.ravel()
+    y_target_pred[l_target_train] = y_target_train.ravel()
+    fcost = ot.dist(y_source_pred.reshape(-1,1), y_target_pred.reshape(-1,1), metric="sqeuclidean")  # is (nA,nB)
 
     cost = np.inf
 
@@ -126,7 +126,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     y_source2 = y_source.copy()
     y_source2[l_source_test] = -1
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
-    #fcost = M_lin
+    fcost = M_lin
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs.copy()
@@ -146,17 +146,17 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
         elif algo2 == "sinkhorn":
             Gv = ot.sinkhorn(vA, vB, Mv, reg2)
 
-        y_source_hat = nA * Gs.dot(y_target_pred)
+        y_source_hat = nA * Gs.dot(y_target_pred.reshape(-1,1))
         y_source_hat[l_source_train] = y_source_train
-        y_target_hat = nB * Gs.T.dot(y_source_pred)
+        y_target_hat = nB * Gs.T.dot(y_source_pred.reshape(-1,1))
         y_target_hat[l_target_train] = y_target_train
         
         clf_source.fit(
             x_source, y_source_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
         )
 
-        y_source_pred = clf_source.predict(x_source, verbose=0)
-        y_source_pred[l_source_train] = y_source_train
+        y_source_pred = clf_source.predict(x_source, verbose=0).ravel()
+        y_source_pred[l_source_train] = y_source_train.ravel()
 
         
 
@@ -164,8 +164,8 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
             x_target, y_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
         )
 
-        y_target_pred = clf_target.predict(x_target, verbose=0)
-        y_target_pred[l_target_train] = y_target_train
+        y_target_pred = clf_target.predict(x_target, verbose=0).ravel()
+        y_target_pred[l_target_train] = y_target_train.ravel()
 
         delta = np.linalg.norm(Gs - Gsold) + np.linalg.norm(Gv - Gvold)
         cost = np.sum(Mv * Gv)
@@ -178,7 +178,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
             print("converged at iter ", k)
             break
 
-        fcost = ot.dist(y_source_pred, y_target_pred, metric="sqeuclidean")
+        fcost = ot.dist(y_source_pred.reshape(-1,1), y_target_pred.reshape(-1,1), metric="sqeuclidean")
 
     ypred_target = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
     ypred_source = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()

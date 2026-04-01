@@ -181,7 +181,7 @@ def discrete_partial_jdcoot3(source, target, test_source, test_target,l_source_t
     z_source_2 = z_source.copy()
     z_source_2[l_source_test] = -1
     M_lin = compute_cost_matrix(yt=z_target_2, ys=z_source_2)
-    #fcost = M_lin
+    fcost = M_lin
 
     for k in range(numIterBCD):
         Gsold = Gs.copy()

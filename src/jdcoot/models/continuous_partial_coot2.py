@@ -7,7 +7,7 @@ from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 
 
 
-def continuous_partial_coot(source, target, source_test, target_test,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+def continuous_partial_coot2(source, target, source_test, target_test,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
     #prop_source = kwargs.get("prop_source", 0.1)
     #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
