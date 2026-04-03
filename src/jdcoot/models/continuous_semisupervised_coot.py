@@ -1,14 +1,12 @@
 import numpy as np
 import ot
-from sklearn.model_selection import train_test_split
 from ..coot import cot_numpy
 from ..comp import comp_regression
 from ..utils import xcolumns, continuous_classifier, continuous_accuracy
 
 
-
 def continuous_semisupervised_coot(source, target, source_test, target_test, l_target_train, l_target_test, **kwargs):
-    #prop_target = kwargs.get("prop_target", 0.1)
+    
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -19,13 +17,10 @@ def continuous_semisupervised_coot(source, target, source_test, target_test, l_t
     x_target = target.loc[:, xcolumns(target)].values
     n_target = len(y_target)
 
-    #l_target_train, l_target_test = train_test_split(
-    #    np.arange(n_target), train_size=prop_target)
-
-    x_target_train = x_target[l_target_train, :]
     y_target_train = y_target[l_target_train, :]
     y_target2 = y_target.copy()
     y_target2[l_target_test] = -1
+
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M

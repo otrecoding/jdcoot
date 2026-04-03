@@ -19,7 +19,6 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target,**kw
     clf_source, clf_target = continuous_classifiers(source, target)
 
     algo1 = algo
-    reg1 = reg
 
     algo2 = "emd"
     reg2 = 1

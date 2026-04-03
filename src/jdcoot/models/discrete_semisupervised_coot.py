@@ -5,8 +5,6 @@ from tf_keras.utils import to_categorical
 from ..comp import comp_
 from ..coot import cot_numpy
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
-from sklearn.model_selection import train_test_split
-from tf_keras.utils import to_categorical
 def one_hot(z, nClass):
     return to_categorical(z, num_classes=nClass)
 

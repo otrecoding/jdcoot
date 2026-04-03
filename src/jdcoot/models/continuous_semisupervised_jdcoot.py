@@ -1,7 +1,6 @@
 import numpy as np
 
 from ..utils import continuous_accuracy, xcolumns, continuous_classifiers
-from sklearn.model_selection import train_test_split
 import ot
 from ..comp import comp_regression
 from ..coot import init_matrix_np
@@ -10,16 +9,10 @@ from ..coot import init_matrix_np
 def continuous_semisupervised_jdcoot(
     source, target, source_test, target_test, l_train, l_test, **kwargs
 ):
-    #prop_target = kwargs.get("prop_target", 0.1)
-
     alpha = kwargs.get("alpha", 2.625)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
-
-    n_target = len(target.Y)
-
-    #l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values

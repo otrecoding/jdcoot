@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder as onehot
 
 from ..coot import cot_numpy
 from ..utils import discrete_classifier, xcolumns, discrete_accuracy
@@ -29,12 +28,6 @@ def discrete_unsupervised_coot(source, target, source_test, target_test,  **kwar
     z_target = target.Z.values
 
     nClass = len(np.union1d(source_levels, target_levels))
-    categories = [np.arange(nClass)]
-
-    encoder = onehot(
-        handle_unknown="ignore", sparse_output=False, categories=categories
-    )
-
 
     Ts, Tv, cost = cot_numpy(
         X1=x_source,
