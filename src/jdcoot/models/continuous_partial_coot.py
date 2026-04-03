@@ -11,7 +11,6 @@ def continuous_partial_coot(source, target, source_test, target_test,l_source_tr
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
-    nb_epoch = 10
     n_source = len(source.Y)
     n_target = len(target.Y)
 

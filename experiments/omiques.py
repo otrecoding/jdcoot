@@ -1,36 +1,16 @@
-import sklearn
-import scipy 
 import numpy as np
 import pandas as pd
 import os
 import sys
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 sys.path.append(os.path.abspath("src"))
-import jdcoot
-import math
-from scipy.io import loadmat
 from jdcoot.utils import xcolumns
 from sklearn.feature_selection import VarianceThreshold
-import numpy as np
 from sklearn.preprocessing import StandardScaler
-from scipy.optimize import linear_sum_assignment
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder as onehot
-from jdcoot.coot import cot_numpy
 from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
-from jdcoot.models.discrete_semisupervised_jdcoot import discrete_semisupervised_jdcoot
-from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
 from jdcoot.models.discrete_unsupervised_coot import discrete_unsupervised_coot
-from jdcoot.models.discrete_semisupervised_coot import discrete_semisupervised_coot
-from jdcoot.models.discrete_partial_coot import discrete_partial_coot
-from jdcoot.models.discrete_semisupervised_reference import discrete_semisupervised_reference
-from jdcoot.models.discrete_partial_reference import discrete_partial_reference
-from jdcoot.utils import discrete_classifier, xcolumns, discrete_accuracy
-from jdcoot.utils import xcolumns, discrete_classifiers, discrete_accuracy
-from sklearn.model_selection import KFold
 from sklearn.model_selection import LeaveOneOut
 
 S_data = pd.read_csv("data_exp.csv")
@@ -128,7 +108,6 @@ x_source_scaled = x_source_scaled * signs
 
 corr_final = np.corrcoef(x_source_scaled.T, x_target_scaled.T)
 
-from sklearn.model_selection import train_test_split
 X_df = pd.DataFrame(x_source_scaled, columns=['X'+str(i) for i in range(x_source_scaled.shape[1])])
 X_df['Z'] = source['Z'].values
 source = X_df
@@ -139,7 +118,6 @@ target = X_df
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split, LeaveOneOut
 
 algo = "emd"
 reg = 0.1
