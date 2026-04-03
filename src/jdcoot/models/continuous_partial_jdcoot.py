@@ -1,16 +1,14 @@
 import numpy as np
+import ot
 
 from jdcoot.comp import comp_regression
 
 from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
-import ot
 from ..coot import init_matrix_np
 from ..coot import cot_numpy
 
 
-def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
-    #prop_source = kwargs.get("prop_source", 0.1)
-    #prop_target = kwargs.get("prop_target", 0.1)
+def continuous_partial_jdcoot(source, target, source_test, target_test,  l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
 
     alpha = kwargs.get("alpha", 2.425)
     algo = kwargs.get("algo", "emd")
@@ -23,13 +21,6 @@ def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_sour
     x_target = target.loc[:, xcolumns(target)].values
     y_source = source.Y.values[:, np.newaxis]
     y_target = target.Y.values[:, np.newaxis]
-
-    #l_source_train, l_source_test = train_test_split(
-    #    np.arange(n_source), train_size=prop_source
-    #)
-    #l_target_train, l_target_test = train_test_split(
-    #    np.arange(n_target), train_size=prop_target
-    #)
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
@@ -66,6 +57,7 @@ def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_sour
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
+
     y_target2 = y_target.copy()
     y_target2[l_target_test] = -1
     y_source2 = y_source_train.copy()
@@ -110,7 +102,6 @@ def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_sour
     y_target_pred = clf_target.predict(x_target, verbose=0).ravel()
     y_source_pred = clf_source.predict(x_source, verbose=0).ravel()
 
-
     y_source_pred[l_source_train] = y_source_train.ravel()
     y_target_pred[l_target_train] = y_target_train.ravel()
     fcost = ot.dist(y_source_pred.reshape(-1,1), y_target_pred.reshape(-1,1), metric="sqeuclidean")  # is (nA,nB)
@@ -120,12 +111,14 @@ def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_sour
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
+
     y_target2 = y_target.copy()
     y_target2[l_target_test] = -1
     y_source2 = y_source.copy()
     y_source2[l_source_test] = -1
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
     fcost = M_lin
+
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs.copy()
@@ -156,8 +149,6 @@ def continuous_partial_jdcoot3(source, target, source_test, target_test,  l_sour
 
         y_source_pred = clf_source.predict(x_source, verbose=0).ravel()
         y_source_pred[l_source_train] = y_source_train.ravel()
-
-        
 
         clf_target.fit(
             x_target, y_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0

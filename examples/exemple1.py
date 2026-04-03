@@ -21,6 +21,14 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
+from jdcoot.models.discrete_semisupervised_jdcoot import discrete_semisupervised_jdcoot
+from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
+from jdcoot.models.discrete_unsupervised_coot import discrete_unsupervised_coot
+from jdcoot.models.discrete_semisupervised_coot import discrete_semisupervised_coot
+from jdcoot.models.discrete_partial_coot import discrete_partial_coot
+from jdcoot.models.discrete_semisupervised_reference import discrete_semisupervised_reference
+from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 sys.path.append(os.path.abspath("src"))
@@ -56,14 +64,6 @@ source.loc[:,'Z'] = source.loc[:, 'Z'] - 1
 target.loc[:,'Z'] = target.loc[:, 'Z'] - 1
 # -
 
-from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
-from jdcoot.models.discrete_semisupervised_jdcoot import discrete_semisupervised_jdcoot
-from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
-from jdcoot.models.discrete_unsupervised_coot import discrete_unsupervised_coot
-from jdcoot.models.discrete_semisupervised_coot import discrete_semisupervised_coot
-from jdcoot.models.discrete_partial_coot import discrete_partial_coot
-from jdcoot.models.discrete_semisupervised_reference import discrete_semisupervised_reference
-from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
 # +
 results = []

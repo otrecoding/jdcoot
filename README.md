@@ -25,6 +25,16 @@ pixi install
 pixi run python examples/discrete_partial_jdcoot.py
 ```
 
+Alternative install with [conda](https://github.com/conda-forge/miniforge)
+
+```bash
+git clone https://github.com/otrecoding/jdcoot/
+cd jdcoot
+conda env create --name jdcoot --file=environment.yml
+conda activate jdcoot
+python examples/discrete_partial_jdcoot.py
+```
+
 ## Numerical experiments
 
 For all expermiments we use three methods `reference`, `coot` and `jdcoot`
