@@ -1,3 +1,6 @@
+import numpy as np
+from sklearn.model_selection import train_test_split
+
 from jdcoot import continuous_partial_coot
 from jdcoot import continuous_partial_jdcoot
 from jdcoot import continuous_partial_reference

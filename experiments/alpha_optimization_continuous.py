@@ -10,6 +10,7 @@ sys.path.append(os.path.abspath("src"))
 
 from jdcoot import DataScenario, DataScenarioTest
 from jdcoot.performance import models
+from sklearn.model_selection import train_test_split
 
 train = DataScenario()
 test = DataScenarioTest()
