@@ -42,10 +42,8 @@ for i in range(nsimulations):
     source_test = source_test.loc[:, source.columns]
     target_test = target_test.loc[:, target.columns]
 
-    y_source = source.Y.values[:, np.newaxis]
-    n_source = len(y_source)
-    y_target = target.Y.values[:, np.newaxis]
-    n_target = len(y_target)
+    n_source = len(source.Y)
+    n_target = len(target.Y)
     l_source_train, l_source_test = train_test_split(np.arange(n_source), train_size=prop_source)
     l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size=prop_target)
 
