@@ -11,14 +11,14 @@ def continuous_partial_reference(source, target, test_source, test_target, l_sou
     y_target = target.Y.values
 
     x_target_train = x_target[l_target_train, :]
-    y_target_train = y_target[l_target_train, :]
+    y_target_train = y_target[l_target_train]
     x_source_train = x_source[l_source_train, :]
-    y_source_train = y_source[l_source_train, :]
+    y_source_train = y_source[l_source_train]
 
     x_target_test = x_target[l_target_test, :]
-    y_target_test = y_target[l_target_test, :]
+    y_target_test = y_target[l_target_test]
     x_source_test = x_source[l_source_test, :]
-    y_source_test = y_source[l_source_test, :]
+    y_source_test = y_source[l_source_test]
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
