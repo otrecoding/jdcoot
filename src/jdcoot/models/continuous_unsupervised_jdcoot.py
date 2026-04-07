@@ -4,10 +4,13 @@ import ot
 from ..coot import cot_numpy
 from ..coot import init_matrix_np
 
+def continuous_unsupervised_jdcoot(source, target, test_source, test_target,
+    l_source_target, l_source_test, l_target_train, l_target_test, **kwargs):
 
-def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **kwargs):
     alpha = kwargs.get("alpha", 0.3)
-
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
 
@@ -16,14 +19,13 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
-    algo1 = "sinkhorn"
-    reg = 100
+    algo1 = algo
 
     algo2 = "emd"
-    reg2 = 0
-    numIterBCD = 10
+    reg2 = 1
+    numIterBCD = 100
     nb_epoch = 10
-    batch_size = 10
+    batch_size = batch_size
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -39,14 +41,14 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
     Gs = np.ones((nA, nB)) / (nA * nB)
     Gv = np.ones((dA, dB)) / (dA * dB)
 
-    clf_source.fit(x_source, y_source, batch_size=10, epochs=nb_epoch, verbose=0)
+    clf_source.fit(x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0)
 
     Ts, Tv, cost = cot_numpy(
         X1=x_source,
         X2=x_target,
         niter=100,
         C_lin=None,
-        algo="sinkhorn",
+        algo="emd",
         reg=1,
         algo2="emd",
         verbose=False,
@@ -60,11 +62,11 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target, **k
 
     for k in range(numIterBCD):
         costold = cost
-        Gsold = Gs
-        Gvold = Gv
+        Gsold = Gs.copy()
+        Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

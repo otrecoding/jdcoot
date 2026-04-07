@@ -1,11 +1,7 @@
-# remove tensorflow warnings
-# import logging
-# logging.disable(logging.WARNING)
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-# import models
 from .models.continuous_partial_coot import continuous_partial_coot
 from .models.continuous_partial_jdcoot import continuous_partial_jdcoot
 from .models.continuous_partial_reference import continuous_partial_reference

@@ -1,22 +1,19 @@
 import numpy as np
 
 from ..utils import continuous_accuracy, xcolumns, continuous_classifiers
-from sklearn.model_selection import train_test_split
 import ot
-
+from ..comp import comp_regression
 from ..coot import init_matrix_np
 
 
 def continuous_semisupervised_jdcoot(
-    source, target, source_test, target_test, **kwargs
+    source, target, source_test, target_test, l_source_train, l_source_test, l_train, l_test, **kwargs
 ):
-    prop_target = kwargs.get("prop_target", 0.1)
 
     alpha = kwargs.get("alpha", 2.625)
-
-    n_target = len(target.Y)
-
-    l_train, l_test = train_test_split(np.arange(n_target), train_size=prop_target)
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
@@ -28,15 +25,15 @@ def continuous_semisupervised_jdcoot(
 
     clf_source, clf_target = continuous_classifiers(source, target)
 
-    algo1 = "sinkhorn"
-    reg = 100
+    algo1 = algo
+    reg = reg
 
     algo2 = "emd"
     reg2 = 0
     alpha = 1
-    numIterBCD = 10
+    numIterBCD = 100
     nb_epoch = 10
-    batch_size = 10
+    batch_size = batch_size
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
@@ -53,10 +50,10 @@ def continuous_semisupervised_jdcoot(
     Gs = np.ones((nA, nB)) / (nA * nB)  # is (n,n')
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
-    clf_source.fit(x_source, y_source, batch_size=10, epochs=nb_epoch, verbose=0)
+    clf_source.fit(x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0)
 
     clf_target.fit(
-        x_target_train, y_target_train, batch_size=10, epochs=nb_epoch, verbose=0
+        x_target_train, y_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
     )
 
     y_target_pred = clf_target.predict(x_target, verbose=0)
@@ -66,13 +63,21 @@ def continuous_semisupervised_jdcoot(
 
     cost = np.inf
 
+    y_target2 = y_target.copy()
+    y_target2[l_test] = -1
+    def compute_cost_matrix(ys, yt):
+        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
+        return M
+
+    M_lin = compute_cost_matrix(yt=y_target2, ys=y_source)
+    fcost= M_lin
     for k in range(numIterBCD):
         costold = cost
-        Gsold = Gs
-        Gvold = Gv
+        Gsold = Gs.copy()
+        Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms = alpha * (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + fcost  # is (nA,nB)
+        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  alpha *fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

@@ -4,8 +4,13 @@ from ..comp import comp_regression
 from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_accuracy, continuous_classifier
 
+def continuous_unsupervised_coot(source, target, source_test, target_test,  
+    l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
 
-def continuous_unsupervised_coot(source, target, source_test, target_test, **kwargs):
+    algo = kwargs.get("algo", "emd")
+    reg = kwargs.get("reg", 1)
+    batch_size = kwargs.get("batch_size", 20)
+
     x_source = source.loc[:, xcolumns(source)]
     x_target = target.loc[:, xcolumns(target)]
 
@@ -25,8 +30,8 @@ def continuous_unsupervised_coot(source, target, source_test, target_test, **kwa
         X2=x_target,
         niter=100,
         C_lin=M_lin,
-        algo="sinkhorn",
-        reg=1,
+        algo=algo,
+        reg=reg,
         algo2="emd",
         verbose=False,
     )
@@ -39,7 +44,7 @@ def continuous_unsupervised_coot(source, target, source_test, target_test, **kwa
 
     clf = continuous_classifier(target)
 
-    clf.fit(x_target, ypred, batch_size=10, epochs=10, verbose=0)
+    clf.fit(x_target, ypred, batch_size=batch_size, epochs=10, verbose=0)
     xtest = target_test.loc[:, xcolumns(target)].values
     ytest = clf.predict(xtest, verbose=0).ravel()
 
