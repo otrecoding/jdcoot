@@ -10,12 +10,12 @@ from tf_keras.utils import to_categorical
 def one_hot(y, nClass):
     return to_categorical(y, num_classes=nClass)
 
-
 def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
+def discrete_unsupervised_jdcoot(source, target, source_test, target_test,
+    l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
 
-def discrete_unsupervised_jdcoot(source, target, source_test, target_test,**kwargs):
     alpha = kwargs.get("alpha", 0.661)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -34,16 +34,11 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test,**kwar
     z_source_train = one_hot(z_source, nClass).astype(np.float64)
     x_target_train = x_target
 
-    #algo = "sinkhorn"
-    #reg = 1
-    algo = algo
     reg = reg
     algo2 = "emd"
     reg2 = 0
     numIterBCD = 100
     nb_epoch = 10
-    #batch_size = 20
-    batch_size = batch_size 
     nA, dA = x_source.shape
     nB, dB = x_target.shape
 

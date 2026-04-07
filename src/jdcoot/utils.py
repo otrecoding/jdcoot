@@ -67,7 +67,11 @@ def continuous_accuracy_2(ypred_source, ytrue_source, ypred_target, ytrue_target
 
 def continuous_accuracy_1(ypred, ytrue):
     assert len(ypred) == len(ytrue)
-    return sum((ypred - ytrue) ** 2) / len(ypred)
+    res = sum((ypred - ytrue) ** 2) / len(ypred)
+    if hasattr(res, "__len__"):
+       return sum(res)
+    else:
+       return res
 
 
 def continuous_accuracy(*args):

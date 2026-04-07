@@ -7,8 +7,9 @@ from ..coot import init_matrix_np
 
 
 def continuous_semisupervised_jdcoot(
-    source, target, source_test, target_test, l_train, l_test, **kwargs
+    source, target, source_test, target_test, l_source_train, l_source_test, l_train, l_test, **kwargs
 ):
+
     alpha = kwargs.get("alpha", 2.625)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)

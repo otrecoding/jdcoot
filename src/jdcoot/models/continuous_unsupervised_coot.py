@@ -4,8 +4,9 @@ from ..comp import comp_regression
 from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_accuracy, continuous_classifier
 
+def continuous_unsupervised_coot(source, target, source_test, target_test,  
+    l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
 
-def continuous_unsupervised_coot(source, target, source_test, target_test,  **kwargs):
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)

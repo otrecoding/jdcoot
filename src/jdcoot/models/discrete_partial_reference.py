@@ -19,7 +19,8 @@ def one_cold(z_hot, seen_levels):
     seen_levels = np.array(seen_levels)
     return seen_levels[indices]
 
-def discrete_partial_reference(source, target, test_source, test_target,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
+def discrete_partial_reference(source, target, test_source, test_target, l_source_train, 
+                               l_source_test, l_target_train, l_target_test, **kwargs):
     
     batch_size = kwargs.get("batch_size", 20) 
 

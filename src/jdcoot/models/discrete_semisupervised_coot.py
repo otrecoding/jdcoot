@@ -5,30 +5,16 @@ from tf_keras.utils import to_categorical
 from ..comp import comp_
 from ..coot import cot_numpy
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
+
 def one_hot(z, nClass):
     return to_categorical(z, num_classes=nClass)
 
-def one_hot2(z, seen_levels):
-    """
-    One-hot encoding sur les classes vues dans ce fold.
-
-    z : array-like, labels (float ou int)
-    seen_levels : array-like, original labels present
-    """
-    z = np.array(z)
-    seen_levels = np.array(seen_levels)
-    indices = np.searchsorted(seen_levels, z)
-    return to_categorical(indices, num_classes=len(seen_levels))
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
-def one_cold2(z_hot, seen_levels):
-    indices = np.argmax(z_hot, axis=1)
-    seen_levels = np.array(seen_levels)
-    return seen_levels[indices]
+def discrete_semisupervised_coot(source, target, source_test, target_test,
+    l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
 
-def discrete_semisupervised_coot(source, target, source_test, target_test,l_target_train, l_target_test, **kwargs):
-    #prop_target = kwargs.get("prop_target", 0.1)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20) 
@@ -46,10 +32,6 @@ def discrete_semisupervised_coot(source, target, source_test, target_test,l_targ
     z_target = target.Z.values
 
     n_target = len(z_target)
-
-    #l_target_train, l_target_test = train_test_split(
-    #    np.arange(n_target), train_size=prop_target
-    #)
 
     z_target_train = z_target.copy()
     z_target_train[l_target_test] = -1

@@ -3,7 +3,8 @@ from ..utils import xcolumns, continuous_accuracy, continuous_classifier
 
 
 def continuous_semisupervised_reference(
-    source, target, source_test, target_test,l_target_train, l_target_test, **kwargs
+    source, target, source_test, target_test, l_source_train, l_source_test, 
+    l_target_train, l_target_test, **kwargs
 ):
     batch_size = kwargs.get("batch_size", 20)
 
