@@ -1,24 +1,24 @@
-export CUDA_VISIBLE_DEVICES=""
-
 import sklearn
 import scipy 
 import numpy as np
 import pandas as pd
 import os
 import sys
+import math
+import jdcoot
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 sys.path.append(os.path.abspath("src"))
-import jdcoot
-import math
-from scipy.io import loadmat
 
+from scipy.io import loadmat
+from jdcoot.models.discrete_partial_jdcoot3 import discrete_partial_jdcoot3
 from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
 from jdcoot.models.discrete_semisupervised_jdcoot import discrete_semisupervised_jdcoot
 from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
 from jdcoot.models.discrete_unsupervised_coot import discrete_unsupervised_coot
 from jdcoot.models.discrete_semisupervised_coot import discrete_semisupervised_coot
 from jdcoot.models.discrete_partial_coot import discrete_partial_coot
+from jdcoot.models.discrete_partial_coot2   import discrete_partial_coot2
 from jdcoot.models.discrete_semisupervised_reference import discrete_semisupervised_reference
 from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
@@ -55,8 +55,7 @@ algo = "sinkhorn"
 reg = 1
 batch_size= 20
 alpha =1.5# hyperparamètre devant la loss a été optimé
-prop_target_values_s = [0.01, 0.05, 0.1, 0.2, 0.4]
-prop_target_values_p = [0.01, 0.05, 0.1, 0.2, 0.4]
+prop_values = [1,2,3,4,5]
 
 for repe in range(numRepetitions):
     print("num repe :", repe + 1)
@@ -103,33 +102,23 @@ for repe in range(numRepetitions):
          "test_target": test_target,
      })
 
-    for prop_target in prop_target_values_s:
+    for prop_values_s in prop_values:
 
-        # JDCOOT
-        pure_source, pure_target, test_source, test_target = discrete_semisupervised_jdcoot(
-                S, T, S_test, T_test,
-                alpha=alpha,
-                prop_target=prop_target,
-                algo=algo,
-                reg=reg, batch_size=batch_size
-            )
+        l_target_train = []
+        for z in np.unique(T['Z']):
+            idx = np.where(T['Z'] == z)[0]
+            chosen = np.random.choice(idx, size=prop_values_s, replace=False)
+            l_target_train.extend(chosen)
 
-        results.append({
-            "repetition": repe,
-            "recoding": "jdcoot",
-            "learning": "semisupervised",
-            "prop_source": 1,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
+        l_target_train = np.array(l_target_train)
+        l_train = l_target_train
+        l_target_test = np.setdiff1d(np.arange(len(T['Z'])), l_target_train)
+        l_test = l_target_test
 
-        # COOT
+                # COOT
         pure_source, pure_target, test_source, test_target = discrete_semisupervised_coot(
-                S, T, S_test, T_test,algo=algo,reg=reg,
-                prop_target=prop_target, batch_size=batch_size
+                S, T, S_test, T_test,l_train, l_test,algo=algo,
+                reg=reg, batch_size=batch_size,alpha=alpha     
             )
 
         results.append({
@@ -143,11 +132,28 @@ for repe in range(numRepetitions):
             "pure_target": pure_target,
             "test_target": test_target,
         })
+        
+        # JDCOOT
+        pure_source, pure_target, test_source, test_target = discrete_semisupervised_jdcoot(
+                S, T, S_test, T_test,l_train, l_test,algo=algo,
+                reg=reg, batch_size=batch_size,alpha=alpha         
+            ) 
+        results.append({
+            "repetition": repe,
+            "recoding": "jdcoot",
+            "learning": "semisupervised",
+            "prop_source": 1,
+            "prop_target": prop_values_s,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
 
         # Reference
         pure_source, pure_target, test_source, test_target = discrete_semisupervised_reference(
-                S, T, S_test, T_test,
-                prop_target=prop_target,algo=algo,reg=reg, batch_size=batch_size
+                S, T, S_test, T_test,l_train, l_test,algo=algo,
+                reg=reg, batch_size=batch_size,alpha=alpha     
             )
 
         results.append({
@@ -165,60 +171,65 @@ for repe in range(numRepetitions):
     # =========================================================
     # PARTIAL
     # =========================================================
-    for prop_target in prop_target_values_p:
+           
+# SOURCE
+        l_source_train = []
+        for z in np.unique(S['Z']):
+            idx = np.where(S['Z'] == z)[0]
+            chosen = np.random.choice(idx, size=prop_values_s, replace=False)
+            l_source_train.extend(chosen)
 
-        # JDCOOT
-        pure_source, pure_target, test_source, test_target = discrete_partial_jdcoot(
-                S, T, S_test, T_test,algo=algo,reg=reg,
-                alpha=alpha,
-                prop_source=0.5,
-                prop_target=prop_target, batch_size=batch_size
-            )
+        l_source_train = np.array(l_source_train)
 
-        results.append({
-            "repetition": repe,
-            "recoding": "jdcoot",
-            "learning": "partial",
-            "prop_source": 0.5,
-            "prop_target": prop_target,
-            "pure_source": pure_source,
-            "test_source": test_source,
-            "pure_target": pure_target,
-            "test_target": test_target,
-        })
+# le reste en test
+        l_source_test = np.setdiff1d(np.arange(len(S['Z'])), l_source_train)
 
-        # COOT
-        pure_source, pure_target, test_source, test_target = discrete_partial_coot(
-                S, T, S_test, T_test,algo=algo,reg=reg,
-                prop_source=0.5,
-                prop_target=prop_target, batch_size=batch_size
-            )
+                # COOT
+        pure_source, pure_target, test_source, test_target = discrete_partial_coot2(
+                S, T, S_test, T_test,l_source_train, l_source_test,l_target_train, l_target_test,algo="sinkhorn",reg=1,batch_size=20          
+)
 
         results.append({
             "repetition": repe,
             "recoding": "coot",
             "learning": "partial",
-            "prop_source": 0.5,
-            "prop_target": prop_target,
+            "prop_source": prop_values_s,
+            "prop_target": prop_values_s,
             "pure_source": pure_source,
             "test_source": test_source,
             "pure_target": pure_target,
             "test_target": test_target,
         })
 
+# TARGET
+     # JDCOOT
+        pure_source, pure_target, test_source, test_target = discrete_partial_jdcoot3(
+                S, T, S_test, T_test,l_source_train, l_source_test,l_target_train, l_target_test,algo="sinkhorn",reg=1,batch_size=20,alpha =1.5
+            )
+        results.append({
+            "repetition": repe,
+            "recoding": "jdcoot",
+            "learning": "partial",
+            "prop_source": prop_values_s,
+            "prop_target": prop_values_s,
+            "pure_source": pure_source,
+            "test_source": test_source,
+            "pure_target": pure_target,
+            "test_target": test_target,
+        })
+
+
         # Reference
         pure_source, pure_target, test_source, test_target = discrete_partial_reference(
-                S, T, S_test, T_test,algo=algo,reg=reg,
-                prop_source=0.5,
-                prop_target=prop_target, batch_size=batch_size
+                S, T, S_test, T_test,l_source_train, l_source_test,l_target_train, l_target_test
             )
 
         results.append({
             "repetition": repe,
             "recoding": "reference",
             "learning": "partial",
-            "prop_source": 0.5,
-            "prop_target": prop_target,
+            "prop_source": prop_values_s,
+            "prop_target": prop_values_s,
             "pure_source": pure_source,
             "test_source": test_source,
             "pure_target": pure_target,
