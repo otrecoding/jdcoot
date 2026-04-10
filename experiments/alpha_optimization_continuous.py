@@ -26,7 +26,7 @@ nsimulations = 100
 alpha_values = np.logspace(-6, -3, 10)
 
 variable_types = ["continuous"]
-learning_methods = ["unsupervised"]
+learning_methods = ["partial", "semisupervised"]
 recoding_methods = ["jdcoot"]
 
 sparse_rate = 0.75
