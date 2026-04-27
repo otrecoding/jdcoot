@@ -23,10 +23,10 @@ with open(json_file, "w+") as f:
     f.seek(0)
 
 nsimulations = 100
-alpha_values = np.logspace(-6, -1, 10)
+alpha_values = np.linspace(0, 1, 11)
 
 variable_types = ["discrete"]
-learning_methods = ["partial", "semisupervised"]
+learning_methods = ["unsupervised", "partial", "semisupervised"]
 recoding_methods = ["jdcoot"]
 
 sparse_rate = 0.75
