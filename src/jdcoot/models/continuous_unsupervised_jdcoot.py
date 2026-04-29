@@ -7,7 +7,7 @@ from ..coot import init_matrix_np
 def continuous_unsupervised_jdcoot(source, target, test_source, test_target,
     l_source_target, l_source_test, l_target_train, l_target_test, **kwargs):
 
-    alpha = kwargs.get("alpha", 0.3)
+    alpha = kwargs.get("alpha", 1e-5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)

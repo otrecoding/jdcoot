@@ -16,7 +16,7 @@ def one_cold(z_hot):
 def discrete_semisupervised_jdcoot(source, target, source_test, target_test, 
     l_source_train, l_source_test, l_train, l_test, **kwargs):
 
-    alpha = kwargs.get("alpha", 3.335)
+    alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20) 
@@ -37,8 +37,6 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test,
 
     clf = discrete_classifier(target, "relu", "softmax", nClass)
 
-    algo = algo
-    reg = reg
     algo2 = "emd"
     reg2 = 0
 
@@ -72,6 +70,7 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test,
     def compute_cost_matrix(ys, yt, v=10000):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
         return M
+
     z_target2 = z_target.copy()
     z_target2[l_test] = -1
     M_lin = compute_cost_matrix(yt=z_target2, ys=z_source)

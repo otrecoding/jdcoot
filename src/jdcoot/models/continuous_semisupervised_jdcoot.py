@@ -10,7 +10,7 @@ def continuous_semisupervised_jdcoot(
     source, target, source_test, target_test, l_source_train, l_source_test, l_train, l_test, **kwargs
 ):
 
-    alpha = kwargs.get("alpha", 2.625)
+    alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -30,7 +30,6 @@ def continuous_semisupervised_jdcoot(
 
     algo2 = "emd"
     reg2 = 0
-    alpha = 1
     numIterBCD = 100
     nb_epoch = 10
     batch_size = batch_size

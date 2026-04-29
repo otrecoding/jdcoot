@@ -131,6 +131,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
     def compute_cost_matrix(ys, yt, v=10000):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
         return M
+
     z_target_2 = z_target.copy()
     z_target_2[l_target_test] = -1
     z_source_2 = z_source.copy()
