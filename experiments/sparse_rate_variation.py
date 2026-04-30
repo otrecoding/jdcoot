@@ -23,10 +23,10 @@ size_target_test = size
 train = DataScenario()
 test = DataScenarioTest()
 
-train_scenario.size_source = size_source_train
-train_scenario.size_target = size_target_train
-test_scenario.size_source = size_source_test
-test_scenario.size_target = size_target_test
+train.size_source = size_source_train
+train.size_target = size_target_train
+test.size_source = size_source_test
+test.size_target = size_target_test
 
 json_file = "sparse_rate_variation.json"
 with open(json_file, "w+") as f:
