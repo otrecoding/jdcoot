@@ -30,7 +30,7 @@ learning_methods = ["unsupervised", "partial", "semisupervised"]
 recoding_methods = ["jdcoot"]
 
 sparse_rate = 0.75
-prop_source, prop_target = 0.1, 0.1
+prop_source, prop_target = 0.5, 0.01
 
 for i in range(nsimulations):
 

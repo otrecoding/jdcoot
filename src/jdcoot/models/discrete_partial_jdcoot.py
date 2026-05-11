@@ -18,6 +18,7 @@ def one_cold(z_hot):
 def discrete_partial_jdcoot(source, target, test_source, test_target,
                 l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
     
+    alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -145,7 +146,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
         costold = cost
         # step 1 : samples coupling optimization
         Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T))
-        Ms= Ms + fcost #+  M_lin# + alpha * fcost  # is (nA,nB)
+        Ms = Ms + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":

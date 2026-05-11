@@ -10,7 +10,7 @@ import jdcoot
 
 
 prop_source=0.5
-prop_target=0.005 
+prop_target=0.01
 
 source, target, source_test, target_test = jdcoot.generate_data()
 n_target = len(target.Z)
