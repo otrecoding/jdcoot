@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 sys.path.append(os.path.abspath("src"))
 import jdcoot
-from jdcoot.scenario import generate_data
 
 prop_source=0.5
 prop_target=0.01 
