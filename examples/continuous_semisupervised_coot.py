@@ -11,6 +11,8 @@ from jdcoot.scenario import generate_data
 
 source, target, source_test, target_test = generate_data()
 
+l_source_train, l_source_test = None, None
+
 n_target = len(target.Z)
 l_target_train, l_target_test = train_test_split( np.arange(n_target), train_size=0.01)
 alpha = 0.1
@@ -26,7 +28,7 @@ print(f"Test performance on source : {test_source} ")
 print(f"Test performance on target : {test_target} ")
 
 pure_source, pure_target, test_source, test_target = jdcoot.continuous_semisupervised_coot(
-   source, target, source_test, target_test, l_train, l_test)
+   source, target, source_test, target_test, l_source_train, l_source_test, l_target_train, l_target_test)
 
 print(f"Pure performance on source : {pure_source} ")
 print(f"Pure performance on target : {pure_target} ")
