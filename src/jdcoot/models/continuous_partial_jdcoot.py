@@ -8,8 +8,17 @@ from ..coot import init_matrix_np
 from ..coot import cot_numpy
 
 
-def continuous_partial_jdcoot(source, target, source_test, target_test,  l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
-
+def continuous_partial_jdcoot(
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_target_train,
+    l_target_test,
+    **kwargs,
+):
     alpha = kwargs.get("alpha", 1e-5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -56,6 +65,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
+
     y_target2 = y_target.copy()
     y_target2[l_target_test] = -1
     y_source2 = y_source_train.copy()
@@ -81,15 +91,15 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     M_lin = compute_cost_matrix(yt=y_source2, ys=y_target2)
 
     Ts, Tv, cost = cot_numpy(
-         X1=x_target_train,
-         X2=x_source,
-         niter=100,
-         C_lin=M_lin,
-         algo=algo,
-         reg=reg,
-         algo2="emd",
-         verbose=False,
-     )
+        X1=x_target_train,
+        X2=x_source,
+        niter=100,
+        C_lin=M_lin,
+        algo=algo,
+        reg=reg,
+        algo2="emd",
+        verbose=False,
+    )
 
     zs_estimated = n_source * np.dot(Ts.T, y_target_train)
     zs_estimated[l_source_train] = y_source_train
@@ -100,16 +110,18 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
     y_target_pred = clf_target.predict(x_target, verbose=0).ravel()
     y_source_pred = clf_source.predict(x_source, verbose=0).ravel()
 
-
     y_source_pred[l_source_train] = y_source_train.ravel()
     y_target_pred[l_target_train] = y_target_train.ravel()
-    fcost = ot.dist(y_source_pred.reshape(-1,1), y_target_pred.reshape(-1,1), metric="sqeuclidean")  # is (nA,nB)
+    fcost = ot.dist(
+        y_source_pred.reshape(-1, 1), y_target_pred.reshape(-1, 1), metric="sqeuclidean"
+    )  # is (nA,nB)
 
     cost = np.inf
 
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
+
     y_target2 = y_target.copy()
     y_target2[l_target_test] = -1
     y_source2 = y_source.copy()
@@ -122,7 +134,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
         Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  alpha * fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":
@@ -135,19 +147,17 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
         elif algo2 == "sinkhorn":
             Gv = ot.sinkhorn(vA, vB, Mv, reg2)
 
-        y_source_hat = nA * Gs.dot(y_target_pred.reshape(-1,1))
+        y_source_hat = nA * Gs.dot(y_target_pred.reshape(-1, 1))
         y_source_hat[l_source_train] = y_source_train
-        y_target_hat = nB * Gs.T.dot(y_source_pred.reshape(-1,1))
+        y_target_hat = nB * Gs.T.dot(y_source_pred.reshape(-1, 1))
         y_target_hat[l_target_train] = y_target_train
-        
+
         clf_source.fit(
             x_source, y_source_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
         )
 
         y_source_pred = clf_source.predict(x_source, verbose=0).ravel()
         y_source_pred[l_source_train] = y_source_train.ravel()
-
-        
 
         clf_target.fit(
             x_target, y_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
@@ -167,7 +177,11 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,  l_sourc
             print("converged at iter ", k)
             break
 
-        fcost = ot.dist(y_source_pred.reshape(-1,1), y_target_pred.reshape(-1,1), metric="sqeuclidean")
+        fcost = ot.dist(
+            y_source_pred.reshape(-1, 1),
+            y_target_pred.reshape(-1, 1),
+            metric="sqeuclidean",
+        )
 
     ypred_target = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
     ypred_source = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()

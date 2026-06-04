@@ -10,12 +10,22 @@ from tf_keras.utils import to_categorical
 def one_hot(y, nClass):
     return to_categorical(y, num_classes=nClass)
 
+
 def one_cold(z_encoded):
     return np.argmax(z_encoded, axis=1)
 
-def discrete_unsupervised_jdcoot(source, target, source_test, target_test,
-    l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
 
+def discrete_unsupervised_jdcoot(
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_target_train,
+    l_target_test,
+    **kwargs,
+):
     alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -29,7 +39,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test,
     x_target = target.loc[:, xcolumns(target)].values
     z_target = target.Z.values
 
-    clf = discrete_classifier(target,"relu", "softmax", nClass)
+    clf = discrete_classifier(target, "relu", "softmax", nClass)
 
     z_source_train = one_hot(z_source, nClass).astype(np.float64)
     x_target_train = x_target
@@ -56,7 +66,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test,
 
     # step 1 : samples coupling optimization
 
-    Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T))  # is (nA,nB)
+    Ms = C_s - np.dot(h1_s, Gv).dot(h2_s.T)  # is (nA,nB)
     if algo == "emd":
         Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
     elif algo == "sinkhorn":
@@ -88,7 +98,7 @@ def discrete_unsupervised_jdcoot(source, target, source_test, target_test,
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":

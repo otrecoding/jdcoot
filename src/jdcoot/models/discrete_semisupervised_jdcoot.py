@@ -7,19 +7,30 @@ from ..comp import comp_
 from ..losses import loss_crossentropy2
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
+
 def one_hot(z, nClass):
     return to_categorical(z, num_classes=nClass)
+
 
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
-def discrete_semisupervised_jdcoot(source, target, source_test, target_test, 
-    l_source_train, l_source_test, l_train, l_test, **kwargs):
 
+def discrete_semisupervised_jdcoot(
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_train,
+    l_test,
+    **kwargs,
+):
     alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
-    batch_size = kwargs.get("batch_size", 20) 
+    batch_size = kwargs.get("batch_size", 20)
     classes = np.union1d(np.unique(source.Z), np.unique(target.Z))
     nClass = len(classes)
 
@@ -60,7 +71,13 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test,
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
     # we train the classifier with labelled examples only
-    clf.fit(x_target_train, z_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0)
+    clf.fit(
+        x_target_train,
+        z_target_train,
+        batch_size=batch_size,
+        epochs=nb_epoch,
+        verbose=0,
+    )
     z_target_pred = clf.predict(x_target, verbose=0)  # first estimate of XB labels
     z_target_pred[l_train] = z_target_train
 
@@ -74,14 +91,14 @@ def discrete_semisupervised_jdcoot(source, target, source_test, target_test,
     z_target2 = z_target.copy()
     z_target2[l_test] = -1
     M_lin = compute_cost_matrix(yt=z_target2, ys=z_source)
-    fcost  = M_lin
+    fcost = M_lin
     for k in range(numIterBCD):
         Gsold = Gs.copy()
         Gvold = Gv.copy()
         costold = cost
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
 
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)

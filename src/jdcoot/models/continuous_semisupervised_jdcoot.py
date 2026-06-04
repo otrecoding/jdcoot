@@ -7,9 +7,16 @@ from ..coot import init_matrix_np
 
 
 def continuous_semisupervised_jdcoot(
-    source, target, source_test, target_test, l_source_train, l_source_test, l_train, l_test, **kwargs
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_train,
+    l_test,
+    **kwargs,
 ):
-
     alpha = kwargs.get("alpha", 1e-5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -49,10 +56,16 @@ def continuous_semisupervised_jdcoot(
     Gs = np.ones((nA, nB)) / (nA * nB)  # is (n,n')
     Gv = np.ones((dA, dB)) / (dA * dB)  # is (d,d')
 
-    clf_source.fit(x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0)
+    clf_source.fit(
+        x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0
+    )
 
     clf_target.fit(
-        x_target_train, y_target_train, batch_size=batch_size, epochs=nb_epoch, verbose=0
+        x_target_train,
+        y_target_train,
+        batch_size=batch_size,
+        epochs=nb_epoch,
+        verbose=0,
     )
 
     y_target_pred = clf_target.predict(x_target, verbose=0)
@@ -64,19 +77,20 @@ def continuous_semisupervised_jdcoot(
 
     y_target2 = y_target.copy()
     y_target2[l_test] = -1
+
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
 
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source)
-    fcost= M_lin
+    fcost = M_lin
     for k in range(numIterBCD):
         costold = cost
         Gsold = Gs.copy()
         Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  alpha *fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

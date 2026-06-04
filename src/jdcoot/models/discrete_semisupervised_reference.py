@@ -15,16 +15,24 @@ def one_hot(z, seen_levels):
     indices = np.searchsorted(seen_levels, z)
     return to_categorical(indices, num_classes=len(seen_levels))
 
+
 def one_cold(z_hot, seen_levels):
     indices = np.argmax(z_hot, axis=1)
     seen_levels = np.array(seen_levels)
     return seen_levels[indices]
 
-def discrete_semisupervised_reference(
-    source, target, source_test, target_test,
-    l_source_train, l_source_test, l_train, l_test, **kwargs
-):
 
+def discrete_semisupervised_reference(
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_train,
+    l_test,
+    **kwargs,
+):
     batch_size = kwargs.get("batch_size", 20)
 
     xtrain_target = target.loc[l_train, xcolumns(target)].values
@@ -33,7 +41,9 @@ def discrete_semisupervised_reference(
     xtest_target = target.loc[l_test, xcolumns(target)].values
     ztest_target = target.Z.values[l_test]
 
-    z_target_train = one_hot(ztrain_target[:, np.newaxis], np.sort(np.unique(ztrain_target))).astype(np.float64)
+    z_target_train = one_hot(
+        ztrain_target[:, np.newaxis], np.sort(np.unique(ztrain_target))
+    ).astype(np.float64)
     target_levels_train = np.sort(np.unique(ztrain_target))
 
     clf = discrete_classifier(target, "relu", "softmax", len(target_levels_train))
@@ -47,14 +57,16 @@ def discrete_semisupervised_reference(
 
     z_test = clf.predict(target_test.loc[:, xcolumns(target)], verbose=0)
     z_test = one_cold(
-        clf.predict(target_test.loc[:, xcolumns(target)], verbose=0),target_levels_train)
+        clf.predict(target_test.loc[:, xcolumns(target)], verbose=0),
+        target_levels_train,
+    )
 
     perf_pure_source = 1.0
     perf_pure_target = discrete_accuracy(z_test, target_test.Z)
 
     z_test = clf.predict(xtest_target, verbose=0)
-    z_test = one_cold(z_test,target_levels_train)
-    
+    z_test = one_cold(z_test, target_levels_train)
+
     perf_test_source = 1.0
     perf_test_target = discrete_accuracy(z_test, ztest_target)
 

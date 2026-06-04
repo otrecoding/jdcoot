@@ -5,11 +5,17 @@ from ..comp import comp_regression
 from ..utils import xcolumns, continuous_classifier, continuous_accuracy
 
 
-def continuous_semisupervised_coot(source, target, source_test, target_test, 
-    l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
-
-
-    
+def continuous_semisupervised_coot(
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_target_train,
+    l_target_test,
+    **kwargs,
+):
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)

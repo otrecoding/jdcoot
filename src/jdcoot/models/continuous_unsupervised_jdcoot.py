@@ -4,9 +4,18 @@ import ot
 from ..coot import cot_numpy
 from ..coot import init_matrix_np
 
-def continuous_unsupervised_jdcoot(source, target, test_source, test_target,
-    l_source_target, l_source_test, l_target_train, l_target_test, **kwargs):
 
+def continuous_unsupervised_jdcoot(
+    source,
+    target,
+    test_source,
+    test_target,
+    l_source_target,
+    l_source_test,
+    l_target_train,
+    l_target_test,
+    **kwargs,
+):
     alpha = kwargs.get("alpha", 1e-5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -41,7 +50,9 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target,
     Gs = np.ones((nA, nB)) / (nA * nB)
     Gv = np.ones((dA, dB)) / (dA * dB)
 
-    clf_source.fit(x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0)
+    clf_source.fit(
+        x_source, y_source, batch_size=batch_size, epochs=nb_epoch, verbose=0
+    )
 
     Ts, Tv, cost = cot_numpy(
         X1=x_source,
@@ -66,7 +77,7 @@ def continuous_unsupervised_jdcoot(source, target, test_source, test_target,
         Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms =  (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha *fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + alpha * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":

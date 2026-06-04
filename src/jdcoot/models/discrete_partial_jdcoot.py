@@ -12,12 +12,22 @@ from tf_keras.utils import to_categorical
 def one_hot(z, nClass):
     return to_categorical(z, num_classes=nClass)
 
+
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)
 
-def discrete_partial_jdcoot(source, target, test_source, test_target,
-                l_source_train, l_source_test, l_target_train, l_target_test, **kwargs):
-    
+
+def discrete_partial_jdcoot(
+    source,
+    target,
+    test_source,
+    test_target,
+    l_source_train,
+    l_source_test,
+    l_target_train,
+    l_target_test,
+    **kwargs,
+):
     alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -53,11 +63,13 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
     x_target_test = x_target[l_target_test, :]
     z_source_test = source.loc[l_source_test, "Z"].values
     z_target_test = target.loc[l_target_test, "Z"].values
-    
+
     clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
+
     def compute_cost_matrix(ys, yt, v=10000):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
         return M
+
     z_target_2 = z_target.copy()
     z_target_2[l_target_test] = -1
     z_source_2 = z_source[l_source_train]
@@ -77,7 +89,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
 
     zs_onehot = z_source_train
     zt_onehot_estimated = n_target * np.dot(Ts.T, zs_onehot)
-    zt_onehot_estimated [l_target_train] = z_target_train
+    zt_onehot_estimated[l_target_train] = z_target_train
 
     z_target_2 = z_target[l_target_train]
     z_source_2 = z_source.copy()
@@ -85,27 +97,31 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
     M_lin = compute_cost_matrix(yt=z_source_2, ys=z_target_2)
 
     Ts, Tv, cost = cot_numpy(
-         X1=x_target_train,
-         X2=x_source,
-         niter=100,
-         C_lin=M_lin,
-         algo="sinkhorn",
-         reg=1,
-         algo2="emd",
-         verbose=False,
+        X1=x_target_train,
+        X2=x_source,
+        niter=100,
+        C_lin=M_lin,
+        algo="sinkhorn",
+        reg=1,
+        algo2="emd",
+        verbose=False,
     )
 
     zt_onehot = z_target_train
     zs_onehot_estimated = n_source * np.dot(Ts.T, zt_onehot)
     zs_onehot_estimated[l_source_train] = z_source_train
 
-    clf_source.fit(x_source, zs_onehot_estimated, batch_size=batch_size, epochs=10, verbose=0)
-    clf_target.fit(x_target, zt_onehot_estimated, batch_size=batch_size, epochs=10, verbose=0)
+    clf_source.fit(
+        x_source, zs_onehot_estimated, batch_size=batch_size, epochs=10, verbose=0
+    )
+    clf_target.fit(
+        x_target, zt_onehot_estimated, batch_size=batch_size, epochs=10, verbose=0
+    )
 
     z_target_pred = clf_target.predict(x_target, verbose=0)
-    
+
     z_source_pred = clf_source.predict(x_source, verbose=0)
-    
+
     nA, dA = x_source.shape
     nB, dB = x_target.shape
 
@@ -123,7 +139,6 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
     Gs = np.ones((nA, nB)) / (nA * nB)
     Gv = np.ones((dA, dB)) / (dA * dB)
 
-    
     log_out = {}
     log_out["cost"] = []
 
@@ -145,7 +160,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
         Gvold = Gv.copy()
         costold = cost
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T))
+        Ms = C_s - np.dot(h1_s, Gv).dot(h2_s.T)
         Ms += M_lin + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
@@ -172,30 +187,36 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
         zt_onehot_estimated = nB * Gs.T.dot(z_source_pred)
         zt_onehot_estimated[l_target_train] = z_target_train
         clf_source.fit(
-                x_source, zs_onehot_estimated, batch_size=batch_size, epochs=nb_epoch, verbose=0
-            )
+            x_source,
+            zs_onehot_estimated,
+            batch_size=batch_size,
+            epochs=nb_epoch,
+            verbose=0,
+        )
         z_source_pred = clf_source.predict(x_source, verbose=0)
 
         z_source_pred[l_source_train] = z_source_train
 
-        
-
         clf_target.fit(
-                x_target, zt_onehot_estimated, batch_size=batch_size, epochs=nb_epoch, verbose=0
-            )
+            x_target,
+            zt_onehot_estimated,
+            batch_size=batch_size,
+            epochs=nb_epoch,
+            verbose=0,
+        )
         z_target_pred = clf_target.predict(x_target, verbose=0)
 
         z_target_pred[l_target_train] = z_target_train
 
         accuracy = np.mean(
-                (one_cold(z_target_pred[l_target_test]) + min(target_levels))
-                == z_target[l_target_test]
-            )
+            (one_cold(z_target_pred[l_target_test]) + min(target_levels))
+            == z_target[l_target_test]
+        )
 
         print(f"Delta: {delta} \t  Loss: {cost} \t Accuracy: {accuracy}")
 
         fcost = loss_crossentropy2(z_source_pred, z_target_pred)
-    
+
     zpred_target = one_cold(clf_target.predict(x_target_test, verbose=0)) + min(
         target_levels
     )
