@@ -37,8 +37,9 @@ sparse_rate = 0.75
 prop_source, prop_target = 0.5, 0.01
 
 for i in range(nsimulations):
-
-    indices = np.random.choice(np.arange(100), math.ceil(sparse_rate * 100), replace=False)
+    indices = np.random.choice(
+        np.arange(100), math.ceil(sparse_rate * 100), replace=False
+    )
     source, target = train.generate(indices)
     source_test, target_test = test.generate(indices)
 
@@ -47,11 +48,14 @@ for i in range(nsimulations):
 
     n_source = len(source.Y)
     n_target = len(target.Y)
-    l_source_train, l_source_test = train_test_split(np.arange(n_source), train_size=prop_source)
-    l_target_train, l_target_test = train_test_split(np.arange(n_target), train_size=prop_target)
+    l_source_train, l_source_test = train_test_split(
+        np.arange(n_source), train_size=prop_source
+    )
+    l_target_train, l_target_test = train_test_split(
+        np.arange(n_target), train_size=prop_target
+    )
 
     for odds_ratio in odds_ratio_values:
-
         train.odds_ratio_source = odds_ratio
         train.odds_ratio_target = odds_ratio
         test.odds_ratio_source = odds_ratio
@@ -61,9 +65,11 @@ for i in range(nsimulations):
             for learning_method in learning_methods:
                 for recoding_method in recoding_methods:
                     try:
-                        otrecod = models[(variable_type, learning_method, recoding_method)]
+                        otrecod = models[
+                            (variable_type, learning_method, recoding_method)
+                        ]
                         print(
-                        f"Model : {variable_type}_{learning_method}_{recoding_method}"
+                            f"Model : {variable_type}_{learning_method}_{recoding_method}"
                         )
                         results = deepcopy(train.__dict__)
                         results["mean_x_source"] = np.mean(train.mean_x_source)
@@ -78,8 +84,10 @@ for i in range(nsimulations):
                             target,
                             source_test,
                             target_test,
-                            l_source_train, l_source_test,
-                            l_target_train, l_target_test,
+                            l_source_train,
+                            l_source_test,
+                            l_target_train,
+                            l_target_test,
                         )
 
                         results["pure_source"] = pure_source
@@ -88,7 +96,7 @@ for i in range(nsimulations):
                         results["test_target"] = test_target
                         results["size_source_test"] = test.size_source
                         results["size_target_test"] = test.size_target
-                  
+
                         with open(json_file, "a") as f:
                             json.dump(results, f)
                             f.write("\n")
@@ -96,5 +104,5 @@ for i in range(nsimulations):
                     except KeyError:
                         print(
                             f"Model : {variable_type}_{learning_method}_{recoding_method} is not available"
-                    )
+                        )
                         pass
