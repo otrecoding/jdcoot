@@ -146,7 +146,7 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
         costold = cost
         # step 1 : samples coupling optimization
         Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T))
-        Ms= Ms + fcost +  M_lin + alpha * fcost  # is (nA,nB)
+        Ms += M_lin + alpha * fcost  # is (nA,nB)
         if algo == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo == "sinkhorn":
@@ -195,10 +195,6 @@ def discrete_partial_jdcoot(source, target, test_source, test_target,
         print(f"Delta: {delta} \t  Loss: {cost} \t Accuracy: {accuracy}")
 
         fcost = loss_crossentropy2(z_source_pred, z_target_pred)
-    
-    print("Gs sum:", Gs.sum())
-    print("Gs max:", Gs.max())
-    print("Gs min:", Gs.min())
     
     zpred_target = one_cold(clf_target.predict(x_target_test, verbose=0)) + min(
         target_levels
