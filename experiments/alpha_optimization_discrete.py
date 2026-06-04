@@ -69,10 +69,8 @@ for i in range(nsimulations):
                             target,
                             source_test,
                             target_test,
-                            l_source_train,
-                            l_source_test,
-                            l_target_train,
-                            l_target_train,
+                            l_source_train, l_source_test,
+                            l_target_train, l_target_test,
                             alpha = alpha,
                         )
 

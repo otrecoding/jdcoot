@@ -26,15 +26,15 @@ test = DataScenarioTest()
 test.size_source = test_size
 test.size_target = test_size
 
-json_file = "observed_labels_proportions_variation.json"
+json_file = "observed_labels_proportions_variation_05.json"
 with open(json_file, "w+") as f:
     f.seek(0)
 
 variable_types = ["continuous", "discrete"]
-learning_methods = ["reference", "unsupervised", "semisupervised", "partial"]
+learning_methods = ["partial"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-prop_source_values = [0.001, 0.005, 0.01, 0.05, 0.1]
+prop_source_values = [0.5]
 prop_target_values = [0.001, 0.005, 0.01, 0.05, 0.1]
 
 sparse_rate = 0.75
@@ -82,6 +82,8 @@ for i in range(nsimulations):
                                 l_target_train, l_target_test,
                             )
 
+                            results["prop_source"] = prop_source
+                            results["prop_target"] = prop_target
                             results["pure_source"] = pure_source
                             results["test_source"] = test_source
                             results["pure_target"] = pure_target

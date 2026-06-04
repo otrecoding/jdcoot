@@ -28,7 +28,7 @@ recoding_methods = ["coot", "jdcoot"]
 mean_source_values = [0.0]
 mean_target_values = [0.0, 0.1, 0.2, 0.3, 0.4]
 sparse_rate = 0.75
-prop_source, prop_target = 0.1, 0.1
+prop_source, prop_target = 0.5, 0.01
 
 for i in range(nsimulations):
 

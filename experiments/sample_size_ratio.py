@@ -24,7 +24,7 @@ test = DataScenarioTest()
 test.size_source = test_size
 test.size_target = test_size
 
-sizes = [10, 100, 500, 1000]
+sizes = [100, 300, 500, 700, 1000]
 
 json_file = "sample_size_variation.json"
 
@@ -36,7 +36,7 @@ with open(json_file, "w+") as f:
     f.seek(0)
 
 sparse_rate = 0.75
-prop_source, prop_target = 0.1, 0.1
+prop_source, prop_target = 0.5, 0.01
 
 for i in range(nsimulations):
 

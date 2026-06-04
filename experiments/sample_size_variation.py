@@ -13,8 +13,8 @@ from sklearn.model_selection import train_test_split
 
 nsimulations = 100
 
-prop_source, prop_target = 0.1, 0.1
-sizes = [10, 100, 500, 1000]
+prop_source, prop_target = 0.5, 0.01
+sizes = [100, 400, 700, 1000]
 
 train = DataScenario()
 test = DataScenarioTest()

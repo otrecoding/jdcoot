@@ -10,7 +10,7 @@ from ..coot import cot_numpy
 
 def continuous_partial_jdcoot(source, target, source_test, target_test,  l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
 
-    alpha = kwargs.get("alpha", 0.5)
+    alpha = kwargs.get("alpha", 1e-5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)

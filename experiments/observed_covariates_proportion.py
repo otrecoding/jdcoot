@@ -26,7 +26,7 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 sparse_rate = 0.75
-prop_source, prop_target = 0.1, 0.1
+prop_source, prop_target = 0.5, 0.01
 
 values = [0.2, 0.4, 0.6, 0.8]
 
