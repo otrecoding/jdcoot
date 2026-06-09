@@ -201,8 +201,6 @@ def cot_numpy(
     log_out = {}
     log_out["cost"] = []
 
-    verbose = True
-
     for i in range(niter):
         Tsold = Ts
         Tvold = Tv
