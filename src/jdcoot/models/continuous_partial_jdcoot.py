@@ -1,15 +1,21 @@
 import numpy as np
 import ot
-from sklearn.model_selection import train_test_split
 from ..comp import comp_regression
-from ..coot import cot_numpy
 from ..utils import xcolumns, continuous_classifiers, continuous_accuracy
 from ..coot import init_matrix_np
 
 
-def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_train, l_source_test,l_target_train, l_target_test, **kwargs):
-    #prop_source = kwargs.get("prop_source", 0.1)
-    #prop_target = kwargs.get("prop_target", 0.1)
+def continuous_partial_jdcoot(
+    source,
+    target,
+    source_test,
+    target_test,
+    l_source_train,
+    l_source_test,
+    l_target_train,
+    l_target_test,
+    **kwargs,
+):
     alphaS = kwargs.get("alphaS", 2.425)
     alphaT = kwargs.get("alphaT", 2.425)
     algo = kwargs.get("algo", "emd")
@@ -23,15 +29,6 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
     numIterBCD = 100
     nb_epoch = 10
     batch_size = batch_size
-    n_source = len(source.Y)
-    n_target = len(target.Y)
-
-    #l_source_train, l_source_test = train_test_split(
-    #    np.arange(n_source), train_size=prop_source
-   #)
-    #l_target_train, l_target_test = train_test_split(
-    #    np.arange(n_target), train_size=prop_target
-    #)
 
     x_source = source.loc[:, xcolumns(source)].values
     x_target = target.loc[:, xcolumns(target)].values
@@ -46,10 +43,10 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
     x_target_train = x_target[l_target_train, :]
     y_target_train = y_target[l_target_train, :]
 
-
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
+
     y_target2 = y_target.copy()
     y_target2[l_target_test] = -1
     y_source2 = y_source_train.copy()
@@ -78,7 +75,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
         Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  M_lin + alphaT * fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin + alphaT * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wA, wB, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":
@@ -91,10 +88,8 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
         elif algo2 == "sinkhorn":
             Gv = ot.sinkhorn(vA, vB, Mv, reg2)
 
-
-        y_target_hat = nB * Gs.T.dot(y_source_train.reshape(-1,1))
+        y_target_hat = nB * Gs.T.dot(y_source_train.reshape(-1, 1))
         y_target_hat[l_target_train] = y_target_train
-        
 
         clf_target.fit(
             x_target, y_target_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
@@ -114,8 +109,12 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
             print("converged at iter ", k)
             break
 
-        fcost = ot.dist(y_source_train.reshape(-1,1), y_target_pred.reshape(-1,1), metric="sqeuclidean")
-    
+        fcost = ot.dist(
+            y_source_train.reshape(-1, 1),
+            y_target_pred.reshape(-1, 1),
+            metric="sqeuclidean",
+        )
+
     y_target2 = y_target_train.copy()
     y_source2 = y_source.copy()
     y_source2[l_source_test] = -1
@@ -130,11 +129,11 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
     wB = np.ones(nB) / nB  # is (n',)
 
     # original losses
-    C_s, h1_s, h2_s = init_matrix_np(x_target_train,x_source,  vB, vA)
-    C_v, h1_v, h2_v = init_matrix_np(x_target_train.T,x_source.T,  wB, wA)
+    C_s, h1_s, h2_s = init_matrix_np(x_target_train, x_source, vB, vA)
+    C_v, h1_v, h2_v = init_matrix_np(x_target_train.T, x_source.T, wB, wA)
 
-    Gs = np.ones(( nB,nA)) / (nA * nB)  # is (n,n')
-    Gv = np.ones((dB,dA)) / (dA * dB)  # is (d,d')
+    Gs = np.ones((nB, nA)) / (nA * nB)  # is (n,n')
+    Gv = np.ones((dB, dA)) / (dA * dB)  # is (d,d')
 
     fcost = M_lin
     cost = np.inf
@@ -144,7 +143,7 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
         Gvold = Gv.copy()
 
         # step 1 : samples coupling optimization
-        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) +  M_lin + alphaS * fcost  # is (nA,nB)
+        Ms = (C_s - np.dot(h1_s, Gv).dot(h2_s.T)) + M_lin + alphaS * fcost  # is (nA,nB)
         if algo1 == "emd":
             Gs = ot.emd(wB, wA, Ms, numItermax=1e7)
         elif algo1 == "sinkhorn":
@@ -157,10 +156,9 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
         elif algo2 == "sinkhorn":
             Gv = ot.sinkhorn(vB, vA, Mv, reg2)
 
-
-        y_source_hat = nA * Gs.T.dot(y_target_train.reshape(-1,1))
+        y_source_hat = nA * Gs.T.dot(y_target_train.reshape(-1, 1))
         y_source_hat[l_source_train] = y_source_train
-        
+
         clf_source.fit(
             x_source, y_source_hat, batch_size=batch_size, epochs=nb_epoch, verbose=0
         )
@@ -179,16 +177,17 @@ def continuous_partial_jdcoot(source, target, source_test, target_test,l_source_
             print("converged at iter ", k)
             break
 
-        fcost = ot.dist(y_target_train.reshape(-1,1), y_source_pred.reshape(-1,1), metric="sqeuclidean")
-    
- 
+        fcost = ot.dist(
+            y_target_train.reshape(-1, 1),
+            y_source_pred.reshape(-1, 1),
+            metric="sqeuclidean",
+        )
 
     ypred_target = clf_target.predict(x_target[l_target_test, :], verbose=0).ravel()
     ypred_source = clf_source.predict(x_source[l_source_test, :], verbose=0).ravel()
 
     perf_pure_source = continuous_accuracy(ypred_source, source.loc[l_source_test, "Y"])
     perf_pure_target = continuous_accuracy(ypred_target, target.loc[l_target_test, "Y"])
-  
 
     zt_test = clf_target.predict(
         target_test.loc[:, xcolumns(target_test)], verbose=0

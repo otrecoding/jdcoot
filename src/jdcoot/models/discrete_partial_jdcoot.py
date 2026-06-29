@@ -11,6 +11,7 @@ from ..utils import (
 from ..losses import loss_crossentropy2
 from ..coot import init_matrix_np
 
+
 def discrete_partial_jdcoot(
     source,
     target,
