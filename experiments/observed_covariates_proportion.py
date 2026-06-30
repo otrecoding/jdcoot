@@ -26,7 +26,7 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 sparse_rate = 0.75
-prop_source, prop_target = 0.5, 0.01
+prop_source, prop_target = 1.0, 0.0
 
 values = [0.2, 0.4, 0.6, 0.8]
 
@@ -34,25 +34,16 @@ for i in range(nsimulations):
     indices = np.random.choice(
         np.arange(100), math.ceil(sparse_rate * 100), replace=False
     )
-    source, target = train.generate(indices)
-    source_test, target_test = test.generate(indices)
-
-    source_test = source_test.loc[:, source.columns]
-    target_test = target_test.loc[:, target.columns]
-
-    n_source = len(source.Y)
-    n_target = len(target.Y)
-    l_source_train, l_source_test = train_test_split(
-        np.arange(n_source), train_size=prop_source
-    )
-    l_target_train, l_target_test = train_test_split(
-        np.arange(n_target), train_size=prop_target
-    )
 
     for pxo_source in values:
         for pxo_target in values:
             train.obs_covar_prop_source = pxo_source
             train.obs_covar_prop_target = pxo_target
+            source, target = train.generate(indices)
+            source_test, target_test = test.generate(indices)
+
+            source_test = source_test.loc[:, source.columns]
+            target_test = target_test.loc[:, target.columns]
 
             for variable_type in variable_types:
                 for learning_method in learning_methods:
@@ -71,6 +62,8 @@ for i in range(nsimulations):
                             results["recoding"] = recoding_method
                             results["learning"] = learning_method
                             results["sparse_rate"] = sparse_rate
+                            results["prop_source"] = prop_source
+                            results["prop_target"] = prop_target
 
                             pure_source, pure_target, test_source, test_target = (
                                 otrecod(
@@ -78,10 +71,10 @@ for i in range(nsimulations):
                                     target,
                                     source_test,
                                     target_test,
-                                    l_source_train,
-                                    l_source_test,
-                                    l_target_train,
-                                    l_target_test,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
                                 )
                             )
 

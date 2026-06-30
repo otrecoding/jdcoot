@@ -36,7 +36,7 @@ with open(json_file, "w+") as f:
     f.seek(0)
 
 sparse_rate = 0.75
-prop_source, prop_target = 0.5, 0.01
+prop_source, prop_target = 1.0, 0.0
 
 for i in range(nsimulations):
     for size in sizes:
@@ -54,15 +54,6 @@ for i in range(nsimulations):
 
         source_test = source_test.loc[:, source.columns]
         target_test = target_test.loc[:, target.columns]
-
-        n_source = len(source.Y)
-        n_target = len(target.Y)
-        l_source_train, l_source_test = train_test_split(
-            np.arange(n_source), train_size=prop_source
-        )
-        l_target_train, l_target_test = train_test_split(
-            np.arange(n_target), train_size=prop_target
-        )
 
         for variable_type in variable_types:
             for learning_method in learning_methods:
@@ -87,12 +78,14 @@ for i in range(nsimulations):
                             target,
                             source_test,
                             target_test,
-                            l_source_train,
-                            l_source_test,
-                            l_target_train,
-                            l_target_test,
+                            None,
+                            None,
+                            None,
+                            None,
                         )
 
+                        results["prop_source"] = prop_source
+                        results["prop_target"] = prop_target
                         results["pure_source"] = pure_source
                         results["test_source"] = test_source
                         results["pure_target"] = pure_target

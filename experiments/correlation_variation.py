@@ -28,35 +28,27 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 sparse_rate = 0.75
-prop_source, prop_target = 0.5, 0.01
-
+prop_source, prop_target = 1.0, 0.0
 
 for i in range(nsimulations):
     indices = np.random.choice(
         np.arange(100), math.ceil(sparse_rate * 100), replace=False
     )
-    source, target = train.generate(indices)
-    source_test, target_test = test.generate(indices)
-
-    source_test = source_test.loc[:, source.columns]
-    target_test = target_test.loc[:, target.columns]
-
-    n_source = len(source.Y)
-    n_target = len(target.Y)
-    l_source_train, l_source_test = train_test_split(
-        np.arange(n_source), train_size=prop_source
-    )
-    l_target_train, l_target_test = train_test_split(
-        np.arange(n_target), train_size=prop_target
-    )
 
     for coef_source in coef_source_values:
         for coef_target in coef_target_values:
+
             train.active_autocorr_source = coef_source
             train.active_autocorr_target = coef_target
 
             test.active_autocorr_source = coef_source
             test.active_autocorr_target = coef_target
+
+            source, target = train.generate(indices)
+            source_test, target_test = test.generate(indices)
+
+            source_test = source_test.loc[:, source.columns]
+            target_test = target_test.loc[:, target.columns]
 
             for variable_type in variable_types:
                 for learning_method in learning_methods:
@@ -82,13 +74,15 @@ for i in range(nsimulations):
                                     target,
                                     source_test,
                                     target_test,
-                                    l_source_train,
-                                    l_source_test,
-                                    l_target_train,
-                                    l_target_test,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
                                 )
                             )
 
+                            results["prop_source"] = prop_source
+                            results["prop_target"] = prop_target
                             results["pure_source"] = pure_source
                             results["test_source"] = test_source
                             results["pure_target"] = pure_target

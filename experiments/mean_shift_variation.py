@@ -33,11 +33,6 @@ for i in range(nsimulations):
     indices = np.random.choice(
         np.arange(100), math.ceil(sparse_rate * 100), replace=False
     )
-    source, target = train.generate(indices)
-    source_test, target_test = test.generate(indices)
-
-    source_test = source_test.loc[:, source.columns]
-    target_test = target_test.loc[:, target.columns]
 
     for mean_shift_source in mean_source_values:
         for mean_shift_target in mean_target_values:
@@ -52,6 +47,12 @@ for i in range(nsimulations):
 
             test.mean_x_source += mean_shift_source
             test.mean_x_target += mean_shift_target
+
+            source, target = train.generate(indices)
+            source_test, target_test = test.generate(indices)
+
+            source_test = source_test.loc[:, source.columns]
+            target_test = target_test.loc[:, target.columns]
 
             for variable_type in variable_types:
                 for learning_method in learning_methods:
