@@ -32,8 +32,7 @@ variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 sparse_rate = 0.75
 prop_source, prop_target = 1.0, 0.0

@@ -25,8 +25,7 @@ test.size_source = test_size
 test.size_target = test_size
 
 json_file = "odds_ratio_variations.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 odds_ratio_values = [0.2, 0.4, 0.6, 0.8]
 
