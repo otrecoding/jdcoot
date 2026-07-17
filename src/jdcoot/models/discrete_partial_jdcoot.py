@@ -1,15 +1,15 @@
 import numpy as np
-from jdcoot.models.discrete_unsupervised_jdcoot import one_hot, one_cold
+from jdcoot.models.discrete_unsupervised_jdcoot import one_hot
 import ot
 
 from ..comp import comp_
-from ..utils import (
-    xcolumns,
-    discrete_accuracy,
-    discrete_classifiers,
-)
+from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 from ..losses import loss_crossentropy2
 from ..coot import init_matrix_np
+
+
+def one_cold(z_hot):
+    return np.argmax(z_hot, axis=1)
 
 
 def discrete_partial_jdcoot(
