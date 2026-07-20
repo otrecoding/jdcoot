@@ -76,7 +76,7 @@ def continuous_semisupervised_jdcoot(
     cost = np.inf
 
     y_target2 = y_target.copy()
-    y_target2[l_test] = -1
+    y_target2[l_test] = np.nan
 
     def compute_cost_matrix(ys, yt):
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())

@@ -40,7 +40,7 @@ def continuous_partial_coot(
         return M
 
     y_target2 = y_target.copy()
-    y_target2[l_target_test] = -1
+    y_target2[l_target_test] = np.nan
     y_source2 = y_source_train.copy()
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
 
@@ -60,7 +60,7 @@ def continuous_partial_coot(
 
     y_target2 = y_target_train.copy()
     y_source2 = y_source.copy()
-    y_source2[l_source_test] = -1
+    y_source2[l_source_test] = np.nan
     M_lin = compute_cost_matrix(yt=y_source2, ys=y_target2)
 
     Ts, Tv, cost = cot_numpy(

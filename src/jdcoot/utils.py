@@ -36,27 +36,26 @@ def xcolumns(df):
 
 
 def continuous_classifier(data):
+    """Regression network for a continuous target.
+    """
+
     def clf_seq(shape):
-        model = tf_keras.Sequential(
+        return tf_keras.Sequential(
             [
                 Dense(units=128, input_shape=shape, activation="linear"),
                 Dense(units=1, activation="linear"),
             ]
         )
-        return model
 
     fe_size = len(xcolumns(data))
     shape = (fe_size,)
-    loss = "MeanSquaredError"
     clf = clf_seq(shape)
-    clf.compile(optimizer="Adam", loss=loss, metrics=["accuracy"])
-
+    clf.compile(optimizer="Adam", loss="MeanSquaredError", metrics=["mae"])
     return clf
 
 
 def continuous_classifiers(source, target):
     return continuous_classifier(source), continuous_classifier(target)
-
 
 def continuous_accuracy_2(ypred_source, ytrue_source, ypred_target, ytrue_target):
     return (
@@ -126,3 +125,5 @@ def discrete_accuracy(*args):
         return discrete_accuracy_2(*args)
     else:
         return np.nan
+
+
