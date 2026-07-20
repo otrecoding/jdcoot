@@ -13,30 +13,6 @@ def _normalize(M, eps=1e-12):
     return M / (m + eps) if m > 0 else M
 
 
-def _mask_unknown_labels(M_lin, unknown_idx, axis):
-    """Replace the columns/rows of M_lin that correspond to unlabeled
-    (sentinel -1) points with the mean of the *known* entries.
-
-    Without this, unknown labels get compared numerically against real
-    labels (e.g. distance-to -1), injecting a fake but nonzero cost that
-    biases the OT coupling for exactly the points we have no label
-    information about. Neutralizing them lets the feature/structure term
-    (C_s) drive the coupling for those points instead, which is what
-    should happen when there's no label signal.
-    """
-    if len(unknown_idx) == 0:
-        return M_lin
-    n = M_lin.shape[axis]
-    known_idx = np.setdiff1d(np.arange(n), unknown_idx)
-    if axis == 1:
-        fill = M_lin[:, known_idx].mean() if len(known_idx) else 0.0
-        M_lin[:, unknown_idx] = fill
-    else:
-        fill = M_lin[known_idx, :].mean() if len(known_idx) else 0.0
-        M_lin[unknown_idx, :] = fill
-    return M_lin
-
-
 def _run_bcd_block(
     x_anchor_train,
     y_anchor_train,
@@ -209,11 +185,10 @@ def continuous_partial_jdcoot(
     y_target_train = y_target[l_target_train, :]
 
     # ---- block 1: source(train) -> target(all) ----
-    y_target2 = y_target.copy()
-    y_target2[l_target_test] = -1
+    y_target2 = y_target.copy().astype(float)
+    y_target2[l_target_test] = np.nan  # comp_regression() checks isnan(y) -> cost 0
     y_source2 = y_source_train.copy()
     M_lin_1 = compute_cost_matrix(yt=y_target2, ys=y_source2)
-    M_lin_1 = _mask_unknown_labels(M_lin_1, np.asarray(l_target_test), axis=1)
 
     clf_target = _run_bcd_block(
         x_anchor_train=x_source_train,
@@ -241,10 +216,9 @@ def continuous_partial_jdcoot(
 
     # ---- block 2: target(train) -> source(all) ----
     y_target2 = y_target_train.copy()
-    y_source2 = y_source.copy()
-    y_source2[l_source_test] = -1
+    y_source2 = y_source.copy().astype(float)
+    y_source2[l_source_test] = np.nan  # comp_regression() checks isnan(y) -> cost 0
     M_lin_2 = compute_cost_matrix(yt=y_source2, ys=y_target2)
-    M_lin_2 = _mask_unknown_labels(M_lin_2, np.asarray(l_source_test), axis=1)
 
     clf_source = _run_bcd_block(
         x_anchor_train=x_target_train,
