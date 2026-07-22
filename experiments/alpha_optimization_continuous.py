@@ -19,7 +19,7 @@ test.size_source = test_size
 test.size_target = test_size
 
 json_file = "alpha_optimization_continuous.json"
-with open(json_file, "w+") as f:
+with open(json_file, "w") as f:
     f.close()
 
 nsimulations = 100
