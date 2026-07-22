@@ -20,7 +20,7 @@ test.size_target = test_size
 
 json_file = "alpha_optimization_continuous.json"
 with open(json_file, "w+") as f:
-    f.seek(0)
+    f.close()
 
 nsimulations = 100
 alpha_values = np.logspace(-6, -3, 10)
