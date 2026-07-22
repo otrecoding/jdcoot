@@ -57,6 +57,7 @@ def continuous_classifier(data):
 def continuous_classifiers(source, target):
     return continuous_classifier(source), continuous_classifier(target)
 
+
 def continuous_accuracy_2(ypred_source, ytrue_source, ypred_target, ytrue_target):
     return (
         sum((ypred_source - ytrue_source) ** 2)
@@ -94,8 +95,12 @@ def discrete_classifier(data, f_in, f_out, nClass):
 
     fe_size = len(xcolumns(data))
     shape = (fe_size,)
-    loss = "categorical_crossentropy"
-    clf = clf_seq(shape)
+    is_binary = nClass <= 2
+    loss = "binary_crossentropy" if is_binary else "categorical_crossentropy"
+    units_out = 1 if is_binary else nClass
+    f_out_effective = "sigmoid" if is_binary else f_out
+
+    clf = clf_seq(shape, units_out, f_out_effective)
     clf.compile(optimizer="Adam", loss=loss, metrics=["accuracy"])
     return clf
 
@@ -125,5 +130,3 @@ def discrete_accuracy(*args):
         return discrete_accuracy_2(*args)
     else:
         return np.nan
-
-
