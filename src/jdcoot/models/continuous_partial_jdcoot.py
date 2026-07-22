@@ -47,9 +47,9 @@ def continuous_partial_jdcoot(
         M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_regression())
         return M
 
-    y_target2 = y_target.copy()
-    y_target2[l_target_test] = -1
-    y_source2 = y_source_train.copy()
+    y_target2 = y_target.copy().astype(np.float32)
+    y_target2[l_target_test] = np.nan
+    y_source2 = y_source_train.copy().astype(np.float32)
     M_lin = compute_cost_matrix(yt=y_target2, ys=y_source2)
 
     nA, dA = x_source_train.shape
@@ -115,9 +115,9 @@ def continuous_partial_jdcoot(
             metric="sqeuclidean",
         )
 
-    y_target2 = y_target_train.copy()
-    y_source2 = y_source.copy()
-    y_source2[l_source_test] = -1
+    y_target2 = y_target_train.copy().astype(np.float32)
+    y_source2 = y_source.copy().astype(np.float32)
+    y_source2[l_source_test] = np.nan
     M_lin = compute_cost_matrix(yt=y_source2, ys=y_target2)
 
     nA, dA = x_source.shape
