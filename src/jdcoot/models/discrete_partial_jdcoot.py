@@ -1,5 +1,4 @@
 import numpy as np
-from jdcoot.models.discrete_unsupervised_jdcoot import one_hot
 import ot
 
 from ..comp import comp_
@@ -7,6 +6,10 @@ from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 from ..losses import loss_crossentropy2
 from ..coot import init_matrix_np
 
+from tf_keras.utils import to_categorical
+
+def one_hot(z, nClass):
+    return to_categorical(z, num_classes=nClass)
 
 def one_cold(z_hot):
     return np.argmax(z_hot, axis=1)

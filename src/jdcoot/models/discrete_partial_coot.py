@@ -31,6 +31,7 @@ def discrete_partial_coot(
     batch_size = kwargs.get("batch_size", 20)
     source_levels = np.unique(source.Z)
     target_levels = np.unique(target.Z)
+
     nClass = len(np.union1d(source_levels, target_levels))
 
     x_source = source.loc[:, xcolumns(source)].values
@@ -104,24 +105,20 @@ def discrete_partial_coot(
         x_target, zt_onehot_estimated, batch_size=batch_size, epochs=10, verbose=0
     )
 
-    zpred_target = one_cold(clf_target.predict(x_target_test, verbose=0)) + min(
-        target_levels
-    )
+    zpred_target = one_cold(clf_target.predict(x_target_test, verbose=0))
 
-    zpred_source = one_cold(clf_source.predict(x_source_test, verbose=0)) + min(
-        source_levels
-    )
+    zpred_source = one_cold(clf_source.predict(x_source_test, verbose=0))
 
     perf_pure_source = discrete_accuracy(zpred_source, z_source_test)
     perf_pure_target = discrete_accuracy(zpred_target, z_target_test)
 
     zt_test = one_cold(
         clf_target.predict(test_target.loc[:, xcolumns(test_target)], verbose=0)
-    ) + min(target_levels)
+    )
 
     zs_test = one_cold(
         clf_source.predict(test_source.loc[:, xcolumns(test_source)], verbose=0)
-    ) + min(source_levels)
+    )
 
     perf_test_source = discrete_accuracy(zs_test, test_source.Z)
     perf_test_target = discrete_accuracy(zt_test, test_target.Z)
