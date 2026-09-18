@@ -19,8 +19,8 @@ test.size_source = test_size
 test.size_target = test_size
 
 json_file = "alpha_optimization_discrete.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+with open(json_file, "w") as f:
+    f.close()
 
 nsimulations = 100
 alpha_values = np.linspace(0, 1, 11)

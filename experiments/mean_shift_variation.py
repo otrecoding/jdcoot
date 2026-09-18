@@ -12,14 +12,13 @@ from jdcoot import DataScenario, DataScenarioTest
 from jdcoot.performance import models
 from sklearn.model_selection import train_test_split
 
-nsimulations = 200
+nsimulations = 100
 
 train = DataScenario()
 test = DataScenarioTest()
 
 json_file = "mean_shift_variation.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]

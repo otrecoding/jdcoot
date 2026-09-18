@@ -20,12 +20,11 @@ train = DataScenario()
 test = DataScenarioTest()
 
 json_file = "sample_size_variation.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]
-recoding_methods = ["coot", "jdcoot", "reference"]
+recoding_methods = ["coot", "jdcoot"]
 
 sparse_rate = 0.75
 
@@ -46,8 +45,8 @@ for i in range(nsimulations):
         source_test = source_test.loc[:, source.columns]
         target_test = target_test.loc[:, target.columns]
 
-        for variable_type in variable_types:
-            for learning_method in learning_methods:
+        for learning_method in learning_methods:
+            for variable_type in variable_types:
                 for recoding_method in recoding_methods:
                     try:
                         otrecod = models[

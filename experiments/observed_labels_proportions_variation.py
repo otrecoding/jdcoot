@@ -26,15 +26,14 @@ test = DataScenarioTest()
 test.size_source = test_size
 test.size_target = test_size
 
-json_file = "observed_labels_proportions_variation_05.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+json_file = "observed_labels_proportions_variation.json"
+open(json_file, "w").close()
 
 variable_types = ["continuous", "discrete"]
-learning_methods = ["partial"]
+learning_methods = ["semisupervised", "partial"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 
-prop_source_values = [0.5]
+prop_source_values = [0.05, 0.5]
 prop_target_values = [0.001, 0.005, 0.01, 0.05, 0.1]
 
 sparse_rate = 0.75

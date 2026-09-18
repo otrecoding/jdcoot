@@ -167,6 +167,9 @@ class DataScenario:
             loc=0, scale=np.sqrt(sigma_source), size=self.size_target
         )
 
+        y_target = (y_target - y_target.mean()) / y_target.std()
+        y_source = (y_source - y_source.mean()) / y_source.std()
+
         a_target = np.zeros(self.dim_target)
         a_target[actives] = np.log(self.odds_ratio_target)
 

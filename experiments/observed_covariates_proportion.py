@@ -19,8 +19,7 @@ train = DataScenario()
 test = DataScenarioTest()
 
 json_file = "observed_covariates_proportion.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]

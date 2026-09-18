@@ -29,8 +29,7 @@ test.size_source = size_source_test
 test.size_target = size_target_test
 
 json_file = "sparse_rate_variation.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 variable_types = ["continuous", "discrete"]
 learning_methods = ["unsupervised"]

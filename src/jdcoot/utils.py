@@ -36,21 +36,21 @@ def xcolumns(df):
 
 
 def continuous_classifier(data):
+    """Regression network for a continuous target.
+    """
+
     def clf_seq(shape):
-        model = tf_keras.Sequential(
+        return tf_keras.Sequential(
             [
                 Dense(units=128, input_shape=shape, activation="linear"),
                 Dense(units=1, activation="linear"),
             ]
         )
-        return model
 
     fe_size = len(xcolumns(data))
     shape = (fe_size,)
-    loss = "MeanSquaredError"
     clf = clf_seq(shape)
-    clf.compile(optimizer="Adam", loss=loss, metrics=["accuracy"])
-
+    clf.compile(optimizer="Adam", loss="MeanSquaredError", metrics=["mae"])
     return clf
 
 
@@ -95,8 +95,12 @@ def discrete_classifier(data, f_in, f_out, nClass):
 
     fe_size = len(xcolumns(data))
     shape = (fe_size,)
-    loss = "categorical_crossentropy"
-    clf = clf_seq(shape)
+    is_binary = nClass <= 2
+    loss = "binary_crossentropy" if is_binary else "categorical_crossentropy"
+    units_out = 1 if is_binary else nClass
+    f_out_effective = "sigmoid" if is_binary else f_out
+
+    clf = clf_seq(shape, units_out, f_out_effective)
     clf.compile(optimizer="Adam", loss=loss, metrics=["accuracy"])
     return clf
 

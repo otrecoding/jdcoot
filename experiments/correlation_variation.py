@@ -18,8 +18,7 @@ train = DataScenario()
 test = DataScenarioTest()
 
 json_file = "correlation_variation.json"
-with open(json_file, "w+") as f:
-    f.seek(0)
+open(json_file, "w").close()
 
 coef_source_values = [0.2]
 coef_target_values = [0.1, 0.2, 0.5, 0.7, 0.9]
