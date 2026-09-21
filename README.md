@@ -68,11 +68,6 @@ Hyper parameter of the problem formulation as in the paper.
    + semi-supervised : 3.335
    + partial : 2.875
 
-- regression
-   + unsupervised : 0.3
-   + semi-supervised : 2.625
-   + partial : 2.425
-
 ### Mean shift between target and source
 
 - classification and regression

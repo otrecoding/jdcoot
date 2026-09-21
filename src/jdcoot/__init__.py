@@ -2,16 +2,6 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-from .models.continuous_partial_coot import continuous_partial_coot
-from .models.continuous_partial_jdcoot import continuous_partial_jdcoot
-from .models.continuous_partial_reference import continuous_partial_reference
-from .models.continuous_semisupervised_coot import continuous_semisupervised_coot
-from .models.continuous_semisupervised_jdcoot import continuous_semisupervised_jdcoot
-from .models.continuous_semisupervised_reference import (
-    continuous_semisupervised_reference,
-)
-from .models.continuous_unsupervised_coot import continuous_unsupervised_coot
-from .models.continuous_unsupervised_jdcoot import continuous_unsupervised_jdcoot
 from .models.discrete_partial_coot import discrete_partial_coot
 from .models.discrete_partial_jdcoot import discrete_partial_jdcoot
 from .models.discrete_partial_reference import discrete_partial_reference
@@ -23,16 +13,7 @@ from .models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
 from .scenario import generate_data
 from .data_scenario import DataScenario, DataScenarioTest
 
-
 __all__ = [
-    continuous_partial_coot,
-    continuous_partial_jdcoot,
-    continuous_partial_reference,
-    continuous_semisupervised_coot,
-    continuous_semisupervised_jdcoot,
-    continuous_semisupervised_reference,
-    continuous_unsupervised_coot,
-    continuous_unsupervised_jdcoot,
     discrete_partial_coot,
     discrete_partial_jdcoot,
     discrete_partial_reference,
