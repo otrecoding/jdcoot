@@ -4,15 +4,8 @@ import tf_keras
 from tf_keras.layers import Dense
 
 
-def rmse(ypred, ytest):
-    n = ytest.size
-    assert ypred.size == ytest.size
-    return math.sqrt(sum((ypred - ytest) ** 2) / n)
-
-
 def xcolumns(df):
     return [a for a in df.columns if "X" in a]
-
 
 def discrete_classifier(data, f_in, f_out, nClass):
     def clf_seq(shape):
@@ -26,12 +19,8 @@ def discrete_classifier(data, f_in, f_out, nClass):
 
     fe_size = len(xcolumns(data))
     shape = (fe_size,)
-    is_binary = nClass <= 2
-    loss = "binary_crossentropy" if is_binary else "categorical_crossentropy"
-    units_out = 1 if is_binary else nClass
-    f_out_effective = "sigmoid" if is_binary else f_out
-
-    clf = clf_seq(shape, units_out, f_out_effective)
+    loss = "categorical_crossentropy"
+    clf = clf_seq(shape)
     clf.compile(optimizer="Adam", loss=loss, metrics=["accuracy"])
     return clf
 
