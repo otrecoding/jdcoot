@@ -29,7 +29,7 @@ test.size_target = test_size
 json_file = "observed_labels_proportions_variation.json"
 open(json_file, "w").close()
 
-variable_types = ["continuous", "discrete"]
+variable_types = ["discrete"]
 learning_methods = ["semisupervised", "partial"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 

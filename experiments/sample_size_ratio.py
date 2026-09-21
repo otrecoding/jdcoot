@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath("src"))
 
 from jdcoot import DataScenario, DataScenarioTest
 from jdcoot.performance import models
-from sklearn.model_selection import train_test_split
 
 nsimulations = 100
 
@@ -28,7 +27,7 @@ sizes = [100, 300, 500, 700, 1000]
 
 json_file = "sample_size_variation.json"
 
-variable_types = ["continuous", "discrete"]
+variable_types = ["discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 

@@ -40,6 +40,8 @@ def compute(
     source_test = source_test.loc[:, source.columns]
     target_test = target_test.loc[:, target.columns]
 
+    variable_type = "discrete"
+
     for learning_method in learning_methods:
         for recoding_method in recoding_methods:
             try:

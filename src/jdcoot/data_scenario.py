@@ -19,12 +19,10 @@ class DataScenario:
     - `size_source`, `size_target` : number of obs of source/target
     - `dim_source`, `dim_target` : number of variables of source/target
     - `mean_x_source`, `mean_x_target` :  mean of the distribution of the co-variates of source/target
-    - `mean_y_source`, `mean_y_target` :  mean of the distribution of the continuous objective variable of source/target
     - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
     - `active_autocorr_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
     - `sparse_rate` : proportion of active co-variates for generation (Same for source and target because generation in the "same world"/ consider that this generation explains the observed phenomenon)
     - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
-    - `r2_source`, `r2_target` : R^2 of the model of source/target (for white noise calculation in continuous case)
     - `obs_covar_prop_source`, `obs_covar_prop_target` : proportion of observed co-variates of source/target
 
     """
@@ -39,12 +37,8 @@ class DataScenario:
 
         self.odds_ratio_source = 0.5
         self.odds_ratio_target = 0.5
-        self.r2_source = 0.6
-        self.r2_target = 0.6
         self.mean_x_source = np.zeros(self.dim_source)
         self.mean_x_target = np.zeros(self.dim_target)
-        self.mean_y_source = 0
-        self.mean_y_target = 0
         self.active_autocorr_source = 0.3
         self.inactive_autocorr_source = 0.3
         self.active_autocorr_target = 0.3
@@ -63,7 +57,6 @@ class DataScenario:
                                                 | X_1 | ... | X_d | Y | Z |
 
         - :math:`X_i` the ith observed co-variate,
-        - :math:`Y` the continuous objective variable for regression analysis,
         - :math:`Z` the discrete objective variable for classification analysis
 
         """
@@ -129,14 +122,6 @@ class DataScenario:
         a_source = np.zeros(self.dim_source)
         a_source[actives] = b_source
 
-        y_source = np.dot(x_source, a_source)
-
-        sigma_source = np.var(y_source) * (1 - self.r2_source) / self.r2_source
-
-        y_source += np.random.normal(
-            loc=0, scale=np.sqrt(sigma_source), size=self.size_source
-        )
-
         a_source = np.zeros(self.dim_source)
         a_source[actives] = np.log(self.odds_ratio_source)
 
@@ -151,8 +136,6 @@ class DataScenario:
         a_target = np.zeros(self.dim_target)
         a_target[actives] = b_source
 
-        y_target = np.dot(x_target, a_target)
-
         def M(x):
             return (
                 sqrtm(cov_source)
@@ -162,13 +145,6 @@ class DataScenario:
             )
 
         mx_target = np.array([M(x) for x in x_target])
-
-        y_target = np.dot(mx_target, a_target) + np.random.normal(
-            loc=0, scale=np.sqrt(sigma_source), size=self.size_target
-        )
-
-        y_target = (y_target - y_target.mean()) / y_target.std()
-        y_source = (y_source - y_source.mean()) / y_source.std()
 
         a_target = np.zeros(self.dim_target)
         a_target[actives] = np.log(self.odds_ratio_target)
@@ -182,9 +158,7 @@ class DataScenario:
         z_target = np.zeros(self.size_target, dtype="int")
         z_target[us < proba_z_target] = 1
 
-        data_source["Y"] = y_source
         data_source["Z"] = z_source
-        data_target["Y"] = y_target
         data_target["Z"] = z_target
 
         return data_source, data_target

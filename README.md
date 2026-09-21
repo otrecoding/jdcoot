@@ -48,7 +48,6 @@ $$
 $$
 
 - $X_i$ the ith observed covariate,
-- $Y$ the continuous objective variable for regression analysis,
 - $Z$ the discrete objective variable for classification analysis
 
 test data, 2 dataframes (test_source and test_target)
