@@ -1,5 +1,4 @@
 tf-keras==2.18.0
-numpy
 pandas
 pot
 scikit-learn
