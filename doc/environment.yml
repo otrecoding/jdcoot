@@ -1,5 +1,0 @@
-name: jdcoot
-channels:
-  - conda-forge
-dependencies:
-  - sphinx
