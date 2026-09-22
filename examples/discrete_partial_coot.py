@@ -19,7 +19,7 @@ l_target_train, l_target_test = train_test_split(
     np.arange(n_target), train_size=prop_target
 )
 
-pure_source, pure_target, test_source, test_target = jdcoot.discrete_partial_coot2(
+pure_source, pure_target, test_source, test_target = jdcoot.discrete_partial_coot(
     source,
     target,
     source_test,

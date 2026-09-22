@@ -4,84 +4,8 @@ import tf_keras
 from tf_keras.layers import Dense
 
 
-def continuous_labels(source, prop_source, target, prop_target):
-    size_s = source.Y.size
-    size_t = target.Y.size
-
-    l_source = np.full(size_s, True)
-    l_target = np.full(size_t, True)
-
-    l_source[
-        np.random.choice(
-            np.arange(size_s), math.ceil(prop_source * size_s), replace=False
-        )
-    ] = False
-    l_target[
-        np.random.choice(
-            np.arange(size_t), math.ceil(prop_target * size_t), replace=False
-        )
-    ] = False
-
-    return l_source, l_target
-
-
-def rmse(ypred, ytest):
-    n = ytest.size
-    assert ypred.size == ytest.size
-    return math.sqrt(sum((ypred - ytest) ** 2) / n)
-
-
 def xcolumns(df):
     return [a for a in df.columns if "X" in a]
-
-
-def continuous_classifier(data):
-    """Regression network for a continuous target.
-    """
-
-    def clf_seq(shape):
-        return tf_keras.Sequential(
-            [
-                Dense(units=128, input_shape=shape, activation="linear"),
-                Dense(units=1, activation="linear"),
-            ]
-        )
-
-    fe_size = len(xcolumns(data))
-    shape = (fe_size,)
-    clf = clf_seq(shape)
-    clf.compile(optimizer="Adam", loss="MeanSquaredError", metrics=["mae"])
-    return clf
-
-
-def continuous_classifiers(source, target):
-    return continuous_classifier(source), continuous_classifier(target)
-
-
-def continuous_accuracy_2(ypred_source, ytrue_source, ypred_target, ytrue_target):
-    return (
-        sum((ypred_source - ytrue_source) ** 2)
-        + sum((ypred_target - ytrue_target) ** 2)
-    ) / (len(ypred_source) + len(ytrue_target))
-
-
-def continuous_accuracy_1(ypred, ytrue):
-    assert len(ypred) == len(ytrue)
-    res = sum((ypred - ytrue) ** 2) / len(ypred)
-    if hasattr(res, "__len__"):
-        return sum(res)
-    else:
-        return res
-
-
-def continuous_accuracy(*args):
-    if len(args) == 2:
-        return continuous_accuracy_1(args[0], args[1])
-    elif len(args) == 4:
-        return continuous_accuracy_2(args[0], args[1], args[2], args[3])
-    else:
-        return np.nan
-
 
 def discrete_classifier(data, f_in, f_out, nClass):
     def clf_seq(shape):
@@ -95,12 +19,8 @@ def discrete_classifier(data, f_in, f_out, nClass):
 
     fe_size = len(xcolumns(data))
     shape = (fe_size,)
-    is_binary = nClass <= 2
-    loss = "binary_crossentropy" if is_binary else "categorical_crossentropy"
-    units_out = 1 if is_binary else nClass
-    f_out_effective = "sigmoid" if is_binary else f_out
-
-    clf = clf_seq(shape, units_out, f_out_effective)
+    loss = "categorical_crossentropy"
+    clf = clf_seq(shape)
     clf.compile(optimizer="Adam", loss=loss, metrics=["accuracy"])
     return clf
 

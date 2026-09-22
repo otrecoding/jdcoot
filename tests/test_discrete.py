@@ -14,8 +14,8 @@ from jdcoot import generate_data
 prop_source, prop_target = 0.1, 0.1
 data = generate_data(size=500)
 source, target = data[0], data[1]
-n_source = len(source.Y)
-n_target = len(target.Y)
+n_source = len(source.Z)
+n_target = len(target.Z)
 l_source = train_test_split(np.arange(n_source), train_size=prop_source)
 l_target = train_test_split(np.arange(n_target), train_size=prop_target)
 

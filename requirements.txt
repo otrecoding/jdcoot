@@ -1,0 +1,6 @@
+tf-keras==2.18.0
+pandas
+pot
+scikit-learn
+seaborn
+scipy==1.16.3

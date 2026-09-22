@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath("src"))
 
 from jdcoot import DataScenario, DataScenarioTest
 from jdcoot.performance import models
-from sklearn.model_selection import train_test_split
 
 nsimulations = 100
 
@@ -31,7 +30,7 @@ test.size_target = size_target_test
 json_file = "sparse_rate_variation.json"
 open(json_file, "w").close()
 
-variable_types = ["continuous", "discrete"]
+variable_types = ["discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot"]
 

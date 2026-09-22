@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath("src"))
 
 from jdcoot import DataScenario, DataScenarioTest
 from jdcoot.performance import models
-from sklearn.model_selection import train_test_split
 
 nsimulations = 100
 
@@ -23,7 +22,7 @@ open(json_file, "w").close()
 coef_source_values = [0.2]
 coef_target_values = [0.1, 0.2, 0.5, 0.7, 0.9]
 
-variable_types = ["continuous", "discrete"]
+variable_types = ["discrete"]
 learning_methods = ["unsupervised"]
 recoding_methods = ["coot", "jdcoot", "reference"]
 sparse_rate = 0.75
