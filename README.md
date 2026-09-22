@@ -6,12 +6,10 @@ Advisors : Valérie Garès (INRIA) and Chloé Friguet (UBS)
 
 Maintenance : Pierre Navaro (CNRS)
 
-This work addresses a fundamental challenge in modern statistical learning: adapting mod-
-els to heterogeneous domains, where source and target data are characterised by different
+This work addresses a fundamental challenge in modern statistical learning: adapting models to heterogeneous domains, where source and target data are characterised by different
 feature spaces and underlying distributions. We introduce Joint Distribution Co-Optimal
 Transport (JDCOOT), a domain adaptation algorithm that leverages optimal transport
-to align the joint feature-label distributions of distinct domains, enabling effective knowl-
-edge transfer across heterogeneous domains. 
+to align the joint feature-label distributions of distinct domains, enabling effective knowledge transfer across heterogeneous domains. 
 
 ## Installation
 
