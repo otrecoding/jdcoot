@@ -1,6 +1,6 @@
 # JDCOOT : A Joint Distribution Co-Optimal Transport Approach for Adapting Models to Heterogeneous Domains
 
-Pierre Navaro, Valérie Garès (INRIA) and Chloé Friguet (UBS) with contribution from Lucas Offroy and Marion Jeamart (Internships)
+Pierre Navaro (CNRS), Valérie Garès (INRIA) and Chloé Friguet (UBS) with contribution from Lucas Offroy and Marion Jeamart (Internships)
 
 This work addresses a fundamental challenge in modern statistical learning: adapting models to heterogeneous domains, where source and target data are characterised by different
 feature spaces and underlying distributions. We introduce Joint Distribution Co-Optimal
