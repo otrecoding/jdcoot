@@ -1,10 +1,6 @@
 # JDCOOT : A Joint Distribution Co-Optimal Transport Approach for Adapting Models to Heterogeneous Domains
 
-Code : Lucas Offroy (Intern Engineer INSA)
-
-Advisors : Valérie Garès (INRIA) and Chloé Friguet (UBS)
-
-Maintenance : Pierre Navaro (CNRS)
+Pierre Navaro, Valérie Garès (INRIA) and Chloé Friguet (UBS) with contribution from Lucas Offroy and Marion Jeamart (Internships)
 
 This work addresses a fundamental challenge in modern statistical learning: adapting models to heterogeneous domains, where source and target data are characterised by different
 feature spaces and underlying distributions. We introduce Joint Distribution Co-Optimal
@@ -33,18 +29,18 @@ pixi run python examples/discrete_partial_jdcoot.py
 ## Numerical experiments
 
 For all expermiments we use three methods `reference`, `coot` and `jdcoot` on two datasets (train and test).
-The "pure" performance is the accuracy and the train dataset and the "test" performance is the prediction accuracy
-using the same model on another dataset.
+The "pure" performance is the accuracy on the train dataset and the "test" performance is the prediction accuracy
+using the same model on the test dataset.
 
 Input : 
 
 learning data, 2 dataframes (source and target) with the following format :
 
 $$
-| X_1 | ... | X_d | Y | Z |
+ X^S = (X 1^S . . . X d_S^S)  Z and X^T = (X 1^T \ldots X d_T^T)  Z
 $$
 
-- $X_i$ the ith observed covariate,
+- $X$ are the observed covariate,
 - $Z$ the discrete objective variable for classification analysis
 
 test data, 2 dataframes (test_source and test_target)
