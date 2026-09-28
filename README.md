@@ -37,7 +37,7 @@ Input :
 learning data, 2 dataframes (source and target) with the following format :
 
 $$
- X^S = (X 1^S . . . X d_S^S)  Z and X^T = (X 1^T \ldots X d_T^T)  Z
+ X^S = (X 1^S . . . X d_S^S)  Z \qquad \mbox{and} \qquad X^T = (X 1^T \ldots X d_T^T)  Z
 $$
 
 - $X$ are the observed covariate,
