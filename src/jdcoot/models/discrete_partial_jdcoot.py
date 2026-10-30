@@ -1,17 +1,21 @@
+"""Partially supervised joint distribution co-optimal transport."""
+
 import numpy as np
 import ot
+from tf_keras.utils import to_categorical
 
 from ..comp import comp_
 from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
 from ..losses import loss_crossentropy2
 from ..coot import init_matrix_np
 
-from tf_keras.utils import to_categorical
 
 def one_hot(z, nClass):
+    """Encode integer labels as categorical probability vectors."""
     return to_categorical(z, num_classes=nClass)
 
 def one_cold(z_hot):
+    """Decode categorical probabilities to integer labels."""
     return np.argmax(z_hot, axis=1)
 
 
@@ -26,6 +30,7 @@ def discrete_partial_jdcoot(
     l_target_test,
     **kwargs,
 ):
+    """Return within-domain and held-out accuracies using partial labels."""
     alphaS = kwargs.get("alphaS", 3.335)
     alphaT = kwargs.get("alphaT", 3.335)
     algo = kwargs.get("algo", "emd")

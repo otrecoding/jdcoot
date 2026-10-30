@@ -1,3 +1,5 @@
+"""Iterative scaling of a positive kernel to prescribed marginals."""
+
 import numpy as np
 
 
@@ -12,13 +14,19 @@ def sinkhorn_scaling(
     always_raise=False,
     **kwargs,
 ):
+    """Scale K to marginals a and b, optionally returning convergence details.
+
+    With multiple target histograms (columns of b), return each scaled
+    kernel's total mass instead of a coupling matrix. The legacy
+    ``always_raise`` and extra keyword arguments are currently unused.
+    """
     a = np.asarray(a, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     K = np.asarray(K, dtype=np.float64)
 
     # init data
-    Nini = len(a)
-    Nfin = len(b)
+    n_source = len(a)
+    n_target = len(b)
 
     nbb = b.shape[1] if b.ndim > 1 else 0
 
@@ -27,23 +35,23 @@ def sinkhorn_scaling(
 
     # we assume that no distances are null except those of the diagonal of distances
     if nbb:
-        u = np.ones((Nini, nbb)) / Nini
-        v = np.ones((Nfin, nbb)) / Nfin
+        u = np.ones((n_source, nbb)) / n_source
+        v = np.ones((n_target, nbb)) / n_target
     else:
-        u = np.ones(Nini) / Nini
-        v = np.ones(Nfin) / Nfin
+        u = np.ones(n_source) / n_source
+        v = np.ones(n_target) / n_target
 
-    Kp = (1 / a[:, np.newaxis]) * K
+    scaled_kernel = (1 / a[:, np.newaxis]) * K
     cpt = 0
     err = 1
     while err > stopThr and cpt < numItermax:
         uprev = u
         vprev = v
-        KtransposeU = np.dot(K.T, u)
-        v = np.divide(b, KtransposeU)
-        u = 1.0 / np.dot(Kp, v)
+        kernel_transpose_u = np.dot(K.T, u)
+        v = np.divide(b, kernel_transpose_u)
+        u = 1.0 / np.dot(scaled_kernel, v)
 
-        zero_in_transp = np.any(KtransposeU == 0)
+        zero_in_transp = np.any(kernel_transpose_u == 0)
         nan_in_dual = np.any(np.isnan(u)) or np.any(np.isnan(v))
         inf_in_dual = np.any(np.isinf(u)) or np.any(np.isinf(v))
         if zero_in_transp or nan_in_dual or inf_in_dual:
@@ -74,16 +82,12 @@ def sinkhorn_scaling(
     if log:
         log["u"] = u
         log["v"] = v
-    M = 1  # FIXME: add by Pierre to fix the undefined variable M
     if nbb:  # return only loss
-        res = np.sum(u.T[:, :, None] * K * v.T[:, None, :] * M, axis=(1, 2))
+        res = np.sum(u.T[:, :, None] * K * v.T[:, None, :], axis=(1, 2))
         if log:
             return res, log
-        else:
-            return res
+        return res
 
-    else:  # return OT matrix
-        if log:
-            return u[:, np.newaxis] * K * v[np.newaxis, :], log
-        else:
-            return u[:, np.newaxis] * K * v[np.newaxis, :]
+    if log:
+        return u[:, np.newaxis] * K * v[np.newaxis, :], log
+    return u[:, np.newaxis] * K * v[np.newaxis, :]

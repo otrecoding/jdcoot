@@ -1,3 +1,5 @@
+"""Synthetic correlated covariates and binary labels for paired domains."""
+
 import math
 
 import numpy as np
@@ -6,6 +8,7 @@ from scipy.linalg import sqrtm
 
 
 def sample(x, px):
+    """Sample a proportion of the values without replacement."""
     return np.random.choice(x, math.floor(px * len(x)), replace=False)
 
 
@@ -18,12 +21,14 @@ class DataScenario:
 
     - `size_source`, `size_target` : number of obs of source/target
     - `dim_source`, `dim_target` : number of variables of source/target
-    - `mean_x_source`, `mean_x_target` :  mean of the distribution of the co-variates of source/target
-    - `active_autocorr_source`, `inactive_autocorr_source` : auto correlation coefficient of active/non active co-variates for source
-    - `active_autocorr_target`, `inactive_autocorr_target` : auto correlation coefficient of active/non active co-variates for target
-    - `sparse_rate` : proportion of active co-variates for generation (Same for source and target because generation in the "same world"/ consider that this generation explains the observed phenomenon)
-    - `odds_ratio_source`, `odds_ratio_target` : odds ratio of the model of source/target (for probabilities calculation in discrete case)
-    - `obs_covar_prop_source`, `obs_covar_prop_target` : proportion of observed co-variates of source/target
+    - `mean_x_source`, `mean_x_target` : mean of the covariate distributions
+    - `active_autocorr_source`, `inactive_autocorr_source` : autocorrelation of
+      active/inactive source covariates
+    - `active_autocorr_target`, `inactive_autocorr_target` : autocorrelation of
+      active/inactive target covariates
+    - `odds_ratio_source`, `odds_ratio_target` : odds ratios for binary labels
+    - `obs_covar_prop_source`, `obs_covar_prop_target` : proportions of observed
+      source/target covariates
 
     """
 
@@ -46,7 +51,7 @@ class DataScenario:
 
     def generate(self, indices):
         """
-        - `indices` : array of indices of active variables. (In order to keep the same generation when we want to generate a test sample)
+        `indices` identifies active variables, shared with the test scenario.
 
         Returns
         -------
@@ -117,11 +122,6 @@ class DataScenario:
         data_source = data_source.loc[:, list(selected_obs_source)]
         data_target = data_target.loc[:, list(selected_obs_target)]
 
-        b_source = 1
-
-        a_source = np.zeros(self.dim_source)
-        a_source[actives] = b_source
-
         a_source = np.zeros(self.dim_source)
         a_source[actives] = np.log(self.odds_ratio_source)
 
@@ -133,10 +133,7 @@ class DataScenario:
         z_source = np.zeros(self.size_source, dtype="int")
         z_source[us < proba_z_source] = 1
 
-        a_target = np.zeros(self.dim_target)
-        a_target[actives] = b_source
-
-        def M(x):
+        def map_target(x):
             return (
                 sqrtm(cov_source)
                 @ sqrtm(np.linalg.inv(cov_target))
@@ -144,7 +141,7 @@ class DataScenario:
                 + self.mean_x_source
             )
 
-        mx_target = np.array([M(x) for x in x_target])
+        mx_target = np.array([map_target(x) for x in x_target])
 
         a_target = np.zeros(self.dim_target)
         a_target[actives] = np.log(self.odds_ratio_target)

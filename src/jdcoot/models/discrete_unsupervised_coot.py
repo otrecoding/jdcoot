@@ -1,15 +1,19 @@
+"""Unsupervised target classification using co-optimal transport."""
+
 import numpy as np
+from tf_keras.utils import to_categorical
 
 from ..coot import cot_numpy
 from ..utils import discrete_classifier, xcolumns, discrete_accuracy
-from tf_keras.utils import to_categorical
 
 
 def one_hot(z, nClass):
+    """Encode integer labels as categorical probability vectors."""
     return to_categorical(z, num_classes=nClass)
 
 
 def one_cold(z_hot):
+    """Decode categorical probabilities to integer labels."""
     return np.argmax(z_hot, axis=1)
 
 
@@ -24,6 +28,7 @@ def discrete_unsupervised_coot(
     l_target_test,
     **kwargs,
 ):
+    """Transfer source labels and return target classification accuracies."""
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -40,7 +45,7 @@ def discrete_unsupervised_coot(
 
     nClass = len(np.union1d(source_levels, target_levels))
 
-    Ts, Tv, cost = cot_numpy(
+    sample_coupling, _, _ = cot_numpy(
         X1=x_source,
         X2=x_target,
         niter=100,
@@ -51,7 +56,7 @@ def discrete_unsupervised_coot(
     )
 
     z_target_pred = size_target * np.dot(
-        Ts.T, one_hot(z_source, nClass).astype(np.float64)
+        sample_coupling.T, one_hot(z_source, nClass).astype(np.float64)
     )
 
     perf_pure_source = 1.0

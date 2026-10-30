@@ -1,17 +1,21 @@
+"""Unsupervised target classification using joint distribution COOT."""
+
 import numpy as np
 import ot
+from tf_keras.utils import to_categorical
 
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 from ..coot import init_matrix_np
 from ..losses import loss_crossentropy2
-from tf_keras.utils import to_categorical
 
 
 def one_hot(y, nClass):
+    """Encode integer labels as categorical probability vectors."""
     return to_categorical(y, num_classes=nClass)
 
 
 def one_cold(z_encoded):
+    """Decode categorical probabilities to integer labels."""
     return np.argmax(z_encoded, axis=1)
 
 
@@ -26,6 +30,7 @@ def discrete_unsupervised_jdcoot(
     l_target_test,
     **kwargs,
 ):
+    """Transfer source labels and return target classification accuracies."""
     alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -44,7 +49,6 @@ def discrete_unsupervised_jdcoot(
     z_source_train = one_hot(z_source, nClass).astype(np.float64)
     x_target_train = x_target
 
-    reg = reg
     algo2 = "emd"
     reg2 = 0
     numIterBCD = 100
