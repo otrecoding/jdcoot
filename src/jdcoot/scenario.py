@@ -1,3 +1,5 @@
+"""Generate or load paired source and target classification datasets."""
+
 import math
 import numpy as np
 import pandas as pd
@@ -5,9 +7,10 @@ from .data_scenario import DataScenario, DataScenarioTest
 
 
 def generate_data(size=1000, seed=2025):
+    """Load cached CSV datasets, or generate and cache a reproducible scenario."""
     np.random.seed(seed)
 
-    INDEX_GENERATION = np.random.choice(
+    index_generation = np.random.choice(
         np.arange(100), math.ceil(0.75 * 100), replace=False
     )
 
@@ -28,11 +31,11 @@ def generate_data(size=1000, seed=2025):
         test_scenario.size_source = size
         test_scenario.size_target = size
 
-        source, target = reference_scenario.generate(INDEX_GENERATION)
+        source, target = reference_scenario.generate(index_generation)
         source.to_csv("source.csv", index=False)
         target.to_csv("target.csv", index=False)
 
-        source_test, target_test = test_scenario.generate(INDEX_GENERATION)
+        source_test, target_test = test_scenario.generate(index_generation)
         source_test.to_csv("source_test.csv", index=False)
         target_test.to_csv("target_test.csv", index=False)
 
@@ -43,6 +46,7 @@ def generate_data(size=1000, seed=2025):
 
 
 def select_observations(source, target):
+    """Select balanced observations from the source and target label classes."""
     z_source = source.Z.values
     z_target = target.Z.values
 

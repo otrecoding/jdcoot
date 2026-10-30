@@ -26,6 +26,23 @@ pixi install
 pixi run python examples/discrete_partial_jdcoot.py
 ```
 
+## Development checks
+
+With the project environment active, install pylint and evaluate all package
+modules, including the classification models:
+
+```bash
+python -m pip install pylint
+python -m pylint src/jdcoot
+python -m pytest
+```
+
+No pylint checks are disabled globally. The package initializer has a scoped
+import-position exception because TensorFlow logging must be configured before
+model imports. Remaining findings include legacy mathematical names, shared
+model-interface arguments unused by some implementations, and
+complexity/duplication in the optimization routines.
+
 ## Numerical experiments
 
 For all expermiments we use three methods `reference`, `coot` and `jdcoot` on two datasets (train and test).

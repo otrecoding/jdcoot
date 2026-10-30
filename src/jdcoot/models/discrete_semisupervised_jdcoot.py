@@ -1,7 +1,9 @@
+"""Semi-supervised joint distribution co-optimal transport."""
+
 import numpy as np
+import ot
 from tf_keras.utils import to_categorical
 
-import ot
 from ..coot import init_matrix_np
 from ..comp import comp_
 from ..losses import loss_crossentropy2
@@ -9,10 +11,12 @@ from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
 
 def one_hot(z, nClass):
+    """Encode integer labels as categorical probability vectors."""
     return to_categorical(z, num_classes=nClass)
 
 
 def one_cold(z_hot):
+    """Decode categorical probabilities to integer labels."""
     return np.argmax(z_hot, axis=1)
 
 
@@ -27,6 +31,7 @@ def discrete_semisupervised_jdcoot(
     l_test,
     **kwargs,
 ):
+    """Return accuracies using full source labels and partial target labels."""
     alpha = kwargs.get("alpha", 0.5)
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
@@ -53,7 +58,6 @@ def discrete_semisupervised_jdcoot(
 
     numIterBCD = 100
     nb_epoch = 10
-    batch_size = batch_size
 
     nA, dA = x_source.shape
     nB, dB = x_target.shape

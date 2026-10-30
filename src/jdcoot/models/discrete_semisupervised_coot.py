@@ -1,3 +1,5 @@
+"""Semi-supervised target classification using co-optimal transport."""
+
 import numpy as np
 import ot
 from tf_keras.utils import to_categorical
@@ -8,10 +10,12 @@ from ..utils import xcolumns, discrete_classifier, discrete_accuracy
 
 
 def one_hot(z, nClass):
+    """Encode integer labels as categorical probability vectors."""
     return to_categorical(z, num_classes=nClass)
 
 
 def one_cold(z_hot):
+    """Decode categorical probabilities to integer labels."""
     return np.argmax(z_hot, axis=1)
 
 
@@ -26,6 +30,7 @@ def discrete_semisupervised_coot(
     l_target_test,
     **kwargs,
 ):
+    """Return accuracies using full source labels and partial target labels."""
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -48,16 +53,15 @@ def discrete_semisupervised_coot(
     z_target_train[l_target_test] = -1
 
     def compute_cost_matrix(ys, yt, v=10000):
-        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
-        return M
+        return ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
 
-    M_lin = compute_cost_matrix(yt=z_target_train, ys=z_source)
+    linear_cost = compute_cost_matrix(yt=z_target_train, ys=z_source)
 
-    Ts, Tv, cost = cot_numpy(
+    sample_coupling, _, _ = cot_numpy(
         X1=x_source,
         X2=x_target,
         niter=100,
-        C_lin=M_lin,
+        C_lin=linear_cost,
         algo=algo,
         reg=reg,
         algo2="emd",
@@ -65,7 +69,7 @@ def discrete_semisupervised_coot(
     )
 
     z_target_pred = n_target * np.dot(
-        Ts.T, one_hot(z_source, nClass).astype(np.float64)
+        sample_coupling.T, one_hot(z_source, nClass).astype(np.float64)
     )
     z_target_pred[l_target_train] = one_hot(z_target[l_target_train], nClass).astype(
         np.float64

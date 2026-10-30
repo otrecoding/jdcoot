@@ -1,3 +1,5 @@
+"""Reference target classifier trained only on labelled target observations."""
+
 import numpy as np
 from tf_keras.utils import to_categorical
 from ..utils import xcolumns, discrete_classifier, discrete_accuracy
@@ -17,6 +19,7 @@ def one_hot(z, seen_levels):
 
 
 def one_cold(z_hot, seen_levels):
+    """Decode categorical probabilities using the training fold's labels."""
     indices = np.argmax(z_hot, axis=1)
     seen_levels = np.array(seen_levels)
     return seen_levels[indices]
@@ -33,6 +36,7 @@ def discrete_semisupervised_reference(
     l_test,
     **kwargs,
 ):
+    """Return target accuracies for the semi-supervised reference classifier."""
     batch_size = kwargs.get("batch_size", 20)
 
     xtrain_target = target.loc[l_train, xcolumns(target)].values

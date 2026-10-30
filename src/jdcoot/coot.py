@@ -1,3 +1,5 @@
+"""NumPy implementation of alternating co-optimal transport."""
+
 import numpy as np
 import ot
 from scipy import stats
@@ -9,13 +11,14 @@ from .sinkhorn import sinkhorn_scaling
 def random_gamma_init(p, q, **kwargs):
     """Returns random coupling matrix with marginal p,q"""
     rvs = stats.beta(1e-1, 1e-1).rvs
-    S = random(len(p), len(q), density=1, data_rvs=rvs)
-    return sinkhorn_scaling(p, q, S.A, **kwargs)
+    coupling = random(len(p), len(q), density=1, data_rvs=rvs)
+    return sinkhorn_scaling(p, q, coupling.toarray(), **kwargs)
 
 
 def init_matrix_np(X1, X2, v1, v2):
     """Return loss matrices and tensors for COOT fast computation
-    Returns the value of :math:`|X1-X2|^{2} \\otimes T` as done in [1] based on [2] for the Gromov-Wasserstein distance.
+    Returns :math:`|X1-X2|^{2} \\otimes T` as in [1], based on the
+    Gromov-Wasserstein distance in [2].
     Where :
         - X1 : The source dataset of shape (n,d)
         - X2 : The target dataset of shape (n',d')
@@ -63,18 +66,14 @@ def init_matrix_np(X1, X2, v1, v2):
     def h2(b):
         return 2 * b
 
-    constC1 = np.dot(
+    const_source = np.dot(
         np.dot(f1(X1), v1.reshape(-1, 1)), np.ones(f1(X2).shape[0]).reshape(1, -1)
     )
-    constC2 = np.dot(
+    const_target = np.dot(
         np.ones(f1(X1).shape[0]).reshape(-1, 1), np.dot(v2.reshape(1, -1), f2(X2).T)
     )
 
-    constC = constC1 + constC2
-    hX1 = h1(X1)
-    hX2 = h2(X2)
-
-    return constC, hX1, hX2
+    return const_source + const_target, h1(X1), h2(X2)
 
 
 def cot_numpy(
@@ -125,21 +124,19 @@ def cot_numpy(
     niter : integer
             Number max of iterations of the BCD for solving COOT.
     algo : string
-            Choice of algorithm for solving OT problems on samples each iteration. Choice ['emd','sinkhorn'].
+            Algorithm for sample OT problems: 'emd' or 'sinkhorn'.
             If 'emd' returns sparse solution
             If 'sinkhorn' returns regularized solution
     algo2 : string
-            Choice of algorithm for solving OT problems on features each iteration. Choice ['emd','sinkhorn'].
+            Algorithm for feature OT problems: 'emd' or 'sinkhorn'.
             If 'emd' returns sparse solution
             If 'sinkhorn' returns regularized solution
     reg : float
             Regularization parameter for samples coupling matrix. Ignored if algo='emd'
     reg2 : float
             Regularization parameter for features coupling matrix. Ignored if algo='emd'
-    eps : float
-        Threshold for the convergence
     random_init : bool
-            Wether to use random initialization for the coupling matrices. If false identity couplings are considered.
+            Use random coupling initialization; otherwise use uniform couplings.
     log : bool, optional
          record log if True
     C_lin : numpy array, shape (n, n')
@@ -183,46 +180,52 @@ def cot_numpy(
         w2 = np.ones(X2.shape[0]) / X2.shape[0]  # is (n,)
 
     if not random_init:
-        Ts = np.ones((X1.shape[0], X2.shape[0])) / (
+        sample_coupling = np.ones((X1.shape[0], X2.shape[0])) / (
             X1.shape[0] * X2.shape[0]
         )  # is (n,n')
-        Tv = np.ones((X1.shape[1], X2.shape[1])) / (
+        feature_coupling = np.ones((X1.shape[1], X2.shape[1])) / (
             X1.shape[1] * X2.shape[1]
         )  # is (d,d')
     else:
-        Ts = random_gamma_init(w1, w2)
-        Tv = random_gamma_init(v1, v2)
+        sample_coupling = random_gamma_init(w1, w2)
+        feature_coupling = random_gamma_init(v1, v2)
 
-    constC_s, hC1_s, hC2_s = init_matrix_np(X1, X2, v1, v2)
+    const_samples, source_samples, target_samples = init_matrix_np(X1, X2, v1, v2)
 
-    constC_v, hC1_v, hC2_v = init_matrix_np(X1.T, X2.T, w1, w2)
+    const_features, source_features, target_features = init_matrix_np(X1.T, X2.T, w1, w2)
     cost = np.inf
 
     log_out = {}
     log_out["cost"] = []
 
     for i in range(niter):
-        Tsold = Ts
-        Tvold = Tv
+        old_samples = sample_coupling
+        old_features = feature_coupling
         costold = cost
 
-        M = constC_s - np.dot(hC1_s, Tv).dot(hC2_s.T)
+        sample_cost = const_samples - np.dot(source_samples, feature_coupling).dot(
+            target_samples.T
+        )
         if C_lin is not None:
-            M = M + C_lin
+            sample_cost = sample_cost + C_lin
         if algo == "emd":
-            Ts = ot.emd(w1, w2, M, numItermax=1e7)
+            sample_coupling = ot.emd(w1, w2, sample_cost, numItermax=1e7)
         elif algo == "sinkhorn":
-            Ts = ot.sinkhorn(w1, w2, M, reg)
+            sample_coupling = ot.sinkhorn(w1, w2, sample_cost, reg)
 
-        M = constC_v - np.dot(hC1_v, Ts).dot(hC2_v.T)
+        feature_cost = const_features - np.dot(source_features, sample_coupling).dot(
+            target_features.T
+        )
 
         if algo2 == "emd":
-            Tv = ot.emd(v1, v2, M, numItermax=1e7)
+            feature_coupling = ot.emd(v1, v2, feature_cost, numItermax=1e7)
         elif algo2 == "sinkhorn":
-            Tv = ot.sinkhorn(v1, v2, M, reg2)
+            feature_coupling = ot.sinkhorn(v1, v2, feature_cost, reg2)
 
-        delta = np.linalg.norm(Ts - Tsold) + np.linalg.norm(Tv - Tvold)
-        cost = np.sum(M * Tv)
+        delta = np.linalg.norm(sample_coupling - old_samples) + np.linalg.norm(
+            feature_coupling - old_features
+        )
+        cost = np.sum(feature_cost * feature_coupling)
 
         if log:
             log_out["cost"].append(cost)
@@ -235,6 +238,5 @@ def cot_numpy(
                 print("converged at iter ", i)
             break
     if log:
-        return Ts, Tv, cost, log_out
-    else:
-        return Ts, Tv, cost
+        return sample_coupling, feature_coupling, cost, log_out
+    return sample_coupling, feature_coupling, cost

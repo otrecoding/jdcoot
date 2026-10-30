@@ -1,3 +1,5 @@
+"""Evaluate classification models and append their results to JSON lines."""
+
 from copy import deepcopy
 import json
 import numpy as np
@@ -11,7 +13,7 @@ from .models.discrete_semisupervised_reference import discrete_semisupervised_re
 from .models.discrete_unsupervised_coot import discrete_unsupervised_coot
 from .models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
 
-models = dict()
+models = {}
 models[("discrete", "unsupervised", "coot")] = discrete_unsupervised_coot
 models[("discrete", "unsupervised", "jdcoot")] = discrete_unsupervised_jdcoot
 models[("discrete", "semisupervised", "coot")] = discrete_semisupervised_coot
@@ -31,6 +33,7 @@ def compute(
     recoding_methods,
     **kwargs,
 ):
+    """Evaluate each requested model and append its scenario and accuracies."""
     prop_source = kwargs.get("prop_source", np.nan)
     prop_target = kwargs.get("prop_target", np.nan)
 
@@ -75,7 +78,7 @@ def compute(
                 results["size_source_test"] = test.size_source
                 results["size_target_test"] = test.size_target
 
-                with open(json_file, "a") as f:
+                with open(json_file, "a", encoding="utf-8") as f:
                     json.dump(results, f)
                     f.write("\n")
 
@@ -83,6 +86,5 @@ def compute(
                 print(
                     f"Model : {variable_type}_{learning_method}_{recoding_method} is not available"
                 )
-                pass
 
     return True

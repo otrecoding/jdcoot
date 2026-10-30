@@ -1,3 +1,5 @@
+"""Independent source and target classifiers trained on partial labels."""
+
 import numpy as np
 from tf_keras.utils import to_categorical
 from ..utils import discrete_classifier, xcolumns, discrete_accuracy
@@ -17,6 +19,7 @@ def one_hot(z, seen_levels):
 
 
 def one_cold(z_hot, seen_levels):
+    """Decode categorical probabilities using the training fold's labels."""
     indices = np.argmax(z_hot, axis=1)
     seen_levels = np.array(seen_levels)
     return seen_levels[indices]
@@ -33,6 +36,7 @@ def discrete_partial_reference(
     l_target_test,
     **kwargs,
 ):
+    """Return within-domain and held-out accuracies for reference classifiers."""
     batch_size = kwargs.get("batch_size", 20)
 
     source_train = source.iloc[l_source_train, :]

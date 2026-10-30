@@ -1,17 +1,21 @@
+"""Partially supervised classification using co-optimal transport."""
+
 import numpy as np
 import ot
+from tf_keras.utils import to_categorical
 
 from ..comp import comp_
 from ..coot import cot_numpy
 from ..utils import xcolumns, discrete_accuracy, discrete_classifiers
-from tf_keras.utils import to_categorical
 
 
 def one_hot(z, nClass):
+    """Encode integer labels as categorical probability vectors."""
     return to_categorical(z, num_classes=nClass)
 
 
 def one_cold(z_hot):
+    """Decode categorical probabilities to integer labels."""
     return np.argmax(z_hot, axis=1)
 
 
@@ -26,6 +30,7 @@ def discrete_partial_coot(
     l_target_test,
     **kwargs,
 ):
+    """Return within-domain and held-out accuracies using partial labels."""
     algo = kwargs.get("algo", "emd")
     reg = kwargs.get("reg", 1)
     batch_size = kwargs.get("batch_size", 20)
@@ -54,20 +59,19 @@ def discrete_partial_coot(
     clf_source, clf_target = discrete_classifiers(source, target, "relu", "softmax")
 
     def compute_cost_matrix(ys, yt, v=10000):
-        M = ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
-        return M
+        return ot.dist(ys.reshape(-1, 1), yt.reshape(-1, 1), metric=comp_(v))
 
     z_target_2 = z_target.copy()
     z_target_2[l_target_test] = -1
     z_source_2 = z_source[l_source_train]
 
-    M_lin = compute_cost_matrix(yt=z_target_2, ys=z_source_2)
+    linear_cost = compute_cost_matrix(yt=z_target_2, ys=z_source_2)
 
-    Ts, Tv, cost = cot_numpy(
+    sample_coupling, _, _ = cot_numpy(
         X1=x_source_train,
         X2=x_target,
         niter=100,
-        C_lin=M_lin,
+        C_lin=linear_cost,
         algo=algo,
         reg=reg,
         algo2="emd",
@@ -75,19 +79,19 @@ def discrete_partial_coot(
     )
 
     zs_onehot = z_source_train
-    zt_onehot_estimated = n_target * np.dot(Ts.T, zs_onehot)
+    zt_onehot_estimated = n_target * np.dot(sample_coupling.T, zs_onehot)
     zt_onehot_estimated[l_target_train] = z_target_train
 
     z_target_2 = z_target[l_target_train]
     z_source_2 = z_source.copy()
     z_source_2[l_source_test] = -1
-    M_lin = compute_cost_matrix(yt=z_source_2, ys=z_target_2)
+    linear_cost = compute_cost_matrix(yt=z_source_2, ys=z_target_2)
 
-    Ts, Tv, cost = cot_numpy(
+    sample_coupling, _, _ = cot_numpy(
         X1=x_target_train,
         X2=x_source,
         niter=100,
-        C_lin=M_lin,
+        C_lin=linear_cost,
         algo=algo,
         reg=reg,
         algo2="emd",
@@ -95,7 +99,7 @@ def discrete_partial_coot(
     )
 
     zt_onehot = z_target_train
-    zs_onehot_estimated = n_source * np.dot(Ts.T, zt_onehot)
+    zs_onehot_estimated = n_source * np.dot(sample_coupling.T, zt_onehot)
     zs_onehot_estimated[l_source_train] = z_source_train
 
     clf_source.fit(
