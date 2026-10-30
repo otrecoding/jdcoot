@@ -7,6 +7,22 @@ feature spaces and underlying distributions. We introduce Joint Distribution Co-
 Transport (JDCOOT), a domain adaptation algorithm that leverages optimal transport
 to align the joint feature-label distributions of distinct domains, enabling effective knowledge transfer across heterogeneous domains. 
 
+## AI assistance disclosure
+
+Parts of this codebase were developed with the help of AI-based assistance
+tools (large language models). Their use was limited mainly to a role similar
+to that of a linter or code reviewer: suggesting changes to better follow
+Python conventions, such as PEP 8 naming rules, code formatting, and
+docstring structure.
+
+- The scientific content, numerical methods, algorithms, and overall design are
+  the work of the authors.
+- Any code suggested or modified by these tools was reviewed, tested, and
+  validated by the authors before being included.
+- The authors take full responsibility for the content of this repository.
+
+If you notice any issue or inconsistency, please open an issue.
+
 ## Installation
 
 Use [pixi](https://pixi.sh) to run the code
@@ -25,23 +41,6 @@ cd jdcoot
 pixi install
 pixi run python examples/discrete_partial_jdcoot.py
 ```
-
-## Development checks
-
-With the project environment active, install pylint and evaluate all package
-modules, including the classification models:
-
-```bash
-python -m pip install pylint
-python -m pylint src/jdcoot
-python -m pytest
-```
-
-No pylint checks are disabled globally. The package initializer has a scoped
-import-position exception because TensorFlow logging must be configured before
-model imports. Remaining findings include legacy mathematical names, shared
-model-interface arguments unused by some implementations, and
-complexity/duplication in the optimization routines.
 
 ## Numerical experiments
 
