@@ -1,3 +1,7 @@
+#
+# Compare partial COOT, JDCOOT, and a reference classifier on paired omics data
+# using fixed class-specific labels and repeated leave-one-out evaluation; save scores to Excel.
+
 import os
 import sys
 import random

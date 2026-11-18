@@ -1,3 +1,7 @@
+#
+# Compare discrete unsupervised COOT and JDCOOT as source and target training
+# sample sizes increase together; record synthetic simulation results in JSONL.
+
 from copy import deepcopy
 import json
 import math

@@ -1,3 +1,7 @@
+#
+# Compare discrete unsupervised COOT and JDCOOT across target mean shifts in
+# synthetic data; append each run's metrics and scenario settings to a JSONL file.
+
 from copy import deepcopy
 import json
 import math

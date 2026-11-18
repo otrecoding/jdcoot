@@ -1,3 +1,7 @@
+#
+# Compare unsupervised COOT and JDCOOT on the paired omics datasets using repeated
+# random splits and leave-one-out scoring; export the mean scores and standard deviations.
+
 import os
 import sys
 import random

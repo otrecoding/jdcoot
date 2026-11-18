@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Gallery of generated COOT and JDCOOT experiment plots.">
+    <title>Experiment plots | COOT and JDCOOT</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #172033;
+        background: #f5f7fb;
+      }
+
+      body {
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: -10000px;
+        top: auto;
+      }
+
+      .skip-link:focus {
+        left: 1rem;
+        top: 1rem;
+        z-index: 1;
+        padding: 0.5rem 0.75rem;
+        background: white;
+      }
+
+      header,
+      main {
+        width: min(1120px, calc(100% - 2rem));
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 3rem 0 1.5rem;
+      }
+
+      h1,
+      h2 {
+        line-height: 1.2;
+      }
+
+      header p,
+      .availability-note {
+        max-width: 70ch;
+        color: #46536a;
+      }
+
+      section {
+        margin: 2rem 0 3rem;
+      }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+        gap: 1rem;
+      }
+
+      figure {
+        margin: 0;
+        padding: 0.75rem;
+        border: 1px solid #dce2ec;
+        border-radius: 0.6rem;
+        background: white;
+        box-shadow: 0 2px 8px rgb(23 32 51 / 5%);
+      }
+
+      figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      figcaption {
+        padding: 0.75rem 0.25rem 0.25rem;
+        font-weight: 600;
+      }
+
+      footer {
+        padding: 1rem;
+        text-align: center;
+        color: #46536a;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to plots</a>
+    <header>
+      <h1>COOT and JDCOOT experiment plots</h1>
+      <p>
+        Static gallery of synthetic experiment variation plots for discrete
+        outcomes. Alpha optimization and continuous-outcome plots are excluded.
+      </p>
+      <p class="availability-note">
+        The plotting script defines nine non-alpha panels for discrete
+        outcomes; seven were generated from the available results. Two
+        observed-label panels had no matching result rows.
+      </p>
+    </header>
+
+    <main id="main-content">
+      <section aria-labelledby="variation-heading">
+        <h2 id="variation-heading">Experiment variations</h2>
+        <div class="gallery">
+          <figure>
+            <img src="plots/correlation_variation_discrete.png" alt="Box plots comparing COOT and JDCOOT target accuracy across correlation matrix shifts for a discrete outcome." loading="lazy">
+            <figcaption>Correlation matrix shift — discrete outcome</figcaption>
+          </figure>
+          <figure>
+            <img src="plots/mean_shift_discrete.png" alt="Box plots comparing COOT and JDCOOT target accuracy across covariate mean shifts for a discrete outcome." loading="lazy">
+            <figcaption>Covariate mean shift — discrete outcome</figcaption>
+          </figure>
+          <figure>
+            <img src="plots/observed_covariates_discrete.png" alt="Box plots comparing COOT and JDCOOT target accuracy across proportions of observed active covariates for a discrete outcome." loading="lazy">
+            <figcaption>Observed active covariates — discrete outcome</figcaption>
+          </figure>
+          <figure>
+            <img src="plots/observed_labels_partial_discrete_source_0.5.png" alt="Box plots comparing COOT, JDCOOT, and reference target accuracy across target and source label observation proportions for a discrete outcome with source proportion 0.5." loading="lazy">
+            <figcaption>Observed labels, partial learning — discrete outcome, source proportion 0.5</figcaption>
+          </figure>
+          <figure>
+            <img src="plots/odds_ratio_variation_discrete.png" alt="Box plots comparing COOT and JDCOOT target accuracy across odds ratios for a discrete outcome." loading="lazy">
+            <figcaption>Odds ratio variation — discrete outcome</figcaption>
+          </figure>
+          <figure>
+            <img src="plots/sample_size_ratio_discrete.png" alt="Box plots comparing COOT and JDCOOT target accuracy across sample size ratios for a discrete outcome." loading="lazy">
+            <figcaption>Sample size ratio — discrete outcome</figcaption>
+          </figure>
+          <figure>
+            <img src="plots/sparse_rate_discrete.png" alt="Box plots comparing COOT and JDCOOT target accuracy across sparsity rates for a discrete outcome." loading="lazy">
+            <figcaption>Sparse rate — discrete outcome</figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+
+    <footer>Generated plot images only; source experiment results are not included.</footer>
+  </body>
+</html>

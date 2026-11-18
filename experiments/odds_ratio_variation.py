@@ -1,3 +1,7 @@
+#
+# Compare discrete unsupervised COOT, JDCOOT, and the reference method over a
+# sweep of source and target odds ratios; append the simulation results to JSONL.
+
 from copy import deepcopy
 import json
 import math

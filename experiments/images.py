@@ -1,3 +1,8 @@
+#
+# Evaluate cross-domain image transfer across source/target domain pairs using
+# five-fold splits and unsupervised, semi-supervised, and partial COOT/JDCOOT/reference methods.
+# Aggregate fold metrics into results_all_domains_kfold.xlsx.
+
 import os
 import sys
 

@@ -1,3 +1,7 @@
+#
+# Compare discrete unsupervised COOT, JDCOOT, and the reference method while
+# varying target training size with source size fixed; write simulation metrics as JSONL.
+
 from copy import deepcopy
 import json
 import math

@@ -1,3 +1,7 @@
+#
+# Sweep the observed-covariate proportions in synthetic source and target data,
+# comparing discrete unsupervised COOT, JDCOOT, and the reference method in JSONL output.
+
 from copy import deepcopy
 import json
 import math

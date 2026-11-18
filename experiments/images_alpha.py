@@ -1,3 +1,7 @@
+#
+# Sweep alpha for unsupervised JDCOOT on identical-domain image pairs using
+# stratified five-fold splits; save fold summaries and print the best alpha per domain.
+
 import os
 import sys
 
