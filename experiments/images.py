@@ -1,26 +1,18 @@
-import sklearn
-import scipy
-import numpy as np
-import pandas as pd
 import os
 import sys
-import math
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 sys.path.append(os.path.abspath("src"))
-import jdcoot
+import numpy as np
+import pandas as pd
 from scipy.io import loadmat
 from sklearn.model_selection import StratifiedKFold
-from jdcoot.models.discrete_partial_jdcoot4 import discrete_partial_jdcoot4
-from jdcoot.models.discrete_partial_jdcoot3 import discrete_partial_jdcoot3
-from jdcoot.models.discrete_partial_jdcoot2 import discrete_partial_jdcoot2
+from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
 from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
 from jdcoot.models.discrete_semisupervised_jdcoot import discrete_semisupervised_jdcoot
-from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
 from jdcoot.models.discrete_unsupervised_coot import discrete_unsupervised_coot
 from jdcoot.models.discrete_semisupervised_coot import discrete_semisupervised_coot
 from jdcoot.models.discrete_partial_coot import discrete_partial_coot
-from jdcoot.models.discrete_partial_coot2 import discrete_partial_coot2
 from jdcoot.models.discrete_semisupervised_reference import discrete_semisupervised_reference
 from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
@@ -46,8 +38,9 @@ results = []
 
 def stratified_kfold_splits(df, class_col='Z', n_splits=5, seed=None):
     """
-    Génère n_splits folds stratifiés (même proportion par classe dans chaque fold).
-    Retourne une liste de tuples (train_pool, test) pour chaque fold.
+    Generate stratified folds with the same class proportions in each fold.
+
+    Return a list of (train_pool, test) tuples, one per fold.
     """
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     y = df[class_col].values
@@ -62,7 +55,7 @@ def stratified_kfold_splits(df, class_col='Z', n_splits=5, seed=None):
 
 
 def sample_n_per_class(df, class_col='Z', n=20, seed=None):
-    """Pioche n échantillons par classe (ou moins si la classe en a moins)."""
+    """Sample up to n observations per class."""
     rng = np.random.default_rng(seed)
     idx_list = []
 
@@ -255,7 +248,7 @@ for source_name in sourceDomainName:
 
                 # PARTIAL COOT
                 pure_source, pure_target, test_source, test_target = \
-                    discrete_partial_coot2(
+                    discrete_partial_coot(
                         S, T, S_test, T_test,
                         l_source_train, l_source_test,
                         l_target_train, l_target_test,
@@ -271,7 +264,7 @@ for source_name in sourceDomainName:
 
                 # PARTIAL JDCOOT
                 pure_source, pure_target, test_source, test_target = \
-                    discrete_partial_jdcoot4(
+                    discrete_partial_jdcoot(
                         S, T, S_test, T_test,
                         l_source_train, l_source_test,
                         l_target_train, l_target_test,
