@@ -1,3 +1,7 @@
+#
+# Sweep alpha for partial JDCOOT on paired omics data with repeated leave-one-out
+# evaluation; append scores to a live workbook and save aggregate results to Excel.
+
 import os
 import sys
 import random

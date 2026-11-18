@@ -1,3 +1,7 @@
+#
+# Sweep alpha for unsupervised JDCOOT on paired omics measurements using repeated
+# splits and inner leave-one-out scoring; save per-run and mean scores to Excel.
+
 import os
 import sys
 import random

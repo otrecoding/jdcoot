@@ -1,3 +1,7 @@
+#
+# Compare discrete unsupervised COOT and JDCOOT across synthetic feature sparsity
+# rates, appending each simulation's settings and scores to a JSONL file.
+
 from copy import deepcopy
 import json
 import math

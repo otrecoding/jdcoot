@@ -1,3 +1,7 @@
+#
+# Sweep alpha for discrete JDCOOT across unsupervised, partially supervised, and
+# semi-supervised synthetic scenarios; append simulation metrics to a JSONL file.
+
 import math
 import numpy as np
 import os

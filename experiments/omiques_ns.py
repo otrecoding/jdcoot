@@ -1,3 +1,7 @@
+#
+# Compare unsupervised COOT and JDCOOT on paired omics measurements with repeated
+# train/test splits and leave-one-out scoring; write the aggregate scores to Excel.
+
 import os
 import sys
 import random

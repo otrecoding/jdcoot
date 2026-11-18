@@ -1,3 +1,7 @@
+#
+# Vary the fractions of observed source and target labels for discrete
+# semi-supervised and partial methods; save simulation settings and scores as JSONL.
+
 from copy import deepcopy
 import json
 import math

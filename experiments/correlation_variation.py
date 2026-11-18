@@ -1,3 +1,7 @@
+#
+# Compare discrete unsupervised COOT, JDCOOT, and the reference method while
+# varying source and target feature autocorrelation; write simulation results as JSONL.
+
 from copy import deepcopy
 import json
 import math
