@@ -1,87 +1,23 @@
-import sklearn
-import scipy
-import numpy as np
-import pandas as pd
 import os
 import sys
-import seaborn as sns
-import matplotlib.pyplot as plt
-import openpyxl
 import random
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
+sys.path.append(os.path.abspath("src"))
+
+import numpy as np
+import pandas as pd
 import tensorflow as tf
-
 from tensorflow.keras import backend as K
-from scipy.io import loadmat
-from scipy.optimize import linear_sum_assignment
-
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import LeaveOneOut
-from sklearn.preprocessing import OneHotEncoder as onehot
+
+from jdcoot.utils import xcolumns
+from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
+
 random.seed(42)
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-
-sys.path.append(os.path.abspath("src"))
-
-import jdcoot
-
-from jdcoot.utils import (
-    xcolumns,
-    discrete_classifier,
-    discrete_accuracy,
-    discrete_classifiers
-)
-
-from jdcoot.coot import cot_numpy
-
-from jdcoot.models.discrete_unsupervised_jdcoot import (
-    discrete_unsupervised_jdcoot
-)
-
-from jdcoot.models.discrete_semisupervised_jdcoot import (
-    discrete_semisupervised_jdcoot
-)
-
-from jdcoot.models.discrete_partial_jdcoot import (
-    discrete_partial_jdcoot
-)
-
-from jdcoot.models.discrete_partial_jdcoot2 import (
-    discrete_partial_jdcoot2
-)
-
-from jdcoot.models.discrete_partial_jdcoot3 import (
-    discrete_partial_jdcoot3
-)
-
-from jdcoot.models.discrete_partial_jdcoot4 import (
-    discrete_partial_jdcoot4
-)
-
-from jdcoot.models.discrete_unsupervised_coot import (
-    discrete_unsupervised_coot
-)
-
-from jdcoot.models.discrete_semisupervised_coot import (
-    discrete_semisupervised_coot
-)
-
-from jdcoot.models.discrete_partial_coot import (
-    discrete_partial_coot
-)
-
-from jdcoot.models.discrete_partial_coot2 import (
-    discrete_partial_coot2
-)
-
-from jdcoot.models.discrete_semisupervised_reference import (
-    discrete_semisupervised_reference
-)
-
-from jdcoot.models.discrete_partial_reference import (
-    discrete_partial_reference
-)
 
 # =========================================================
 # GPU
@@ -97,14 +33,14 @@ for gpu in gpus:
 K.clear_session()
 
 # =========================================================
-# Chargement données
+# Load data
 # =========================================================
 
 S_data = pd.read_csv("data_exp.csv")
 T_data = pd.read_csv("data_met.csv")
 
 # =========================================================
-# Renommer colonnes
+# Rename columns
 # =========================================================
 
 X_colsS = ['X' + str(i) for i in range(S_data.shape[1] - 1)]
@@ -114,7 +50,7 @@ S_data.columns = X_colsS + ['Z']
 T_data.columns = X_colsT + ['Z']
 
 # =========================================================
-# Mapping labels
+# Map labels
 # =========================================================
 
 mapping = {
@@ -130,7 +66,7 @@ S_data = S_data.dropna(subset=['Z'])
 T_data = T_data.dropna(subset=['Z'])
 
 # =========================================================
-# Synchronisation individus
+# Synchronize individuals
 # =========================================================
 
 source_ids = S_data["X1"]
@@ -146,7 +82,7 @@ T_data = T_data[~T_data["X1"].isin(missing_in_source)]
 print("Shape target après filtrage :", T_data.shape)
 
 # =========================================================
-# Suppression ID
+# Remove IDs
 # =========================================================
 
 S_data = S_data.iloc[:, 2:]
@@ -182,7 +118,7 @@ print("Shape source :", x_source_reduced.shape)
 print("Shape target :", x_target_reduced.shape)
 
 # =========================================================
-# Standardisation
+# Standardization
 # =========================================================
 
 scaler_s = StandardScaler()
@@ -192,7 +128,7 @@ x_source_scaled = scaler_s.fit_transform(x_source_reduced)
 x_target_scaled = scaler_t.fit_transform(x_target_reduced)
 
 # =========================================================
-# Corrélations
+# Correlations
 # =========================================================
 
 corr_matrix = np.corrcoef(
@@ -215,7 +151,7 @@ signs = np.where(signs == 0, 1, signs)
 x_source_scaled = x_source_scaled * signs
 
 # =========================================================
-# Reconstruction dataframes
+# Reconstruct dataframes
 # =========================================================
 
 X_df = pd.DataFrame(
@@ -237,7 +173,7 @@ X_df['Z'] = T_data['Z'].values
 target = X_df
 
 # =========================================================
-# Paramètres
+# Parameters
 # =========================================================
 
 alpha_values = np.linspace(0, 1, 11)
@@ -258,7 +194,7 @@ best_score_mean_overall = -np.inf
 indices = np.arange(len(source))
 
 # =========================================================
-# Fichier Excel LIVE
+# Live Excel file
 # =========================================================
 
 excel_file = "results_partial_jdcoot_live.xlsx"
@@ -274,7 +210,7 @@ if not os.path.exists(excel_file):
     ]).to_excel(excel_file, index=False)
 
 # =========================================================
-# Boucle répétitions
+# Repetition loop
 # =========================================================
 
 for rep in range(n_reps):
@@ -298,7 +234,7 @@ for rep in range(n_reps):
     loo = LeaveOneOut()
 
     # =====================================================
-    # Leave One Out
+    # Leave-one-out
     # =====================================================
 
     for train_idx, test_idx in loo.split(source2):
@@ -310,7 +246,7 @@ for rep in range(n_reps):
         T_test = target2.iloc[test_idx].reset_index(drop=True)
 
         # =================================================
-        # indices partial
+        # Partial indices
         # =================================================
 
         l_source_train = np.where(
@@ -330,7 +266,7 @@ for rep in range(n_reps):
         )[0]
 
         # =================================================
-        # sécurité
+        # Guard against empty label groups
         # =================================================
 
         if (
@@ -342,14 +278,14 @@ for rep in range(n_reps):
             continue
 
         # =================================================
-        # Boucle alpha
+        # Alpha loop
         # =================================================
 
         for alpha in alpha_values:
 
             print(f"\nREP = {rep+1} | alpha = {alpha}")
 
-            _, _, test_source, test_target = discrete_partial_jdcoot4(
+            _, _, test_source, test_target = discrete_partial_jdcoot(
                 S,
                 T,
                 S_test,
@@ -372,7 +308,7 @@ for rep in range(n_reps):
             print("mean_score  =", score_mean)
 
             # =============================================
-            # sauvegarde mémoire
+            # Store in memory
             # =============================================
 
             new_row = {
@@ -386,7 +322,7 @@ for rep in range(n_reps):
             results_rep.append(new_row)
 
             # =============================================
-            # sauvegarde immédiate Excel
+            # Save to Excel immediately
             # =============================================
 
             df_new = pd.DataFrame([new_row])
@@ -411,7 +347,7 @@ for rep in range(n_reps):
                 )
 
     # =====================================================
-    # dataframe rep
+    # Repetition dataframe
     # =====================================================
 
     df_rep = pd.DataFrame(results_rep)
@@ -419,7 +355,7 @@ for rep in range(n_reps):
     results_all.append(df_rep)
 
     # =====================================================
-    # meilleur alpha source
+    # Best source alpha
     # =====================================================
 
     mean_source = (
@@ -431,7 +367,7 @@ for rep in range(n_reps):
     score_source = mean_source.max()
 
     # =====================================================
-    # meilleur alpha target
+    # Best target alpha
     # =====================================================
 
     mean_target = (
@@ -443,7 +379,7 @@ for rep in range(n_reps):
     score_target = mean_target.max()
 
     # =====================================================
-    # meilleur alpha mean
+    # Best mean alpha
     # =====================================================
 
     mean_global = (
@@ -466,7 +402,7 @@ for rep in range(n_reps):
     print("Best score mean   :", score_mean)
 
     # =====================================================
-    # best global source
+    # Best overall source
     # =====================================================
 
     if score_source > best_score_source_overall:
@@ -475,7 +411,7 @@ for rep in range(n_reps):
         best_alpha_source_overall = alpha_source
 
     # =====================================================
-    # best global target
+    # Best overall target
     # =====================================================
 
     if score_target > best_score_target_overall:
@@ -484,7 +420,7 @@ for rep in range(n_reps):
         best_alpha_target_overall = alpha_target
 
     # =====================================================
-    # best global mean
+    # Best overall mean
     # =====================================================
 
     if score_mean > best_score_mean_overall:
@@ -493,7 +429,7 @@ for rep in range(n_reps):
         best_alpha_mean_overall = alpha_mean
 
 # =========================================================
-# concat final
+# Final concatenation
 # =========================================================
 
 df_results_all = pd.concat(
@@ -502,7 +438,7 @@ df_results_all = pd.concat(
 )
 
 # =========================================================
-# sauvegarde complète
+# Save all results
 # =========================================================
 
 df_results_all.to_excel(
@@ -511,7 +447,7 @@ df_results_all.to_excel(
 )
 
 # =========================================================
-# résumé
+# Summary
 # =========================================================
 
 summary = (
@@ -531,7 +467,7 @@ summary.to_excel(
 )
 
 # =========================================================
-# résultats finaux
+# Final results
 # =========================================================
 
 print("\n====================================")

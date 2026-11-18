@@ -1,14 +1,10 @@
-import sklearn
-import scipy
-import numpy as np
-import pandas as pd
 import os
 import sys
-import math
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 sys.path.append(os.path.abspath("src"))
-import jdcoot
+import numpy as np
+import pandas as pd
 from scipy.io import loadmat
 from sklearn.model_selection import StratifiedKFold
 from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdcoot
@@ -19,19 +15,19 @@ featuresToUse = ["CaffeNet4096", "GoogleNet1024"]
 # PARAMETERS
 # =========================================================
 
-# Paires identiques uniquement : A->A, C->C, W->W
+# Identical-domain pairs only: A->A, C->C, W->W
 domainPairs = [
     ('amazon', 'amazon'),
     ('caltech10', 'caltech10'),
     ('webcam', 'webcam'),
 ]
 
-n_splits = 5     # nombre de folds K
+n_splits = 5     # Number of folds K
 algo = "sinkhorn"
 reg = 1
 batch_size = 20
 
-# Grille de recherche pour alpha
+# Search grid for alpha
 alpha_values = [
     0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
     1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
@@ -43,8 +39,9 @@ results = []
 
 def stratified_kfold_splits(df, class_col='Z', n_splits=5, seed=None):
     """
-    Génère n_splits folds stratifiés (même proportion par classe dans chaque fold).
-    Retourne une liste de tuples (train_pool, test) pour chaque fold.
+    Generate stratified folds with the same class proportions in each fold.
+
+    Return a list of (train_pool, test) tuples, one per fold.
     """
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     y = df[class_col].values
@@ -98,14 +95,14 @@ for source_name, target_name in domainPairs:
     target.loc[:, 'Z'] = target.loc[:, 'Z'] - 1
 
     # =========================================================
-    # K-FOLD STRATIFIÉ
+    # STRATIFIED K-FOLD
     # =========================================================
 
     source_folds = stratified_kfold_splits(source, class_col='Z', n_splits=n_splits)
     target_folds = stratified_kfold_splits(target, class_col='Z', n_splits=n_splits)
 
     # =====================================================
-    # BOUCLE SUR LES FOLDS
+    # LOOP OVER FOLDS
     # =====================================================
 
     for fold_idx in range(n_splits):
@@ -172,7 +169,7 @@ df_summary.to_excel("results_alpha_search_same_domain.xlsx", index=False)
 print(df_summary)
 
 # =========================================================
-# BEST ALPHA PER DOMAIN (based on test_target_mean, adapt if needed)
+# BEST ALPHA PER DOMAIN (based on test_target_mean; adjust if needed)
 # =========================================================
 
 best_alpha = (
