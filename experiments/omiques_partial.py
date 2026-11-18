@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import LeaveOneOut
 from jdcoot.utils import xcolumns
 from jdcoot.models.discrete_partial_jdcoot import discrete_partial_jdcoot
-from jdcoot.models.discrete_partial_coot2 import discrete_partial_coot2
+from jdcoot.models.discrete_partial_coot import discrete_partial_coot
 from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
 random.seed(42)
@@ -187,7 +187,7 @@ for rep in range(n_reps):
         # COOT
         # =========================================
 
-        _, _, test_source, test_target = discrete_partial_coot2(
+        _, _, test_source, test_target = discrete_partial_coot(
             S,
             T,
             S_test,

@@ -12,7 +12,7 @@ from jdcoot.models.discrete_unsupervised_jdcoot import discrete_unsupervised_jdc
 from jdcoot.models.discrete_semisupervised_jdcoot import discrete_semisupervised_jdcoot
 from jdcoot.models.discrete_unsupervised_coot import discrete_unsupervised_coot
 from jdcoot.models.discrete_semisupervised_coot import discrete_semisupervised_coot
-from jdcoot.models.discrete_partial_coot2 import discrete_partial_coot2
+from jdcoot.models.discrete_partial_coot import discrete_partial_coot
 from jdcoot.models.discrete_semisupervised_reference import discrete_semisupervised_reference
 from jdcoot.models.discrete_partial_reference import discrete_partial_reference
 
@@ -248,7 +248,7 @@ for source_name in sourceDomainName:
 
                 # PARTIAL COOT
                 pure_source, pure_target, test_source, test_target = \
-                    discrete_partial_coot2(
+                    discrete_partial_coot(
                         S, T, S_test, T_test,
                         l_source_train, l_source_test,
                         l_target_train, l_target_test,
